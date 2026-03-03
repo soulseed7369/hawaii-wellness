@@ -1,0 +1,16 @@
+{
+  "kailua-kona":   { "lat": 19.6400, "lng": -155.9969 },
+  "hilo":          { "lat": 19.7241, "lng": -155.0868 },
+  "waimea":        { "lat": 20.0234, "lng": -155.6728 },
+  "volcano village": { "lat": 19.4414, "lng": -155.2343 },
+  "pahoa":         { "lat": 19.4928, "lng": -154.9467 },
+  "honokaa":       { "lat": 20.0793, "lng": -155.4660 },
+  "captain cook":  { "lat": 19.4942, "lng": -155.8767 },
+  "kohala coast":  { "lat": 19.9382, "lng": -155.8608 },
+  "kawaihae":      { "lat": 20.0394, "lng": -155.8267 },
+  "naalehu":       { "lat": 19.0649, "lng": -155.5855 },
+  "holualoa":      { "lat": 19.6317, "lng": -155.9597 },
+  "keaau":         { "lat": 19.6219, "lng": -155.0380 },
+  "mountain view": { "lat": 19.5508, "lng": -155.1140 },
+  "ocean view":    { "lat": 19.1050, "lng": -155.7620 }
+}

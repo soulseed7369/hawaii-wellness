@@ -1,18 +1,34 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const islands = [
-  { value: "big-island", label: "Big Island" },
-  { value: "maui", label: "Maui" },
-  { value: "oahu", label: "O'ahu" },
-  { value: "kauai", label: "Kaua'i" },
-  { value: "molokai", label: "Moloka'i" },
-  { value: "lanai", label: "Lāna'i" },
+const ISLANDS = [
+  { value: "big-island", label: "Big Island",  path: "/" },
+  { value: "maui",       label: "Maui",         path: "/maui" },
+  { value: "oahu",       label: "Oʻahu",        path: "/oahu" },
+  { value: "kauai",      label: "Kauaʻi",       path: "/kauai" },
 ];
 
+function currentIslandFromPath(pathname: string): string {
+  if (pathname.startsWith('/maui'))  return 'maui';
+  if (pathname.startsWith('/oahu'))  return 'oahu';
+  if (pathname.startsWith('/kauai')) return 'kauai';
+  return 'big-island';
+}
+
 export function IslandSelector({ compact }: { compact?: boolean }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const current = currentIslandFromPath(location.pathname);
+
   return (
-    <Select defaultValue="big-island">
+    <Select
+      value={current}
+      onValueChange={(val) => {
+        const island = ISLANDS.find(i => i.value === val);
+        if (island) navigate(island.path);
+      }}
+    >
       <SelectTrigger
         className={
           compact
@@ -24,7 +40,7 @@ export function IslandSelector({ compact }: { compact?: boolean }) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {islands.map((island) => (
+        {ISLANDS.map((island) => (
           <SelectItem key={island.value} value={island.value}>
             {island.label}
           </SelectItem>

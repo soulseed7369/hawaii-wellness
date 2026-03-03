@@ -21,38 +21,49 @@ export function RetreatEventCard({ retreat }: RetreatEventCardProps) {
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={retreat.image}
-          alt={retreat.title}
+          alt={`Cover image for ${retreat.title}`}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        <Badge className="absolute right-3 top-3 bg-foreground/70 text-primary-foreground backdrop-blur-sm">
+        <Badge
+          className="absolute right-3 top-3 bg-foreground/70 text-primary-foreground backdrop-blur-sm"
+          aria-label={`${retreat.durationDays} day retreat`}
+        >
           {retreat.durationDays} Days
         </Badge>
       </div>
 
       {/* Content */}
       <div className="flex flex-col gap-3 p-5">
-        <p className="text-sm font-medium text-primary">{dateLabel}</p>
+        <p className="text-sm font-medium text-primary" aria-label={`Dates: ${dateLabel}`}>
+          {dateLabel}
+        </p>
         <h3 className="font-display text-lg font-semibold leading-snug">
           {retreat.title}
         </h3>
         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+          <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+          <span className="sr-only">Location: </span>
           {retreat.location}
         </p>
         <Badge variant="outline" className="w-fit gap-1.5 text-xs font-normal">
-          <Sparkles className="h-3 w-3" />
+          <Sparkles className="h-3 w-3" aria-hidden="true" />
           {retreat.feature}
         </Badge>
 
         <div className="mt-1 flex items-center justify-between">
           {retreat.price && (
-            <span className="text-sm font-semibold text-foreground">
+            <span className="text-sm font-semibold text-foreground" aria-label={`Starting from ${retreat.price}`}>
               From {retreat.price}
             </span>
           )}
           <Button size="sm" className="ml-auto" asChild>
-            <Link to={`/retreats/${retreat.id}`}>View &amp; Book</Link>
+            <Link
+              to={`/retreats/${retreat.id}`}
+              aria-label={`View and book ${retreat.title}`}
+            >
+              View &amp; Book
+            </Link>
           </Button>
         </div>
       </div>

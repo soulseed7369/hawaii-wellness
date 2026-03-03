@@ -1,0 +1,163 @@
+[
+  {
+    "total_urls": 120,
+    "urls_by_type": {
+      "acupuncturist": 46,
+      "somatic therapist": 45,
+      "reiki": 29
+    },
+    "urls_by_town": {
+      "Kailua-Kona": 18,
+      "Kona": 23,
+      "Hilo": 43,
+      "Waimea": 15,
+      "Naalehu": 1,
+      "Waikoloa": 1
+    },
+    "top_domains": [
+      {
+        "domain": "www.psychologytoday.com",
+        "count": 13
+      },
+      {
+        "domain": "www.yelp.com",
+        "count": 5
+      },
+      {
+        "domain": "acupuncturebigisland.com",
+        "count": 4
+      },
+      {
+        "domain": "npiprofile.com",
+        "count": 3
+      },
+      {
+        "domain": "www.healthgrades.com",
+        "count": 3
+      },
+      {
+        "domain": "www.mapquest.com",
+        "count": 3
+      },
+      {
+        "domain": "www.waimeanaturalhealth.com",
+        "count": 3
+      },
+      {
+        "domain": "www.rula.com",
+        "count": 3
+      },
+      {
+        "domain": "www.reiki.org",
+        "count": 3
+      },
+      {
+        "domain": "inspire-wellness.net",
+        "count": 2
+      }
+    ],
+    "weak_coverage_types": [],
+    "towns_with_low_coverage": [
+      "Naalehu",
+      "Waikoloa"
+    ],
+    "recommended_next_queries": [],
+    "generated_at": "2026-02-25T06:12:25.211Z"
+  },
+  {
+    "total_urls": 600,
+    "urls_by_type": {
+      "acupuncturist": 46,
+      "somatic therapist": 45,
+      "reiki": 29,
+      "energy healer": 34,
+      "massage therapist": 42,
+      "astrologer": 26,
+      "rolfing": 19,
+      "attachment repair": 54,
+      "somatic experiencing": 22,
+      "meditation teacher": 43,
+      "soul guide": 49,
+      "psychologist": 45,
+      "therapist LMFT LCSW": 31,
+      "chiropractor": 41,
+      "naturopathic doctor": 32,
+      "wellness center": 40,
+      "integrative medicine": 2
+    },
+    "urls_by_town": {
+      "Kailua-Kona": 108,
+      "Kona": 99,
+      "Hilo": 154,
+      "Waimea": 95,
+      "Naalehu": 1,
+      "Waikoloa": 4,
+      "Keaau": 1,
+      "Honokaa": 1,
+      "Ocean View": 1,
+      "Captain Cook": 1,
+      "Pahoa": 1,
+      "Kealakekua": 3
+    },
+    "top_domains": [
+      {
+        "domain": "www.psychologytoday.com",
+        "count": 36
+      },
+      {
+        "domain": "www.yelp.com",
+        "count": 30
+      },
+      {
+        "domain": "www.mapquest.com",
+        "count": 21
+      },
+      {
+        "domain": "www.healthgrades.com",
+        "count": 12
+      },
+      {
+        "domain": "bookretreats.com",
+        "count": 9
+      },
+      {
+        "domain": "www.tripadvisor.com",
+        "count": 9
+      },
+      {
+        "domain": "inspire-wellness.net",
+        "count": 6
+      },
+      {
+        "domain": "www.rula.com",
+        "count": 6
+      },
+      {
+        "domain": "doctor.webmd.com",
+        "count": 5
+      },
+      {
+        "domain": "www.hawaiiholisticcare.com",
+        "count": 5
+      }
+    ],
+    "weak_coverage_types": [
+      "integrative medicine"
+    ],
+    "towns_with_low_coverage": [
+      "Naalehu",
+      "Keaau",
+      "Honokaa",
+      "Ocean View",
+      "Captain Cook",
+      "Pahoa"
+    ],
+    "recommended_next_queries": [
+      "integrative medicine 'Kailua-Kona' Hawaii",
+      "integrative medicine \"Big Island\" Hawaii",
+      "integrative medicine \"Kona\" Hawaii",
+      "integrative medicine \"Hilo\" Hawaii"
+    ],
+    "generated_at": "2026-02-25T06:15:14.093Z"
+  }
+]

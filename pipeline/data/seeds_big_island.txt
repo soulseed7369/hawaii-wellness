@@ -1,0 +1,10 @@
+# Big Island Hawaii wellness practitioner seed URLs
+# Directories and listing pages - depth 0 entry points
+https://www.psychologytoday.com/us/therapists/hi/big-island
+https://www.healthgrades.com/find-a-doctor/hawaii/kailua-kona
+https://www.yelp.com/search?find_desc=acupuncture&find_loc=Kailua-Kona%2C+HI
+https://www.yelp.com/search?find_desc=massage&find_loc=Hilo%2C+HI
+https://www.yelp.com/search?find_desc=chiropractor&find_loc=Kailua-Kona%2C+HI
+https://www.yelp.com/search?find_desc=yoga&find_loc=Kailua-Kona%2C+HI
+https://www.massagetherapy.com/find/Hawaii/Kailua-Kona
+https://directory.acupuncturetoday.com/find-an-acupuncturist/state/hawaii

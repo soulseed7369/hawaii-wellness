@@ -15,7 +15,7 @@ export function CenterCard({ center }: CenterCardProps) {
       <div className="flex gap-4 p-4">
         <img
           src={center.image}
-          alt={center.name}
+          alt={`Photo of ${center.name}`}
           className="h-24 w-24 flex-shrink-0 rounded-lg object-cover"
           loading="lazy"
         />
@@ -28,23 +28,29 @@ export function CenterCard({ center }: CenterCardProps) {
           </h3>
           <div className="mb-2 flex items-center gap-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
+              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="sr-only">Location: </span>
               {center.location}
             </span>
-            <span className="flex items-center gap-1 text-primary">
-              <Star className="h-3.5 w-3.5 fill-current" />
+            <span className="flex items-center gap-1 text-primary" aria-label={`Rating: ${center.rating} out of 5`}>
+              <Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
               {center.rating}
             </span>
           </div>
-          <div className="mb-3 flex flex-wrap gap-1.5">
+          <div className="mb-3 flex flex-wrap gap-1.5" role="list" aria-label="Services">
             {center.services.slice(0, 3).map((s) => (
-              <Badge key={s} variant="secondary" className="text-xs font-normal">
+              <Badge key={s} variant="secondary" className="text-xs font-normal" role="listitem">
                 {s}
               </Badge>
             ))}
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/profile/${center.id}`}>View Center</Link>
+            <Link
+              to={`/profile/${center.id}`}
+              aria-label={`View center profile for ${center.name}`}
+            >
+              View Center
+            </Link>
           </Button>
         </div>
       </div>

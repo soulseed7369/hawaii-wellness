@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Lock, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { IslandSelector } from "@/components/IslandSelector";
 import { useState } from "react";
 
@@ -19,9 +19,11 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="flex-shrink-0">
-          <span className="font-display text-xl font-bold text-accent">
-            Hawai'i Holistic Health
-          </span>
+          <img
+            src="/hawaii-wellness-logo.png"
+            alt="Hawa'i Wellness"
+            className="h-10 w-auto"
+          />
         </Link>
 
         {/* Desktop Nav */}
@@ -44,16 +46,12 @@ export function Header() {
         {/* Desktop Actions */}
         <div className="hidden items-center gap-3 md:flex">
           <IslandSelector />
+          <Button asChild variant="outline" size="sm">
+            <Link to="/auth">Provider Login</Link>
+          </Button>
           <Button asChild>
             <Link to="/list-your-practice">List Your Practice</Link>
           </Button>
-          <Link
-            to="/concierge"
-            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Lock className="h-3.5 w-3.5" />
-            Concierge
-          </Link>
         </div>
 
         {/* Mobile: island selector (compact) + menu toggle */}
@@ -84,19 +82,16 @@ export function Header() {
               </Link>
             ))}
             <hr className="border-border" />
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/auth" onClick={() => setMobileOpen(false)}>
+                Provider Login
+              </Link>
+            </Button>
             <Button asChild className="w-full">
               <Link to="/list-your-practice" onClick={() => setMobileOpen(false)}>
                 List Your Practice
               </Link>
             </Button>
-            <Link
-              to="/concierge"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground"
-            >
-              <Lock className="h-3.5 w-3.5" />
-              Concierge Login
-            </Link>
           </nav>
         </div>
       )}

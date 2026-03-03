@@ -1,0 +1,7 @@
+scrapling
+requests
+beautifulsoup4
+pillow
+opencv-python-headless
+supabase
+python-dotenv

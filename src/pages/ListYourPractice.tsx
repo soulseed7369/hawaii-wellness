@@ -1,6 +1,7 @@
 import { PaymentTabs } from "@/components/PaymentTabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const benefits = [
   "Premium directory placement",
@@ -12,13 +13,14 @@ const benefits = [
 ];
 
 const ListYourPractice = () => {
+  usePageMeta("List Your Practice", "Add your wellness practice, center, or retreat to Hawa'i Wellness — Big Island's premier wellness directory.");
   return (
     <main className="container py-12">
       <h1 className="mb-2 text-center font-display text-3xl font-bold md:text-4xl">
         List Your Practice
       </h1>
       <p className="mb-10 text-center text-muted-foreground">
-        Join Hawai'i's premier holistic health directory
+        Join Hawa'i Wellness — Hawaiʻi's premier wellness directory
       </p>
 
       <div className="mx-auto grid max-w-4xl gap-8 lg:grid-cols-2">

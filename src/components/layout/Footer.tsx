@@ -10,7 +10,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="space-y-3">
-            <span className="font-display text-lg font-bold">Hawai'i Holistic Health</span>
+            <span className="font-display text-lg font-bold">Hawa'i Wellness</span>
             <p className="text-sm opacity-80">
               Connecting you with the Big Island's finest holistic practitioners, retreats, and wellness centers.
             </p>
@@ -54,7 +54,7 @@ export function Footer() {
         </div>
 
         <div className="mt-10 border-t border-accent-foreground/10 pt-6 text-center text-xs opacity-60">
-          © {new Date().getFullYear()} Hawai'i Holistic Health Directory. All rights reserved.
+          © {new Date().getFullYear()} Hawa'i Wellness. All rights reserved.
         </div>
       </div>
     </footer>

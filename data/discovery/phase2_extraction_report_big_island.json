@@ -1,0 +1,11 @@
+{
+  "total_processed": 12,
+  "valid_big_island_records": 0,
+  "discarded_non_big_island": 12,
+  "structured_parse_success_rate": "100%",
+  "LLM_parse_usage_count": 0,
+  "duplicate_records_detected": 0,
+  "extraction_failures": 0,
+  "directory_pages_queued": 0,
+  "recommended_improvements": []
+}

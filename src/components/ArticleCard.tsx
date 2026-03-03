@@ -16,7 +16,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
           <div className="aspect-video overflow-hidden md:aspect-auto md:min-h-[300px]">
             <img
               src={article.image}
-              alt={article.title}
+              alt={`Cover image for ${article.title}`}
               className="h-full w-full object-cover"
               loading="lazy"
             />
@@ -28,11 +28,14 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
             </h2>
             <p className="mb-4 text-muted-foreground">{article.excerpt}</p>
             <div className="mb-4 text-sm text-muted-foreground">
-              By {article.author} · {article.date}
+              <span>By {article.author}</span>
+              <span aria-hidden="true"> · </span>
+              <time>{article.date}</time>
             </div>
             <Link
               to="#"
               className="font-medium text-primary hover:underline"
+              aria-label={`Read full article: ${article.title}`}
             >
               Read More →
             </Link>
@@ -47,7 +50,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
       <div className="aspect-video overflow-hidden">
         <img
           src={article.image}
-          alt={article.title}
+          alt={`Cover image for ${article.title}`}
           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
           loading="lazy"
         />
@@ -60,7 +63,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
         <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{article.excerpt}</p>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{article.author}</span>
-          <span>{article.date}</span>
+          <time>{article.date}</time>
         </div>
       </CardContent>
     </Card>

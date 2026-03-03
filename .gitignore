@@ -1,3 +1,12 @@
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Vite temp timestamp files
+vite.config.ts.timestamp-*
+vitest.config.ts.timestamp-*
+
 # Logs
 logs
 *.log
@@ -11,6 +20,24 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# Scraped data batches and discovery data (may contain API keys)
+data/samples/
+data/discovery/
+
+# Pipeline cache (large scraped HTML files)
+pipeline/cache/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite databases
+*.db
+
+# Supabase local temp
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*

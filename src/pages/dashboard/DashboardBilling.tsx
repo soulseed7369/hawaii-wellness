@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { CreditCard, CheckCircle, Calendar, AlertCircle } from "lucide-react";
+import { CreditCard, CheckCircle, Calendar, AlertCircle, Clock } from "lucide-react";
 
 const plans = [
   {
@@ -17,14 +18,24 @@ const plans = [
     name: "Professional",
     price: "$59",
     period: "/mo",
-    features: ["1 Practitioner + 2 Center listings", "Priority placement", "Retreat listings", "Analytics dashboard"],
+    features: [
+      "1 Practitioner + 2 Center listings",
+      "Priority placement",
+      "Retreat listings",
+      "Analytics dashboard",
+    ],
     current: true,
   },
   {
     name: "Enterprise",
     price: "$119",
     period: "/mo",
-    features: ["Unlimited listings", "Featured placement", "Custom branding", "Dedicated support"],
+    features: [
+      "Unlimited listings",
+      "Featured placement",
+      "Custom branding",
+      "Dedicated support",
+    ],
     current: false,
   },
 ];
@@ -39,14 +50,26 @@ export default function DashboardBilling() {
         </p>
       </div>
 
-      {/* Current plan summary */}
+      {/* Coming Soon Banner */}
+      <Alert className="border-amber-300 bg-amber-50 text-amber-900">
+        <Clock className="h-4 w-4 text-amber-600" />
+        <AlertTitle className="font-semibold text-amber-900">Coming Soon</AlertTitle>
+        <AlertDescription className="text-amber-800">
+          Paid plans and billing are not yet active. All listings are currently free during our
+          launch period. We'll notify you before any charges begin.
+        </AlertDescription>
+      </Alert>
+
+      {/* Current plan summary — display only */}
       <Card className="border-primary/20 bg-terracotta-light/20">
         <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Current Plan</p>
-            <p className="font-display text-2xl font-bold text-foreground">Professional</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Current Plan
+            </p>
+            <p className="font-display text-2xl font-bold text-foreground">Free (Launch)</p>
             <p className="text-sm text-muted-foreground">
-              Renews on <span className="font-medium text-foreground">March 25, 2026</span>
+              Enjoy free listings during our launch period.
             </p>
           </div>
           <Badge className="w-fit gap-1.5 bg-secondary text-secondary-foreground">
@@ -56,15 +79,17 @@ export default function DashboardBilling() {
         </CardContent>
       </Card>
 
-      {/* Plans */}
+      {/* Plans — disabled */}
       <div>
-        <h2 className="mb-4 font-display text-lg font-semibold">Choose Your Plan</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold">
+          Future Plans{" "}
+          <Badge variant="outline" className="ml-2 text-xs text-muted-foreground">
+            Not yet available
+          </Badge>
+        </h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {plans.map((plan) => (
-            <Card
-              key={plan.name}
-              className={plan.current ? "border-primary shadow-md" : ""}
-            >
+            <Card key={plan.name} className="opacity-60">
               <CardContent className="flex flex-col gap-4 p-5">
                 <div>
                   <h3 className="font-display text-lg font-semibold">{plan.name}</h3>
@@ -82,11 +107,11 @@ export default function DashboardBilling() {
                   ))}
                 </ul>
                 <Button
-                  variant={plan.current ? "outline" : "default"}
+                  variant="outline"
                   className="mt-auto w-full"
-                  disabled={plan.current}
+                  disabled
                 >
-                  {plan.current ? "Current Plan" : "Switch Plan"}
+                  Coming Soon
                 </Button>
               </CardContent>
             </Card>
@@ -94,8 +119,8 @@ export default function DashboardBilling() {
         </div>
       </div>
 
-      {/* Auto-renewal toggle */}
-      <Card>
+      {/* Auto-renewal toggle — disabled */}
+      <Card className="opacity-60">
         <CardHeader>
           <CardTitle className="text-lg">Auto-Renewal</CardTitle>
           <CardDescription>
@@ -108,20 +133,20 @@ export default function DashboardBilling() {
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
                 <Label className="text-sm font-medium">Auto-renew subscription</Label>
-                <p className="text-xs text-muted-foreground">Next charge: $59.00 on Mar 25, 2026</p>
+                <p className="text-xs text-muted-foreground">Not yet active</p>
               </div>
             </div>
-            <Switch defaultChecked />
+            <Switch disabled />
           </div>
         </CardContent>
       </Card>
 
-      {/* Payment method */}
-      <Card>
+      {/* Payment method — disabled */}
+      <Card className="opacity-60">
         <CardHeader>
           <CardTitle className="text-lg">Payment Method</CardTitle>
           <CardDescription>
-            Your card will be charged automatically on each renewal date.
+            Add a payment method when billing becomes available.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -131,60 +156,25 @@ export default function DashboardBilling() {
                 <CreditCard className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Visa ending in 4242</p>
-                <p className="text-xs text-muted-foreground">Expires 09/2028</p>
+                <p className="text-sm font-medium text-muted-foreground">No payment method on file</p>
+                <p className="text-xs text-muted-foreground">Add one when billing launches</p>
               </div>
             </div>
-            <Badge variant="outline" className="text-xs">Default</Badge>
           </div>
-
           <div className="flex gap-3">
-            <Button variant="outline" size="sm">Update Card</Button>
-            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-              Remove
+            <Button variant="outline" size="sm" disabled>
+              Update Card
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Billing history */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Billing History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[
-              { date: "Feb 25, 2026", amount: "$59.00", status: "Paid" },
-              { date: "Jan 25, 2026", amount: "$59.00", status: "Paid" },
-              { date: "Dec 25, 2025", amount: "$59.00", status: "Paid" },
-            ].map((inv) => (
-              <div
-                key={inv.date}
-                className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0"
-              >
-                <div>
-                  <p className="text-sm font-medium text-foreground">{inv.date}</p>
-                  <p className="text-xs text-muted-foreground">Professional Plan</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">{inv.amount}</span>
-                  <Badge variant="outline" className="gap-1 text-xs text-sage">
-                    <CheckCircle className="h-3 w-3" />
-                    {inv.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Cancel notice */}
+      {/* Notice */}
       <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Need to cancel? You can turn off auto-renewal above. Your listing will remain active until the end of your current billing period.
+          Billing is not yet active. All features are available for free during our launch period.
+          We will give you advance notice before any charges begin.
         </p>
       </div>
     </div>

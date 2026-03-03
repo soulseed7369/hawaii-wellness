@@ -1,0 +1,68 @@
+{
+  "total": 34,
+  "kept": 21,
+  "rejected": 13,
+  "avg_confidence": 0.9132352941176467,
+  "rejection_reasons": {
+    "duplicate_record": 3,
+    "noise_pattern_name": 8,
+    "Address and business location are listed as Kauai, not Big Island Hawaii. Website appears to be a mapquest generic listing.": 1,
+    "name_is_question": 1
+  },
+  "towns_fixed": 29,
+  "types_fixed": 26,
+  "rejected_list": [
+    {
+      "name": "The Body Shop Acupuncture",
+      "reason": "duplicate_record"
+    },
+    {
+      "name": "The Body Shop Acupuncture",
+      "reason": "duplicate_record"
+    },
+    {
+      "name": "Regis Electric",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "Zensations Massage Therapy",
+      "reason": "Address and business location are listed as Kauai, not Big Island Hawaii. Website appears to be a mapquest generic listing."
+    },
+    {
+      "name": "https://bigislandguide.com",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "BIG ISLAND ELOPEMENT",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "Waimea Auto Center, LLC",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "Big Island Scuba Repair",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "Big Island Scuba Repair",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "Big Island Collision Center",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "What are some of the top meditation, cleansing, healing, and yoga retreat centers on the Big Island?",
+      "reason": "name_is_question"
+    },
+    {
+      "name": "https://bigislandguide.com",
+      "reason": "noise_pattern_name"
+    },
+    {
+      "name": "Kona Health & Aesthetics",
+      "reason": "duplicate_record"
+    }
+  ]
+}

@@ -1,7 +1,8 @@
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { Home, User, Building, Calendar, CreditCard, Settings, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const sidebarLinks = [
   { label: "Dashboard Home", to: "/dashboard", icon: Home },
@@ -14,7 +15,17 @@ const sidebarLinks = [
 
 export function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  // Display name: email local part or fallback
+  const displayName = user?.email ? user.email.split("@")[0] : "Provider";
 
   return (
     <div className="flex min-h-screen bg-muted/40">
@@ -36,7 +47,7 @@ export function DashboardLayout() {
         {/* Sidebar header */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-5">
           <Link to="/" className="font-display text-lg font-bold text-accent">
-            Hawai'i Holistic
+            Hawa'i Wellness
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -72,14 +83,25 @@ export function DashboardLayout() {
           })}
         </nav>
 
-        {/* Sidebar footer */}
-        <div className="border-t border-sidebar-border p-3">
+        {/* Sidebar footer — user email + sign out */}
+        <div className="border-t border-sidebar-border p-3 space-y-1">
+          {user?.email && (
+            <p className="truncate px-3 py-1 text-xs text-sidebar-foreground/50">
+              {user.email}
+            </p>
+          )}
+          <button
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
           <Link
             to="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
           >
-            <LogOut className="h-4 w-4" />
-            Back to Directory
+            ← Back to Directory
           </Link>
         </div>
       </aside>
@@ -95,7 +117,8 @@ export function DashboardLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <h2 className="text-sm font-medium text-muted-foreground">
-            Welcome back, <span className="text-foreground">Dr. Leilani</span>
+            Welcome back,{" "}
+            <span className="text-foreground">{displayName}</span>
           </h2>
         </header>
 

@@ -1,0 +1,453 @@
+import fs from 'fs/promises';
+import https from 'https';
+import http from 'http';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import fetch from 'node-fetch';
+import * as cheerio from 'cheerio';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// CONFIG
+const BATCH_SIZE = 8;
+const DELAY_BETWEEN_BATCHES_MS = 500;
+const DELAY_BETWEEN_URLS_MS = 300;
+const OUTPUT_DIR = 'data/discovery';
+const RESULTS_FILE = join(OUTPUT_DIR, 'phase2_practitioners_raw_big_island.json');
+const REPORT_FILE = join(OUTPUT_DIR, 'phase2_extraction_report_big_island.json');
+const STATE_FILE = join(OUTPUT_DIR, 'phase2_state.json');
+
+const BIG_ISLAND_TOWNS = [
+  'kailua-kona', 'kona', 'kealakekua', 'captain cook', 'waikoloa',
+  'hilo', 'pahoa', 'keaau', 'mountain view', 'waimea',
+  'honokaa', 'ocean view', 'naalehu'
+];
+
+const BIG_ISLAND_ZIPS = [
+  '96720', '96740', '96743', '96745', '96750',
+  '96755', '96760', '96771', '96772', '96773',
+  '96774', '96776', '96778', '96781', '96785'
+];
+
+// Load environment variables
+const env = {};
+try {
+  const envContent = await fs.readFile('.env.local', 'utf8');
+  envContent.split('\n').forEach(line => {
+    if (line.startsWith('#')) return;
+    const [key, value] = line.split('=');
+    if (key && value !== undefined) {
+      env[key.trim()] = value.trim();
+    }
+  });
+} catch (err) {
+  console.error('Failed to load .env.local:', err.message);
+}
+
+const SUPABASE_URL = env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
+const BRAVE_API_KEY = env.BRAVE_API_KEY;
+
+// Utility functions
+function isBigIsland(record) {
+  if (!record) return false;
+  
+  const { address, town, zip, bio_excerpt, name } = record;
+  
+  // Check if any of the fields contain Big Island identifiers
+  const addressStr = (address || '').toLowerCase();
+  const townStr = (town || '').toLowerCase();
+  const zipStr = (zip || '').toLowerCase();
+  const bioStr = String(bio_excerpt || '').toLowerCase();
+  const nameStr = (name || '').toLowerCase();
+  
+  // Check towns and zips
+  const hasTown = BIG_ISLAND_TOWNS.some(town => 
+    addressStr.includes(town) || townStr.includes(town)
+  );
+  
+  const hasZip = BIG_ISLAND_ZIPS.some(zipCode => 
+    addressStr.includes(zipCode) || zipStr.includes(zipCode)
+  );
+  
+  // Check for "big island" in bio or name
+  const hasBigIsland = bioStr.includes('big island') || nameStr.includes('big island');
+  
+  return hasTown || hasZip || hasBigIsland;
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
+async function extractRecord(url, existingRecords) {
+  let record = {
+    name: null,
+    credentials: null,
+    practitioner_type: 'unknown',
+    clinic_name: null,
+    address: null,
+    town: null,
+    state: 'HI',
+    zip: null,
+    phone: null,
+    email: null,
+    website: url,
+    booking_url: null,
+    specialties: [],
+    insurance_accepted: [],
+    bio_excerpt: null,
+    source_url: url,
+    extraction_confidence: 0,
+    extraction_method: 'failed'
+  };
+
+  try {
+    // Step 1: Fetch page HTML
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; HawaiiDirectoryBot/1.0)'
+      }
+    }, 10000);
+
+    if (!response.ok) {
+      console.warn(`Failed to fetch ${url}: ${response.status}`);
+      return record;
+    }
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Step 2: Structured parsing
+    let structuredSuccess = false;
+
+    // a. JSON-LD parsing
+    const jsonLdScripts = $('script[type="application/ld+json"]');
+    for (const script of jsonLdScripts) {
+      try {
+        const data = JSON.parse($(script).html());
+        if (Array.isArray(data)) {
+          for (const item of data) {
+            if (item['@type'] === 'Person' || 
+                item['@type'] === 'Physician' ||
+                item['@type'] === 'MedicalBusiness' ||
+                item['@type'] === 'LocalBusiness' ||
+                item['@type'] === 'HealthAndBeautyBusiness' ||
+                item['@type'] === 'MedicalClinic') {
+              record.name = record.name || item.name;
+              record.address = record.address || (item.address?.streetAddress || item.address);
+              record.phone = record.phone || item.telephone;
+              record.email = record.email || item.email;
+              record.website = record.website || item.url;
+              record.bio_excerpt = record.bio_excerpt || item.description;
+              structuredSuccess = true;
+            }
+          }
+        } else if (data['@type'] === 'Person' || 
+                   data['@type'] === 'Physician' ||
+                   data['@type'] === 'MedicalBusiness' ||
+                   data['@type'] === 'LocalBusiness' ||
+                   data['@type'] === 'HealthAndBeautyBusiness' ||
+                   data['@type'] === 'MedicalClinic') {
+          record.name = record.name || data.name;
+          record.address = record.address || (data.address?.streetAddress || data.address);
+          record.phone = record.phone || data.telephone;
+          record.email = record.email || data.email;
+          record.website = record.website || data.url;
+          record.bio_excerpt = record.bio_excerpt || data.description;
+          structuredSuccess = true;
+        }
+      } catch (e) {
+        // Ignore JSON parsing errors
+      }
+    }
+
+    // b. Schema.org microdata
+    if (!record.name) record.name = $('*[itemprop="name"]').first().text().trim();
+    if (!record.phone) record.phone = $('*[itemprop="telephone"]').first().text().trim();
+    if (!record.address) record.address = $('*[itemprop="address"]').first().text().trim();
+    if (!record.email) record.email = $('*[itemprop="email"]').first().text().trim();
+
+    // c. tel: links
+    if (!record.phone) {
+      const phoneLink = $('a[href^="tel:"]').first();
+      if (phoneLink.length) {
+        record.phone = phoneLink.attr('href').replace('tel:', '').trim();
+        structuredSuccess = true;
+      }
+    }
+
+    // d. mailto: links
+    if (!record.email) {
+      const emailLink = $('a[href^="mailto:"]').first();
+      if (emailLink.length) {
+        record.email = emailLink.attr('href').replace('mailto:', '').trim();
+        structuredSuccess = true;
+      }
+    }
+
+    // e. Contact page heuristics
+    if (!record.phone) {
+      const phoneRegex = /(\(\d{3}\)\s*\d{3}-\d{4}|\d{3}-\d{3}-\d{4})/g;
+      const matches = html.match(phoneRegex);
+      if (matches && matches.length > 0) {
+        record.phone = matches[0];
+        structuredSuccess = true;
+      }
+    }
+
+    if (!record.email) {
+      const emailRegex = /\S+@\S+\.\S+/g;
+      const matches = html.match(emailRegex);
+      if (matches && matches.length > 0) {
+        record.email = matches[0];
+        structuredSuccess = true;
+      }
+    }
+
+    // f. Address heuristics
+    if (!record.address) {
+      const addressRegex = /(\d+\s+[\w\s]+,\s*[A-Z]{2}\s+\d{5})/g;
+      const matches = html.match(addressRegex);
+      if (matches && matches.length > 0) {
+        record.address = matches[0];
+        structuredSuccess = true;
+      }
+    }
+
+    // g. Bio excerpt
+    if (!record.bio_excerpt) {
+      const bio = $('p').first().text().trim();
+      if (bio) {
+        record.bio_excerpt = bio.substring(0, 300);
+        structuredSuccess = true;
+      }
+    }
+
+    // h. Booking URL
+    if (!record.booking_url) {
+      const bookingPatterns = [
+        /booking/i, /appointment/i, /schedule/i, /calendly/i,
+        /acuity/i, /mindbody/i, /jane/i, /janeapp/i, /square/i
+      ];
+      
+      const links = $('a[href]');
+      for (const link of links) {
+        const href = $(link).attr('href');
+        if (!href) continue;
+        
+        for (const pattern of bookingPatterns) {
+          if (pattern.test(href)) {
+            record.booking_url = href;
+            structuredSuccess = true;
+            break;
+          }
+        }
+        
+        if (record.booking_url) break;
+      }
+    }
+
+    // If structured parsing found name or address, set confidence
+    if (structuredSuccess && (record.name || record.address)) {
+      record.extraction_method = 'structured';
+      record.extraction_confidence = 0.6;
+    }    // Step 3: LLM fallback disabled
+
+    // Step 4: Directory page detection
+    const title = $('title').text().toLowerCase();
+    const h1 = $('h1').first().text().toLowerCase();
+    
+    if (title.includes('directory') || 
+        title.includes('find a') ||
+        title.includes('search') ||
+        h1.includes('directory') ||
+        h1.includes('find a') ||
+        h1.includes('search') ||
+        h1.includes('therapists near') ||
+        h1.includes('practitioners in')) {
+      
+      const profileLinks = [];
+      $('a[href]').each((i, el) => {
+        const href = $(el).attr('href');
+        if (href && 
+            (href.includes('/profile/') || 
+             href.includes('/therapist/') || 
+             href.includes('/practitioner/') || 
+             href.includes('/provider/') || 
+             href.includes('/biz/'))) {
+          profileLinks.push(href);
+        }
+      });
+      
+      if (profileLinks.length > 0) {
+        // Save to queued profiles file
+        try {
+          const existingQueued = await fs.readFile(join(OUTPUT_DIR, 'phase2_queued_profiles.json'), 'utf8').catch(() => '[]');
+          const queued = JSON.parse(existingQueued);
+          const merged = [...queued, ...profileLinks];
+          await fs.writeFile(join(OUTPUT_DIR, 'phase2_queued_profiles.json'), JSON.stringify([...new Set(merged)], null, 2));
+        } catch (e) {
+          console.error('Failed to save queued profiles:', e.message);
+        }
+        
+        record.extraction_method = 'queued_profiles';
+        return record;
+      }
+    }
+
+    // Step 5: Deduplication
+    const existingRecord = existingRecords.find(r => {
+      if (r.name && record.name) {
+        return r.name.toLowerCase() === record.name.toLowerCase();
+      }
+      if (r.phone && record.phone) {
+        return r.phone === record.phone;
+      }
+      if (r.address && record.address) {
+        return r.address.toLowerCase() === record.address.toLowerCase();
+      }
+      return false;
+    });
+
+    if (existingRecord) {
+      console.log(`Duplicate found for ${record.name || record.phone || record.address}`);
+      return { ...record, extraction_method: 'duplicate' };
+    }
+
+  } catch (error) {
+    console.error(`Error processing ${url}:`, error.message);
+    record.extraction_method = 'failed';
+  }
+
+  return record;
+}
+
+async function main() {
+  // Load state
+  let state = { processed_urls: [], batch_number: 0 };
+  try {
+    const stateContent = await fs.readFile(STATE_FILE, 'utf8');
+    state = JSON.parse(stateContent);
+  } catch (err) {
+    console.log('No existing state file, starting fresh');
+  }
+
+  // Load existing results
+  let existingResults = [];
+  try {
+    const resultsContent = await fs.readFile(RESULTS_FILE, 'utf8');
+    existingResults = JSON.parse(resultsContent);
+  } catch (err) {
+    console.log('No existing results file');
+  }
+
+  // Read all URLs
+  const discoveryFile = join(OUTPUT_DIR, 'brave_discovery_results_big_island.json');
+  const discoveryContent = await fs.readFile(discoveryFile, 'utf8');
+  const urls = JSON.parse(discoveryContent).map(item => item.url);
+
+  // Filter out already processed URLs
+  const filteredUrls = urls.filter(url => !state.processed_urls.includes(url));
+
+  console.log(`Processing ${filteredUrls.length} URLs in batches of ${BATCH_SIZE}`);
+
+  let report = {
+    total_processed: 0,
+    valid_big_island_records: 0,
+    discarded_non_big_island: 0,
+    structured_parse_success_rate: '0%',
+    LLM_parse_usage_count: 0,
+    duplicate_records_detected: 0,
+    extraction_failures: 0,
+    directory_pages_queued: 0,
+    recommended_improvements: []
+  };
+
+  // Process in batches
+  for (let i = 0; i < filteredUrls.length; i += BATCH_SIZE) {
+    const batch = filteredUrls.slice(i, i + BATCH_SIZE);
+    
+    console.log(`Processing batch ${state.batch_number + 1}`);
+    
+    for (const url of batch) {
+      const record = await Promise.race([
+        extractRecord(url, existingResults),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('URL timeout: ' + url)), 20000))
+      ]).catch(err => { console.error('Skipped:', err.message); return null; });
+      if (!record) continue;
+      
+      // Update report
+      report.total_processed++;
+      
+      if (record.extraction_method === 'failed') {
+        report.extraction_failures++;
+      } else if (record.extraction_method === 'duplicate') {
+        report.duplicate_records_detected++;
+      } else if (record.extraction_method === 'queued_profiles') {
+        report.directory_pages_queued++;
+      } else if (record.extraction_method === 'llm') {
+        report.LLM_parse_usage_count++;
+      }
+      
+      // Check if record is valid Big Island
+      if (isBigIsland(record)) {
+        report.valid_big_island_records++;
+        existingResults.push(record);
+      } else {
+        report.discarded_non_big_island++;
+      }
+      
+      // Add to processed URLs
+      state.processed_urls.push(url);
+      
+      await delay(DELAY_BETWEEN_URLS_MS);
+    }
+    
+    // Save state after batch
+    state.batch_number++;
+    await fs.writeFile(STATE_FILE, JSON.stringify(state, null, 2));
+    
+    // Persist results
+    await fs.writeFile(RESULTS_FILE, JSON.stringify(existingResults, null, 2));
+    
+    console.log(`Batch ${state.batch_number} completed`);
+    await delay(DELAY_BETWEEN_BATCHES_MS);
+  }
+
+  // Calculate success rate
+  const totalSuccessful = report.total_processed - report.extraction_failures;
+  report.structured_parse_success_rate = totalSuccessful > 0 ? 
+    `${Math.round((totalSuccessful - report.LLM_parse_usage_count) / totalSuccessful * 100)}%` : '0%';
+
+  // Save report
+  await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2));
+
+  // Print final summary
+  console.log('\n=== Extraction Summary ===');
+  console.log(`Total processed: ${report.total_processed}`);
+  console.log(`Valid Big Island records: ${report.valid_big_island_records}`);
+  console.log(`Discarded non-Big Island: ${report.discarded_non_big_island}`);
+  console.log(`Structured parse success rate: ${report.structured_parse_success_rate}`);
+  console.log(`LLM parse usage count: ${report.LLM_parse_usage_count}`);
+  console.log(`Duplicate records detected: ${report.duplicate_records_detected}`);
+  console.log(`Extraction failures: ${report.extraction_failures}`);
+  console.log(`Directory pages queued: ${report.directory_pages_queued}`);
+}
+
+main().catch(console.error);

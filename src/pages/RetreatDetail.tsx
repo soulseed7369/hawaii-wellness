@@ -2,13 +2,36 @@ import { useParams, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Sparkles } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { mockRetreatEvents } from "@/data/mockData";
+import { useRetreat } from "@/hooks/useRetreats";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function RetreatDetail() {
   const { id } = useParams();
-  const retreat = mockRetreatEvents.find((r) => r.id === id);
+  const { data: retreat, isLoading } = useRetreat(id);
+
+  usePageMeta(
+    retreat ? retreat.title : "Retreat Detail",
+    retreat?.description ?? "View retreat details and registration on Hawa'i Wellness."
+  );
+
+  if (isLoading) {
+    return (
+      <div className="container py-8 space-y-6">
+        <Skeleton className="h-5 w-32" />
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-4 lg:col-span-2">
+            <Skeleton className="aspect-[16/9] w-full rounded-xl" />
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   if (!retreat) {
     return (
@@ -37,7 +60,6 @@ export default function RetreatDetail() {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main content */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Cover image */}
           <div className="overflow-hidden rounded-xl">
             <img
               src={retreat.image}
@@ -68,20 +90,15 @@ export default function RetreatDetail() {
             </div>
           </div>
 
-          {/* Description placeholder */}
           <div className="prose prose-sm max-w-none text-muted-foreground">
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              About This Retreat
-            </h2>
+            <h2 className="font-display text-lg font-semibold text-foreground">About This Retreat</h2>
             <p>
               Immerse yourself in {retreat.durationDays} transformative days on Hawai'i Island.
               This retreat combines ancient Hawaiian healing wisdom with modern wellness practices,
               set against the stunning backdrop of {retreat.area}. Expect daily guided sessions,
               farm-to-table nourishment, and ample time for personal reflection.
             </p>
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              What's Included
-            </h2>
+            <h2 className="font-display text-lg font-semibold text-foreground">What's Included</h2>
             <ul>
               <li>All guided sessions and workshops</li>
               <li>Accommodations for {retreat.durationDays - 1} nights</li>
@@ -92,7 +109,7 @@ export default function RetreatDetail() {
           </div>
         </div>
 
-        {/* Sticky sidebar summary card */}
+        {/* Sticky sidebar */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <Card className="overflow-hidden shadow-md">
             <CardContent className="space-y-5 p-6">
@@ -125,7 +142,7 @@ export default function RetreatDetail() {
 
               <Button className="w-full gap-2" size="lg" asChild>
                 <a href="https://example.com/book" target="_blank" rel="noopener noreferrer">
-                  View Details & Book with Host
+                  View Details &amp; Book with Host
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
