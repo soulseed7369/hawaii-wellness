@@ -1,0 +1,185 @@
+"""
+09_gm_search.py
+───────────────
+Run Google Maps Text Search across modality × city combinations for
+the Big Island (and optionally other islands).  Collects unique Place IDs
+and writes them to pipeline/output/gm_place_ids.jsonl.
+
+Usage:
+    cd pipeline
+    python scripts/09_gm_search.py [--island big_island] [--dry-run]
+"""
+
+import sys, json, time, argparse, requests
+from pathlib import Path
+
+sys.path.insert(0, '.')
+from src.config import OUTPUT_DIR
+
+# ── Google Places Text Search endpoint ────────────────────────────────────────
+GM_TEXT_SEARCH = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+GM_API_KEY     = "REDACTED_GM_API_KEY"
+
+# ── Search terms ───────────────────────────────────────────────────────────────
+MODALITY_QUERIES = [
+    "acupuncture",
+    "acupuncturist",
+    "massage therapist",
+    "massage therapy",
+    "yoga studio",
+    "yoga teacher",
+    "naturopath",
+    "naturopathic doctor",
+    "chiropractor",
+    "chiropractic",
+    "counselor therapist",
+    "psychotherapist",
+    "ayurveda",
+    "reiki healer",
+    "sound healing",
+    "holistic health practitioner",
+    "wellness center",
+    "day spa",
+    "breathwork",
+    "life coach wellness",
+    "energy healer",
+    "herbalist",
+    "doula midwife",
+    "osteopath",
+    "physical therapist",
+    "functional medicine",
+    "craniosacral therapy",
+    "somatic therapy",
+    "meditation teacher",
+    "nutrition coach",
+]
+
+ISLAND_CITIES = {
+    "big_island": [
+        "Hilo Hawaii",
+        "Kailua-Kona Hawaii",
+        "Waimea Hawaii",
+        "Captain Cook Hawaii",
+        "Pahoa Hawaii",
+        "Holualoa Hawaii",
+        "Hawi Hawaii",
+        "Honokaa Hawaii",
+        "Volcano Hawaii",
+        "Waikoloa Hawaii",
+        "Keaau Hawaii",
+        "Kealakekua Hawaii",
+    ],
+    "maui": [
+        "Kahului Maui Hawaii",
+        "Kihei Maui Hawaii",
+        "Lahaina Maui Hawaii",
+        "Paia Maui Hawaii",
+        "Makawao Maui Hawaii",
+        "Wailuku Maui Hawaii",
+    ],
+    "oahu": [
+        "Honolulu Hawaii",
+        "Kailua Oahu Hawaii",
+        "Haleiwa Hawaii",
+        "Manoa Honolulu Hawaii",
+    ],
+    "kauai": [
+        "Lihue Kauai Hawaii",
+        "Kapaa Kauai Hawaii",
+        "Hanalei Kauai Hawaii",
+    ],
+}
+
+
+def text_search(query: str, page_token: str = None) -> dict:
+    """Call Places Text Search API. Returns raw JSON response."""
+    params = {"key": GM_API_KEY, "query": query}
+    if page_token:
+        params["pagetoken"] = page_token
+    resp = requests.get(GM_TEXT_SEARCH, params=params, timeout=15)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def collect_place_ids(island: str, dry_run: bool) -> list[dict]:
+    cities   = ISLAND_CITIES.get(island, ISLAND_CITIES["big_island"])
+    seen_ids = set()
+    results  = []
+
+    total_queries = len(MODALITY_QUERIES) * len(cities)
+    done = 0
+
+    for city in cities:
+        for modality in MODALITY_QUERIES:
+            query = f"{modality} {city}"
+            done += 1
+            print(f"[{done}/{total_queries}] Searching: {query}")
+
+            if dry_run:
+                time.sleep(0.05)
+                continue
+
+            try:
+                page_token = None
+                pages = 0
+                while pages < 2:          # max 2 pages (40 results) per query
+                    data = text_search(query, page_token)
+                    status = data.get("status")
+
+                    if status == "ZERO_RESULTS":
+                        break
+                    if status not in ("OK", "ZERO_RESULTS"):
+                        print(f"  Warning: status={status}")
+                        break
+
+                    for place in data.get("results", []):
+                        pid = place["place_id"]
+                        if pid not in seen_ids:
+                            seen_ids.add(pid)
+                            results.append({
+                                "place_id":      pid,
+                                "name":          place.get("name"),
+                                "address":       place.get("formatted_address"),
+                                "lat":           place["geometry"]["location"]["lat"],
+                                "lng":           place["geometry"]["location"]["lng"],
+                                "types":         place.get("types", []),
+                                "source_query":  query,
+                                "island":        island,
+                            })
+
+                    page_token = data.get("next_page_token")
+                    if not page_token:
+                        break
+                    pages += 1
+                    time.sleep(2.5)   # Google requires a short delay before using next_page_token
+
+            except Exception as e:
+                print(f"  Error on '{query}': {e}")
+
+            time.sleep(0.15)   # polite rate limit between queries
+
+    return results
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--island",  default="big_island",
+                        choices=list(ISLAND_CITIES.keys()))
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print queries without hitting the API")
+    args = parser.parse_args()
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUTPUT_DIR / "gm_place_ids.jsonl"
+
+    place_ids = collect_place_ids(args.island, args.dry_run)
+
+    if not args.dry_run:
+        with open(out_path, "w") as f:
+            for item in place_ids:
+                f.write(json.dumps(item) + "\n")
+        print(f"\n✓ Saved {len(place_ids)} unique place IDs → {out_path}")
+    else:
+        total = len(MODALITY_QUERIES) * len(ISLAND_CITIES[args.island])
+        print(f"\nDry-run: would run {total} searches across "
+              f"{len(ISLAND_CITIES[args.island])} cities × {len(MODALITY_QUERIES)} modalities")

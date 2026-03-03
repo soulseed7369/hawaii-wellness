@@ -12,6 +12,14 @@ export interface PractitionerRow {
   id: string;
   owner_id: string | null;
   name: string;
+  // Sprint 2 — Practitioner-First split-name fields (null until backfilled)
+  first_name: string | null;
+  last_name: string | null;
+  display_name: string | null;
+  slug: string | null;
+  years_experience: number | null;
+  lineage_or_training: string | null;
+  business_id: string | null;   // FK → centers.id
   modalities: string[];
   bio: string | null;
   island: string;
@@ -61,6 +69,9 @@ export interface CenterRow {
   id: string;
   owner_id: string | null;
   name: string;
+  // Sprint 2 — Practitioner-First additions (null until backfilled)
+  slug: string | null;
+  logo: string | null;
   center_type: 'spa' | 'wellness_center' | 'clinic' | 'retreat_center';
   description: string | null;
   island: string;
