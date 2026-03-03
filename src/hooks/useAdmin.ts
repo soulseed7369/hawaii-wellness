@@ -64,7 +64,7 @@ export const useAllPractitioners = (params: AdminQueryParams = {}) => {
 
       let query = supabaseAdmin
         .from('practitioners')
-        .select('*, center:centers(id,name)', { count: 'exact' });
+        .select('*, center:centers!practitioners_center_id_fkey(id,name)', { count: 'exact' });
 
       if (search) {
         query = query.ilike('name', `%${search}%`);
