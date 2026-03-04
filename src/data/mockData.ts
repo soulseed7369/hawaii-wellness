@@ -24,12 +24,15 @@ export interface Practitioner {
 
 export interface Article {
   id: string;
+  slug: string;
   title: string;
   image: string;
   excerpt: string;
   author: string;
   date: string;
   category: string;
+  body?: string;       // Rich HTML for detail page
+  featured?: boolean;
 }
 
 export interface Provider {
@@ -138,12 +141,12 @@ export const mockRetreatEvents: RetreatEvent[] = [
 ];
 
 export const mockArticles: Article[] = [
-  { id: "a1", title: "The Rise of Lomilomi: Honoring Hawaiian Healing Traditions", image: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=800&h=500&fit=crop", excerpt: "How Big Island practitioners are preserving and evolving the sacred art of traditional Hawaiian massage.", author: "Sarah Kealoha", date: "Feb 18, 2026", category: "Traditions" },
-  { id: "a2", title: "Volcanic Hot Springs: Nature's Ultimate Therapy", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=500&fit=crop", excerpt: "Exploring the geothermal wellness opportunities unique to Hawai'i Island's volcanic landscape.", author: "Mike Tanaka", date: "Feb 12, 2026", category: "Wellness" },
-  { id: "a3", title: "Plant Medicine on the Big Island: A Practitioner's Guide", image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&h=500&fit=crop", excerpt: "Local herbalists share their knowledge of native Hawaiian medicinal plants and their modern applications.", author: "Dr. Leilani Kamaka", date: "Feb 5, 2026", category: "Herbalism" },
-  { id: "a4", title: "Mindful Living in Paradise: A Wellness Community Grows", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=500&fit=crop", excerpt: "How the Big Island's wellness community is creating spaces for mindfulness and sustainable living.", author: "Keoni Makoa", date: "Jan 28, 2026", category: "Community" },
-  { id: "a5", title: "Ocean Therapy: Healing Through Hawai'i's Waters", image: "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&h=500&fit=crop", excerpt: "From surf therapy to underwater meditation, discover how the Pacific Ocean heals body and mind.", author: "Kai Nakamura", date: "Jan 20, 2026", category: "Therapy" },
-  { id: "a6", title: "Integrative Medicine Finds a Home in Hilo", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=500&fit=crop", excerpt: "A new wave of practitioners is blending Western and Eastern medicine on the Big Island's windward side.", author: "Maya Chen", date: "Jan 14, 2026", category: "Medicine" },
+  { id: "a1", slug: "rise-of-lomilomi", title: "The Rise of Lomilomi: Honoring Hawaiian Healing Traditions", image: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=800&h=500&fit=crop", excerpt: "How Big Island practitioners are preserving and evolving the sacred art of traditional Hawaiian massage.", author: "Sarah Kealoha", date: "Feb 18, 2026", category: "Traditions" },
+  { id: "a2", slug: "volcanic-hot-springs", title: "Volcanic Hot Springs: Nature's Ultimate Therapy", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=500&fit=crop", excerpt: "Exploring the geothermal wellness opportunities unique to Hawai'i Island's volcanic landscape.", author: "Mike Tanaka", date: "Feb 12, 2026", category: "Wellness" },
+  { id: "a3", slug: "plant-medicine-big-island", title: "Plant Medicine on the Big Island: A Practitioner's Guide", image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&h=500&fit=crop", excerpt: "Local herbalists share their knowledge of native Hawaiian medicinal plants and their modern applications.", author: "Dr. Leilani Kamaka", date: "Feb 5, 2026", category: "Herbalism" },
+  { id: "a4", slug: "mindful-living-paradise", title: "Mindful Living in Paradise: A Wellness Community Grows", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=500&fit=crop", excerpt: "How the Big Island's wellness community is creating spaces for mindfulness and sustainable living.", author: "Keoni Makoa", date: "Jan 28, 2026", category: "Community" },
+  { id: "a5", slug: "ocean-therapy-hawaii", title: "Ocean Therapy: Healing Through Hawai'i's Waters", image: "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&h=500&fit=crop", excerpt: "From surf therapy to underwater meditation, discover how the Pacific Ocean heals body and mind.", author: "Kai Nakamura", date: "Jan 20, 2026", category: "Therapy" },
+  { id: "a6", slug: "integrative-medicine-hilo", title: "Integrative Medicine Finds a Home in Hilo", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=500&fit=crop", excerpt: "A new wave of practitioners is blending Western and Eastern medicine on the Big Island's windward side.", author: "Maya Chen", date: "Jan 14, 2026", category: "Medicine" },
 ];
 
 export const mockProviders: Provider[] = [

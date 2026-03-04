@@ -16,6 +16,7 @@ const Directory         = lazy(() => import("./pages/Directory"));
 const Retreats          = lazy(() => import("./pages/Retreats"));
 const RetreatDetail     = lazy(() => import("./pages/RetreatDetail"));
 const Articles          = lazy(() => import("./pages/Articles"));
+const ArticleDetail     = lazy(() => import("./pages/ArticleDetail"));
 const ListYourPractice  = lazy(() => import("./pages/ListYourPractice"));
 const ProfileDetail     = lazy(() => import("./pages/ProfileDetail"));
 const Concierge         = lazy(() => import("./pages/Concierge"));
@@ -101,6 +102,7 @@ const App = () => (
                 <Route path="/retreats"           element={<Retreats />} />
                 <Route path="/retreats/:id"       element={<RetreatDetail />} />
                 <Route path="/articles"           element={<Articles />} />
+                <Route path="/articles/:slug"     element={<ArticleDetail />} />
                 <Route path="/list-your-practice" element={<ListYourPractice />} />
                 <Route path="/profile/:id"        element={<ProfileDetail />} />
                 <Route path="/admin"              element={<AdminPanel />} />

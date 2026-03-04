@@ -1,0 +1,106 @@
+import { useParams, Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft } from 'lucide-react';
+import { useArticleBySlug } from '@/hooks/useArticles';
+
+export default function ArticleDetail() {
+  const { slug } = useParams<{ slug: string }>();
+  const { data: article, isLoading, isError } = useArticleBySlug(slug ?? '');
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12">
+        <Skeleton className="mb-4 h-6 w-24" />
+        <Skeleton className="mb-6 h-10 w-3/4" />
+        <Skeleton className="mb-4 h-64 w-full rounded-xl" />
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-4/6" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !article) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <h1 className="mb-3 text-2xl font-bold">Article not found</h1>
+        <p className="mb-6 text-muted-foreground">
+          This article may have been removed or the link is incorrect.
+        </p>
+        <Button asChild variant="outline">
+          <Link to="/articles">← Back to Articles</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-10">
+        {/* Back link */}
+        <Link
+          to="/articles"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Articles
+        </Link>
+
+        {/* Category badge */}
+        <Badge variant="secondary" className="mb-4">
+          {article.category}
+        </Badge>
+
+        {/* Title */}
+        <h1 className="mb-4 font-display text-3xl font-bold leading-tight md:text-4xl">
+          {article.title}
+        </h1>
+
+        {/* Meta */}
+        <div className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <span>By {article.author}</span>
+          {article.date && (
+            <>
+              <span aria-hidden="true">·</span>
+              <time>{article.date}</time>
+            </>
+          )}
+        </div>
+
+        {/* Cover image */}
+        {article.image && (
+          <div className="mb-8 overflow-hidden rounded-xl">
+            <img
+              src={article.image}
+              alt={`Cover image for ${article.title}`}
+              className="w-full object-cover max-h-[480px]"
+            />
+          </div>
+        )}
+
+        {/* Body */}
+        {article.body ? (
+          <div
+            className="prose prose-stone max-w-none"
+            dangerouslySetInnerHTML={{ __html: article.body }}
+          />
+        ) : (
+          /* Fallback: show excerpt if no body */
+          <p className="text-lg leading-relaxed text-foreground/90">{article.excerpt}</p>
+        )}
+
+        {/* Footer nav */}
+        <div className="mt-16 border-t pt-8">
+          <Button asChild variant="outline">
+            <Link to="/articles">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Articles
+            </Link>
+          </Button>
+        </div>
+    </div>
+  );
+}

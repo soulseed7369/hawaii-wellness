@@ -166,11 +166,14 @@ export function articleRowToArticle(row: ArticleRow): Article {
 
   return {
     id: row.id,
+    slug: row.slug,
     title: row.title,
     image: row.cover_image_url || PLACEHOLDER_ARTICLE,
     excerpt: row.excerpt || '',
-    author: "Hawa'i Wellness", // author field not in v1 schema
+    author: row.author || "Hawai'i Wellness",
     date: dateLabel,
     category,
+    body: row.body || undefined,
+    featured: row.featured,
   };
 }

@@ -33,7 +33,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
               <time>{article.date}</time>
             </div>
             <Link
-              to="#"
+              to={`/articles/${article.slug}`}
               className="font-medium text-primary hover:underline"
               aria-label={`Read full article: ${article.title}`}
             >
@@ -46,26 +46,28 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
   }
 
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-      <div className="aspect-video overflow-hidden">
-        <img
-          src={article.image}
-          alt={`Cover image for ${article.title}`}
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-          loading="lazy"
-        />
-      </div>
-      <CardContent className="p-5">
-        <Badge variant="secondary" className="mb-2">{article.category}</Badge>
-        <h3 className="mb-2 font-display text-lg font-semibold leading-tight">
-          {article.title}
-        </h3>
-        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{article.excerpt}</p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{article.author}</span>
-          <time>{article.date}</time>
+    <Link to={`/articles/${article.slug}`} className="block group">
+      <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+        <div className="aspect-video overflow-hidden">
+          <img
+            src={article.image}
+            alt={`Cover image for ${article.title}`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
         </div>
-      </CardContent>
-    </Card>
+        <CardContent className="p-5">
+          <Badge variant="secondary" className="mb-2">{article.category}</Badge>
+          <h3 className="mb-2 font-display text-lg font-semibold leading-tight group-hover:text-primary transition-colors">
+            {article.title}
+          </h3>
+          <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{article.excerpt}</p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{article.author}</span>
+            <time>{article.date}</time>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

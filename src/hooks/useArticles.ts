@@ -16,11 +16,42 @@ export function useArticles() {
       const { data, error } = await supabase
         .from('articles')
         .select('*')
+        .eq('status', 'published')
         .order('featured', { ascending: false })
         .order('published_at', { ascending: false });
 
       if (error) throw error;
       return (data ?? []).map(articleRowToArticle);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+/**
+ * Returns a single published article by slug.
+ * Falls back to mockArticles when Supabase is not configured.
+ */
+export function useArticleBySlug(slug: string) {
+  return useQuery<Article | null>({
+    queryKey: ['article', slug],
+    enabled: !!slug,
+    queryFn: async () => {
+      if (!supabase) {
+        return mockArticles.find(a => a.slug === slug) ?? null;
+      }
+
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') return null; // not found
+        throw error;
+      }
+      return data ? articleRowToArticle(data) : null;
     },
     staleTime: 1000 * 60 * 5,
   });

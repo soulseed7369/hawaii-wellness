@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import type { PractitionerRow, CenterRow } from '@/types/database';
+import type { PractitionerRow, CenterRow, ArticleRow } from '@/types/database';
 
 const PRACTITIONER_BUCKET = 'practitioner-images';
 const CENTER_BUCKET = 'practitioner-images'; // reuse same bucket
@@ -434,6 +434,102 @@ export const useConvertPractitionerToCenter = () => {
       queryClient.invalidateQueries({ queryKey: ['practitioners'] });
       queryClient.invalidateQueries({ queryKey: ['centers'] });
       queryClient.invalidateQueries({ queryKey: ['centers-as-providers'] });
+    },
+  });
+};
+
+// ─── Article image upload ─────────────────────────────────────────────────────
+
+const ARTICLE_BUCKET = 'practitioner-images'; // reuse same bucket
+
+export async function uploadArticleImage(file: File): Promise<string> {
+  if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+  const ext = file.name.split('.').pop();
+  const path = `articles/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabaseAdmin.storage
+    .from(ARTICLE_BUCKET)
+    .upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data } = supabaseAdmin.storage.from(ARTICLE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ─── Article queries ──────────────────────────────────────────────────────────
+
+export const useAllArticles = (params: { search?: string; status?: 'all' | 'published' | 'draft' } = {}) => {
+  const { search = '', status = 'all' } = params;
+  return useQuery<ArticleRow[]>({
+    queryKey: ['admin-articles', params],
+    queryFn: async () => {
+      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      let query = supabaseAdmin.from('articles').select('*');
+      if (search) query = query.ilike('title', `%${search}%`);
+      if (status !== 'all') query = query.eq('status', status);
+      query = query.order('created_at', { ascending: false });
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    },
+  });
+};
+
+// ─── Article mutations ────────────────────────────────────────────────────────
+
+type ArticlePayload = {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body: string | null;
+  cover_image_url: string | null;
+  island: string | null;
+  tags: string[];
+  featured: boolean;
+  author: string | null;
+  published_at: string | null;
+  status: 'draft' | 'published' | 'archived';
+};
+
+export const useInsertArticle = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: ArticlePayload) => {
+      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      const { error } = await supabaseAdmin.from('articles').insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
+    },
+  });
+};
+
+export const useUpdateArticle = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Partial<ArticlePayload> }) => {
+      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      const { error } = await supabaseAdmin.from('articles').update(payload).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
+    },
+  });
+};
+
+export const useDeleteArticle = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      const { error } = await supabaseAdmin.from('articles').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
   });
 };

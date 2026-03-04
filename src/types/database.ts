@@ -145,11 +145,12 @@ export interface ArticleRow {
   slug: string;
   title: string;
   excerpt: string | null;
-  body: string | null;
+  body: string | null;           // Rich HTML from Tiptap
   cover_image_url: string | null;
   island: string | null;
   tags: string[];
   featured: boolean;
+  author: string | null;         // Sprint 3 — added by migration 20260304000002
   published_at: string | null;
   status: 'draft' | 'published' | 'archived';
   created_at: string;

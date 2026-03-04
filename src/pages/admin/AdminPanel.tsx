@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { AdminArticles } from './AdminArticles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -142,7 +143,7 @@ interface ClaimRequest {
 const CLAIM_DOCS_BUCKET = 'claim-documents';
 
 const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState<'practitioners' | 'centers' | 'claims'>('practitioners');
+  const [activeTab, setActiveTab] = useState<'practitioners' | 'centers' | 'claims' | 'articles'>('practitioners');
   const [isAddPractitionerOpen, setIsAddPractitionerOpen] = useState(false);
   const [isAddCenterOpen, setIsAddCenterOpen] = useState(false);
 
@@ -956,11 +957,11 @@ const AdminPanel = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={v => {
-        const tab = v as 'practitioners' | 'centers' | 'claims';
+        const tab = v as 'practitioners' | 'centers' | 'claims' | 'articles';
         setActiveTab(tab);
         if (tab === 'claims') fetchClaims(claimStatusFilter);
       }}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="practitioners">
             Practitioners {practResult ? `(${practTotal})` : ''}
           </TabsTrigger>
@@ -969,6 +970,9 @@ const AdminPanel = () => {
           </TabsTrigger>
           <TabsTrigger value="claims">
             Claims
+          </TabsTrigger>
+          <TabsTrigger value="articles">
+            Articles
           </TabsTrigger>
         </TabsList>
 
@@ -1549,6 +1553,10 @@ const AdminPanel = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="articles" className="mt-6">
+          <AdminArticles />
         </TabsContent>
       </Tabs>
 
