@@ -1,0 +1,315 @@
+# Aloha Health Hub — Project Knowledge Base
+
+This file is read automatically at the start of every session. It captures hard-won knowledge about this codebase so I don't have to re-explore it each time.
+
+---
+
+## Project Overview
+
+**Aloha Health Hub** — Hawaiian wellness directory at hawaiiwellness.net
+**Operator:** Hawaii Wellness LLC
+**Contact:** aloha@hawaiiwellness.net
+**Stack:** React + TypeScript + Vite · Tailwind CSS + shadcn/ui · Supabase (Postgres + Auth + Storage) · Stripe (subscriptions) · Vercel (hosting)
+**Repo:** github.com/soulseed7369/aloha-health-hub
+
+---
+
+## Directory Data Model
+
+### `practitioners` table (key columns)
+```
+id            uuid PK
+name          text
+bio           text
+island        text  -- 'big_island' | 'maui' | 'oahu' | 'kauai'
+city          text
+address       text
+phone         text
+email         text
+website_url   text
+external_booking_url text
+modalities    text[]   -- ARRAY, not comma-separated string
+tier          text     -- 'free' | 'premium' | 'featured'
+status        text     -- 'draft' | 'published'
+owner_id      uuid FK → auth.users
+accepts_new_clients boolean
+lat           float8
+lng           float8
+photo_url     text
+social_links  jsonb    -- { instagram, facebook, linkedin, x, substack }
+session_type  text     -- 'in_person' | 'online' | 'both'
+created_at    timestamptz
+updated_at    timestamptz
+```
+
+### `centers` table (key columns)
+Same shape as practitioners plus:
+```
+center_type   text     -- 'spa' | 'wellness_center' | 'clinic' | 'retreat_center'
+photos        text[]   -- array of image URLs (max 5)
+working_hours jsonb    -- { mon: {open, close} | null, tue: ..., ... }
+testimonials  jsonb[]
+description   text
+```
+
+### `featured_slots` table
+```
+id            uuid PK
+listing_id    uuid     -- FK to practitioners.id OR centers.id
+listing_type  text     -- 'practitioner' | 'center'
+island        text
+owner_id      uuid FK → auth.users
+created_at    timestamptz
+```
+- Capped at **5 per island** (enforced by DB trigger)
+- Created/deleted atomically by `useSetListingTier` and by the Stripe webhook
+
+### `user_profiles` table
+```
+id                    uuid PK (= auth.users.id)
+tier                  text
+stripe_customer_id    text
+stripe_subscription_id text
+stripe_price_id       text
+subscription_status   text
+subscription_period_end timestamptz
+updated_at            timestamptz
+```
+
+### `retreats` table — separate from practitioners/centers, gated by Premium tier
+
+### `articles` table — admin-managed blog posts, slug-routed
+
+### `listing_flags` table — user-submitted reports for admin review
+
+---
+
+## Directory Filtering & Sorting
+
+### Where filtering lives
+- **`src/hooks/usePractitioners.ts`** — fetches practitioners with Supabase query-level filters
+- **`src/hooks/useCenters.ts`** — same for centers
+- **`src/pages/Directory.tsx`** — combines both, applies client-side sort/filter UI
+
+### Filter columns and how they're applied
+| Filter | Applied at | Notes |
+|--------|-----------|-------|
+| `island` | Supabase `.eq('island', value)` | Always applied first |
+| `status` | Supabase `.eq('status', 'published')` | Hard-coded in hooks |
+| `modality` | Client-side `Array.includes()` | modalities is `text[]` |
+| `city` | Client-side string match | cities vary per island |
+| `session_type` | Client-side | 'in_person' \| 'online' \| 'both' |
+| `tier` | Client-side | for filtering premium/featured |
+
+### Sort order
+Featured listings always sort first (tier = 'featured'), then by name alphabetically. Featured rotation on island homepages is driven by the `featured_slots` table.
+
+### Island → cities mapping (defined in `DashboardProfile.tsx` and `AdminPanel.tsx`)
+```
+big_island: Kailua-Kona, Hilo, Waimea/Kamuela, Pahoa, Captain Cook, Keaau,
+            Holualoa, Volcano, Waikoloa, Ocean View, Hawi, Kapaau, Honokaa
+maui:       Lahaina, Kihei, Wailea, Kahului, Wailuku, Makawao, Paia,
+            Haiku, Kula, Pukalani, Napili, Kapalua, Hana
+oahu:       Honolulu, Waikiki, Kailua, Kaneohe, Pearl City, Kapolei,
+            Haleiwa, Mililani, Hawaii Kai, Manoa, Kaimuki
+kauai:      Lihue, Kapaa, Hanalei, Princeville, Poipu, Koloa,
+            Hanapepe, Waimea, Kilauea, Kalaheo
+```
+
+### Canonical modalities list (34 total — used in checkboxes and pipeline)
+Acupuncture, Alternative Therapy, Astrology, Ayurveda, Birth Doula, Breathwork,
+Chiropractic, Counseling, Craniosacral, Dentistry, Energy Healing,
+Functional Medicine, Herbalism, Hypnotherapy, Life Coaching,
+Lomilomi / Hawaiian Healing, Luminous Practitioner, Massage, Meditation, Midwife,
+Naturopathic, Nervous System Regulation, Network Chiropractic, Nutrition,
+Osteopathic, Physical Therapy, Psychotherapy, Reiki, Somatic Therapy,
+Soul Guidance, Sound Healing, TCM (Traditional Chinese Medicine),
+Trauma Informed Services, Watsu / Water Therapy, Yoga
+
+---
+
+## Tier System
+
+| Tier | Price | Features |
+|------|-------|----------|
+| free | $0 | Basic listing: name, bio, location, modalities, contact |
+| premium | $39/mo | + Retreat posts, social links, working hours, testimonials |
+| featured | $129/mo | + Homepage rotation, crown badge, priority in results — 5/island cap |
+
+### Tier management flow
+1. **Via payment:** Stripe webhook (`supabase/functions/stripe-webhook/index.ts`) fires on `checkout.session.completed` → calls `syncTierToListings(userId, tier)` which updates `practitioners.tier` + `centers.tier` AND upserts/deletes `featured_slots` rows
+2. **Via admin override:** `useSetListingTier` mutation in `src/hooks/useAdmin.ts` — updates listing tier + manages `featured_slots` atomically using `supabaseAdmin`
+
+### Stripe price IDs (live mode, account T47YY)
+Defined in `src/lib/stripe.ts`:
+- `STRIPE_PRICES.PREMIUM_MONTHLY` — Premium $39/mo
+- `STRIPE_PRICES.FEATURED_MONTHLY` — Featured $129/mo
+- No yearly plans exist
+
+### Stripe edge functions
+- `supabase/functions/create-checkout-session/index.ts` — requires auth JWT, validates priceId starts with `price_`, validates same-origin URLs
+- `supabase/functions/stripe-webhook/index.ts` — verifies Stripe signature, handles checkout.session.completed / subscription.updated / subscription.deleted
+
+---
+
+## Key Hooks Reference
+
+| Hook | File | Purpose |
+|------|------|---------|
+| `useAdmin` | `src/hooks/useAdmin.ts` | All admin mutations — practitioners, centers, retreats, articles, flags |
+| `useSetListingTier` | `src/hooks/useAdmin.ts` | Set tier on listing + manage featured_slots |
+| `useAccounts` | `src/hooks/useAccounts.ts` | All user accounts, subscription status, linked listings |
+| `useMyPractitioner` | `src/hooks/useMyPractitioner.ts` | Provider's own practitioner profile CRUD + `uploadMyPhoto()` |
+| `useStripe` | `src/hooks/useStripe.ts` | `useCreateCheckoutSession`, `useMyBillingProfile`, `PLAN_OPTIONS` |
+| `useListingFlags` | `src/hooks/useListingFlags.ts` | Flag listings for review |
+| `usePractitioners` | `src/hooks/usePractitioners.ts` | Public directory fetch with island filter |
+| `useCenters` | `src/hooks/useCenters.ts` | Public directory fetch for centers |
+| `useArticles` / `useArticleBySlug` | `src/hooks/useArticles.ts` | Blog article fetch |
+
+### Important: `supabaseAdmin` is server-only
+`src/lib/supabaseAdmin.ts` — after security audit, the service role key is **not** available in the browser. `supabaseAdmin` returns null client-side. It is only used in Supabase Edge Functions and should stay that way. Admin mutations that need service role should go through edge functions, not client hooks.
+
+---
+
+## Auth Flow
+
+- **Magic link** is the primary sign-in method (`supabase.auth.signInWithOtp`)
+- Password sign-in is available as a secondary toggle
+- **Plan intent persistence:** `localStorage.setItem('pendingPlan', priceId)` before auth redirect; `DashboardHome` checks on mount and fires checkout automatically
+- After login, redirect priority: pendingPlan → claimId → redirectTo param → /dashboard
+
+---
+
+## Google Maps Pipeline
+
+### Purpose
+Ingests wellness listings from Google Maps into the DB as `draft` records for admin review.
+
+### Environment variable required
+```
+GM_API_KEY=<your Google Places API key>   # in .env (not .env.local)
+```
+
+### Full pipeline run (from `pipeline/` directory)
+```bash
+cd pipeline
+bash scripts/run_gm_pipeline.sh --island big_island
+# or: --island maui | oahu | kauai
+# add --dry-run to test without writing to DB
+```
+
+### Step-by-step breakdown
+| Script | Input | Output | What it does |
+|--------|-------|--------|--------------|
+| `09_gm_search.py` | island arg | `gm_place_ids.jsonl` | Text Search for modality × city combos → collect Place IDs |
+| `10_gm_details.py` | `gm_place_ids.jsonl` | `gm_raw.jsonl` | Fetch full Place Details for each ID (resumes automatically) |
+| `11_gm_classify.py` | `gm_raw.jsonl` | `gm_classified.jsonl` | Classify as practitioner/center, map Google types → modalities |
+| `12_gm_dedup.py` | `gm_classified.jsonl` + Supabase DB | `gm_new.jsonl`, `gm_enrichments.jsonl`, `gm_review.jsonl` | Deduplicate against existing DB records |
+| `13_gm_upsert.py` | `gm_new.jsonl`, `gm_enrichments.jsonl` | Supabase DB | Insert new as `draft`, enrich existing blanks only |
+
+### Deduplication logic (any ONE signal = duplicate)
+1. Phone number match (10-digit normalized, strip country code)
+2. Website domain match (strip protocol / www / trailing slash)
+3. Fuzzy name match (≥ 85% similarity, same island) via `SequenceMatcher`
+
+### After running
+New records land in DB as `status = 'draft'`, `tier = 'free'`, `owner_id = null`.
+Review and publish from **Admin panel → Practitioners or Centers tab**.
+
+### Google Places API fields fetched (cost-conscious)
+`place_id, name, formatted_address, formatted_phone_number, website, url, geometry, opening_hours, types, rating, user_ratings_total, business_status, photos`
+
+### Google Maps API endpoints used
+- Text Search: `https://maps.googleapis.com/maps/api/place/textsearch/json`
+- Place Details: `https://maps.googleapis.com/maps/api/place/details/json`
+
+---
+
+## Web Crawl Pipeline (original/fallback pipeline)
+
+```bash
+cd pipeline
+bash scripts/run_pipeline.sh [--dry-run]
+```
+
+Steps: Brave search (00) → seed URLs (01) → crawl pages (03) → extract entities (04) → normalize (05) → extract images (06) → download images (07) → upload + upsert (08)
+
+Less reliable than GM pipeline for finding new listings. Use GM pipeline preferentially.
+
+---
+
+## Admin Panel Structure
+
+Route: `/admin` (protected by `AdminProtectedRoute`)
+
+Tabs:
+1. **Practitioners** — list, search, edit (with tier override), delete, add
+2. **Centers** — list, search, edit (with tier override), delete, add
+3. **Retreats** — manage retreat listings
+4. **Articles** — manage blog articles
+5. **Flags** — review user-submitted listing reports
+6. **Accounts** — view all user accounts, subscription tiers, linked listings, featured slot overview per island
+
+### Tier override in admin
+Both Edit Practitioner and Edit Center dialogs have a **Subscription Tier** Select dropdown. Changing it immediately calls `setListingTier.mutate()` — no save button needed. This atomically updates the listing's tier AND creates/removes a `featured_slots` row.
+
+---
+
+## File Structure (key locations)
+
+```
+src/
+  pages/
+    admin/AdminPanel.tsx         — admin UI (large, ~2800 lines)
+    dashboard/
+      DashboardHome.tsx          — onboarding + pending checkout resume
+      DashboardProfile.tsx       — provider profile editor (island, modalities, photo)
+      DashboardBilling.tsx       — subscription management
+    Auth.tsx                     — magic link + password sign-in
+    ListYourPractice.tsx         — pricing/signup page
+    Directory.tsx                — public directory with filters
+    PrivacyPolicy.tsx            — /privacy-policy
+    TermsOfService.tsx           — /terms-of-service
+    HelpCenter.tsx               — /help (FAQ accordion)
+  hooks/
+    useAdmin.ts                  — all admin mutations
+    useMyPractitioner.ts         — provider's own profile
+    useStripe.ts                 — checkout + billing hooks
+    useAccounts.ts               — account management
+    useListingFlags.ts           — listing flag/report system
+  lib/
+    stripe.ts                    — STRIPE_PRICES constants
+    supabaseAdmin.ts             — service-role client (server-only, null in browser)
+  components/
+    layout/Footer.tsx            — sitewide footer
+    AdminProtectedRoute.tsx      — admin route guard
+supabase/
+  functions/
+    create-checkout-session/     — Stripe checkout edge function
+    stripe-webhook/              — Stripe event handler
+  migrations/
+    20260305000000_listing_flags.sql
+    20260305000001_user_profiles.sql
+    20260305000002_featured_slots.sql
+pipeline/
+  scripts/                       — all Python pipeline scripts (00–20)
+  src/
+    config.py                    — OUTPUT_DIR, island town lists, city config
+    supabase_client.py           — Supabase client for pipeline
+  output/                        — intermediate JSONL files
+```
+
+---
+
+## Common Gotchas
+
+- **`modalities` is `text[]`** (Postgres array), not a comma-separated string. Always handle as array in TypeScript and pass as array to Supabase.
+- **Island default is `'big_island'`** — always falls back to this if unset. When adding new listings make sure to set island explicitly.
+- **`supabaseAdmin` is null in the browser** — after security audit, the service role key was removed from VITE_ env vars. Any code that calls `supabaseAdmin` client-side will fail silently. Admin mutations that need elevated access must go through Supabase Edge Functions.
+- **Photo upload uses regular `supabase` client**, not `supabaseAdmin`. Bucket is `images`. Path format: `practitioners/{timestamp}-{random}.{ext}`.
+- **Featured slots 5-per-island cap** is enforced by a Postgres trigger (`check_featured_slot_limit`). Inserting a 6th slot will throw a DB error — handle gracefully.
+- **Stripe keys are live mode** (account T47YY) — be careful running checkout flows locally as real charges will occur.
+- **Magic link OTP** expires after 60 minutes. Users hitting expired links should be prompted to request a new one.
+- **`pendingPlan` localStorage key** must be validated against a whitelist of known price IDs before acting on it (security: prevents open redirect abuse).
+- **Hero images for Maui/Oahu/Kauai** are local public assets with spaces in filenames — use URL-encoded paths (`/maui%20hero.jpg` etc.) in `heroImageUrl` config.
+- **AdminPanel.tsx is ~2800+ lines** — always use offset/limit when reading it, or grep for specific sections.
