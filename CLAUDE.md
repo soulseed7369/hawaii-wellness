@@ -225,6 +225,53 @@ Review and publish from **Admin panel → Practitioners or Centers tab**.
 
 ---
 
+## Website Enrichment Pipeline (script 22)
+
+### Purpose
+Crawls existing listing websites to fill blank fields: email, phone, bio/description (≤100 words), avatar photo (og:image), and modalities.
+
+### Usage
+```bash
+cd pipeline
+
+# Crawl Big Island listings, save to website_enrichments.jsonl (review first)
+python scripts/22_website_enrich.py --island big_island
+
+# Limit to N listings (useful for testing)
+python scripts/22_website_enrich.py --island big_island --limit 50
+
+# Preview without writing any files
+python scripts/22_website_enrich.py --dry-run
+
+# Crawl AND apply to DB in one step
+python scripts/22_website_enrich.py --island big_island --apply
+```
+
+### How it works
+1. Fetches all listings for the island that have a `website_url` but are missing ≥1 of: email, phone, bio/description (<10 words), avatar_url, modalities
+2. Crawls each homepage; tries `/contact` page as fallback for email
+3. Extracts: email from `mailto:` links + regex; phone from `tel:` links + regex; bio from `og:description` → meta description → first 100-word paragraph; photo from `og:image` → `twitter:image` → first substantial `<img>`; modalities via keyword matching
+4. Saves results to `pipeline/output/website_enrichments.jsonl`
+5. Never overwrites existing data — only fills blank fields
+
+### Typical results
+~85–90% hit rate on listings with working websites. Avatar photos come from og:image (Squarespace, Wix, WordPress sites all expose this). Some avatar_url values may be logos — review before applying.
+
+### Apply saved enrichments to DB (if not using --apply flag)
+```python
+# Apply from the saved JSONL
+import json
+from src.supabase_client import client
+
+with open('output/website_enrichments.jsonl') as f:
+    for line in f:
+        r = json.loads(line)
+        patch = {k: v for k, v in r.items() if not k.startswith('_')}
+        client.table(r['_db_table']).update(patch).eq('id', r['_db_id']).execute()
+```
+
+---
+
 ## Web Crawl Pipeline (original/fallback pipeline)
 
 ```bash

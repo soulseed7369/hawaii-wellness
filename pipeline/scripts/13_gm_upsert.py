@@ -158,6 +158,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true",
                         help="Preview changes without writing to DB")
+    parser.add_argument("--enrichments-only", action="store_true",
+                        help="Skip new inserts; only apply enrichments to existing records")
     args = parser.parse_args()
 
     new_path    = OUTPUT_DIR / "gm_new.jsonl"
@@ -165,12 +167,13 @@ if __name__ == "__main__":
 
     # ── Insert new records ─────────────────────────────────────────────────────
     new_records = []
-    if new_path.exists():
-        with open(new_path) as f:
-            for line in f:
-                new_records.append(json.loads(line))
-    else:
-        print(f"Warning: {new_path} not found — skipping new inserts")
+    if not args.enrichments_only:
+        if new_path.exists():
+            with open(new_path) as f:
+                for line in f:
+                    new_records.append(json.loads(line))
+        else:
+            print(f"Warning: {new_path} not found — skipping new inserts")
 
     print(f"\n── Inserting {len(new_records)} new records ──────────────────────")
     ins_p, ins_c = insert_new(new_records, args.dry_run)

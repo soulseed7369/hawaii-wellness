@@ -20,7 +20,21 @@ import sys, json, re, argparse
 from pathlib import Path
 
 sys.path.insert(0, '.')
-from src.config import OUTPUT_DIR
+from src.config import OUTPUT_DIR, BIG_ISLAND_TOWNS, ISLAND_TOWN_LISTS
+
+# ── Island detection from city name ───────────────────────────────────────────
+# Build a reverse lookup: lowercase city → island key
+_CITY_TO_ISLAND: dict[str, str] = {}
+for _island, _towns in ISLAND_TOWN_LISTS.items():
+    for _town in _towns:
+        _CITY_TO_ISLAND[_town.lower()] = _island
+for _town in BIG_ISLAND_TOWNS:
+    _CITY_TO_ISLAND[_town.lower()] = "big_island"
+
+
+def detect_island(city: str, fallback: str) -> str:
+    """Return the island key that matches *city*, or *fallback* if unknown."""
+    return _CITY_TO_ISLAND.get(city.lower().strip(), fallback)
 
 # ── Your canonical modalities list ────────────────────────────────────────────
 MODALITIES = [
@@ -189,6 +203,9 @@ def convert(raw: dict) -> dict:
     island  = raw.get("island", "big_island")
 
     city = raw.get("_city") or extract_city_from_address(address)
+
+    # Correct island based on actual city — don't blindly trust the search island
+    island = detect_island(city, island)
 
     phone = normalize_phone(
         raw.get("formatted_phone_number") or raw.get("international_phone_number")
