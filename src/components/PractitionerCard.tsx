@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, CheckCircle } from "lucide-react";
+import { MapPin, CheckCircle } from "lucide-react";
 import type { Practitioner } from "@/data/mockData";
 import { Link } from "react-router-dom";
 
@@ -31,14 +31,10 @@ export function PractitionerCard({ practitioner }: PractitionerCardProps) {
             <p className="text-sm text-primary">{practitioner.modality}</p>
           </div>
         </div>
-        <div className="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+        <div className="mb-3 flex items-center text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
             {practitioner.location}
-          </span>
-          <span className="flex items-center gap-1 text-primary">
-            <Star className="h-3.5 w-3.5 fill-current" />
-            {practitioner.rating}
           </span>
         </div>
         {practitioner.acceptingClients && (

@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Retreat } from "@/data/mockData";
 import { Link } from "react-router-dom";
 
@@ -26,14 +26,10 @@ export function RetreatCard({ retreat }: RetreatCardProps) {
         <h3 className="mb-2 font-display text-lg font-semibold leading-tight">
           {retreat.name}
         </h3>
-        <div className="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+        <div className="mb-3 flex items-center text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
             {retreat.location}
-          </span>
-          <span className="flex items-center gap-1 text-primary">
-            <Star className="h-3.5 w-3.5 fill-current" />
-            {retreat.rating}
           </span>
         </div>
         <Button variant="outline" size="sm" className="w-full" asChild>

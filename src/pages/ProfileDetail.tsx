@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft, Quote, Flag } from "lucide-react";
+import { CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft, Quote, Flag, Instagram, Facebook, Linkedin } from "lucide-react";
+import { FlagListingButton } from "@/components/FlagListingButton";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 const ProfileDetail = () => {
@@ -181,6 +182,48 @@ const ProfileDetail = () => {
                     </a>
                   )}
                 </div>
+
+                {/* Social links */}
+                {p.socialLinks && Object.values(p.socialLinks).some(Boolean) && (
+                  <div className="flex flex-wrap gap-3 pt-1 border-t border-border/50">
+                    {p.socialLinks.instagram && (
+                      <a href={p.socialLinks.instagram} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                        <Instagram className="h-4 w-4" /> Instagram
+                      </a>
+                    )}
+                    {p.socialLinks.facebook && (
+                      <a href={p.socialLinks.facebook} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                        <Facebook className="h-4 w-4" /> Facebook
+                      </a>
+                    )}
+                    {p.socialLinks.linkedin && (
+                      <a href={p.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                        <Linkedin className="h-4 w-4" /> LinkedIn
+                      </a>
+                    )}
+                    {p.socialLinks.x && (
+                      <a href={p.socialLinks.x} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                        X / Twitter
+                      </a>
+                    )}
+                    {p.socialLinks.substack && (
+                      <a href={p.socialLinks.substack} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 17.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
+                        </svg>
+                        Substack
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -223,6 +266,15 @@ const ProfileDetail = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Report inaccurate / expired listing */}
+          <div className="flex justify-center pt-1">
+            <FlagListingButton
+              listingType="practitioner"
+              listingId={p.id}
+              listingName={p.name}
+            />
+          </div>
         </div>
       </section>
     </main>

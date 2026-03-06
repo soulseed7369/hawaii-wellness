@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Center } from "@/data/mockData";
 import { Link } from "react-router-dom";
 
@@ -31,10 +31,6 @@ export function CenterCard({ center }: CenterCardProps) {
               <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="sr-only">Location: </span>
               {center.location}
-            </span>
-            <span className="flex items-center gap-1 text-primary" aria-label={`Rating: ${center.rating} out of 5`}>
-              <Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-              {center.rating}
             </span>
           </div>
           <div className="mb-3 flex flex-wrap gap-1.5" role="list" aria-label="Services">

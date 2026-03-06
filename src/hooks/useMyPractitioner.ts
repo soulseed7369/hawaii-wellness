@@ -3,25 +3,18 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import type { PractitionerRow, PractitionerInsert } from '@/types/database';
 
-/**
- * Returns the practitioner profile row owned by the current user.
- * Returns null if the user hasn't created one yet.
- */
 export function useMyPractitioner() {
   const { user } = useAuth();
-
   return useQuery<PractitionerRow | null>({
     queryKey: ['my-practitioner', user?.id],
     enabled: !!user && !!supabase,
     queryFn: async () => {
       if (!supabase || !user) return null;
-
       const { data, error } = await supabase
         .from('practitioners')
         .select('*')
         .eq('owner_id', user.id)
         .maybeSingle();
-
       if (error) throw error;
       return data ?? null;
     },
@@ -31,10 +24,10 @@ export function useMyPractitioner() {
 
 export type PractitionerFormData = {
   name: string;
-  modalities: string; // comma-separated in form, split on save
+  island: string;
+  modalities: string[];
   bio: string;
   city: string;
-  region: string;
   address: string;
   phone: string;
   email: string;
@@ -43,9 +36,6 @@ export type PractitionerFormData = {
   accepts_new_clients: boolean;
 };
 
-/**
- * Upsert (create or update) the practitioner profile for the current user.
- */
 export function useSavePractitioner() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -57,24 +47,19 @@ export function useSavePractitioner() {
       const payload: Partial<PractitionerInsert> = {
         owner_id: user.id,
         name: formData.name.trim(),
-        modalities: formData.modalities
-          .split(',')
-          .map((m) => m.trim())
-          .filter(Boolean),
+        island: formData.island || 'big_island',
+        modalities: formData.modalities.filter(Boolean),
         bio: formData.bio.trim() || null,
         city: formData.city.trim() || null,
-        region: formData.region.trim() || null,
         address: formData.address.trim() || null,
         phone: formData.phone.trim() || null,
         email: formData.email.trim() || null,
         website_url: formData.website_url.trim() || null,
         external_booking_url: formData.external_booking_url.trim() || null,
         accepts_new_clients: formData.accepts_new_clients,
-        island: 'big_island',
         status: 'draft',
       };
 
-      // Check if record already exists for this owner
       const { data: existing } = await supabase
         .from('practitioners')
         .select('id')
@@ -95,8 +80,21 @@ export function useSavePractitioner() {
         if (error) throw error;
       }
     },
-    onSuccess: (_data, _vars, _ctx) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-practitioner'] });
     },
   });
+}
+
+/** Upload a profile photo using the authenticated user's session */
+export async function uploadMyPhoto(file: File): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const ext = file.name.split('.').pop();
+  const path = `practitioners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage
+    .from('images')
+    .upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data } = supabase.storage.from('images').getPublicUrl(path);
+  return data.publicUrl;
 }

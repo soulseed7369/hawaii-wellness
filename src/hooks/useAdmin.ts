@@ -596,3 +596,68 @@ export const useDeleteArticle = () => {
     },
   });
 };
+
+// ─── Per-listing tier override ───────────────────────────────────────────────
+
+export type ListingType = 'practitioner' | 'center';
+
+export const useSetListingTier = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      listingId,
+      listingType,
+      tier,
+      island,
+      ownerId,
+      previousTier,
+    }: {
+      listingId: string;
+      listingType: ListingType;
+      tier: 'free' | 'premium' | 'featured';
+      island: string;
+      ownerId: string | null;
+      previousTier: string | null;
+    }) => {
+      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+
+      const table = listingType === 'practitioner' ? 'practitioners' : 'centers';
+
+      // Update the listing tier
+      const { error: updateError } = await supabaseAdmin
+        .from(table)
+        .update({ tier })
+        .eq('id', listingId);
+      if (updateError) throw updateError;
+
+      // If promoting to featured → create featured_slot
+      if (tier === 'featured') {
+        const { error: slotError } = await supabaseAdmin
+          .from('featured_slots')
+          .upsert({
+            listing_id: listingId,
+            listing_type: listingType,
+            island,
+            owner_id: ownerId,
+          }, { onConflict: 'listing_id' });
+        if (slotError) throw slotError;
+      }
+
+      // If demoting from featured → remove featured_slot
+      if (previousTier === 'featured' && tier !== 'featured') {
+        const { error: deleteError } = await supabaseAdmin
+          .from('featured_slots')
+          .delete()
+          .eq('listing_id', listingId);
+        if (deleteError) throw deleteError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-practitioners'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-centers'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-featured-slots'] });
+      queryClient.invalidateQueries({ queryKey: ['practitioners'] });
+      queryClient.invalidateQueries({ queryKey: ['centers'] });
+    },
+  });
+};

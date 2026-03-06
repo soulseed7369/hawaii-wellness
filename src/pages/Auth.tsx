@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase, hasSupabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -6,42 +6,81 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Leaf, AlertCircle } from 'lucide-react';
+import { Leaf, AlertCircle, Mail, Lock } from 'lucide-react';
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Auth() {
   usePageMeta("Sign In", "Sign in to manage your Hawa'i Wellness practitioner or center listing.");
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const claimId = searchParams.get('claim');
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const redirectTo = searchParams.get('redirect');
+
+  const [mode, setMode] = useState<'magic' | 'password'>('magic');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [magicSent, setMagicSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // If already logged in, redirect appropriately
+  useEffect(() => {
+    if (!user) return;
+    const pending = localStorage.getItem('pendingPlan');
+    if (pending && pending !== 'free') {
+      navigate('/dashboard/billing');
+    } else if (claimId) {
+      navigate(`/claim/${claimId}`);
+    } else if (redirectTo) {
+      navigate(redirectTo);
+    } else {
+      navigate('/dashboard');
+    }
+  }, [user]);
+
+  const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
-
     setError('');
-    setSuccess('');
     setLoading(true);
-
     try {
-      if (mode === 'signup') {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          shouldCreateUser: true,
+        },
+      });
+      if (otpError) throw otpError;
+      setMagicSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase) return;
+    setError('');
+    setLoading(true);
+    try {
+      if (isSignUp) {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (signUpError) throw signUpError;
-        setSuccess('Account created! Check your email to confirm your address, then sign in.');
+        setMagicSent(true);
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
-        navigate(claimId ? `/claim/${claimId}` : '/dashboard');
+        // navigation handled by useEffect above
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
@@ -50,9 +89,44 @@ export default function Auth() {
     }
   };
 
+  if (magicSent) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-secondary/30 px-4">
+        <Link to="/" className="mb-8 flex items-center gap-2 text-primary">
+          <Leaf className="h-6 w-6" />
+          <span className="font-display text-xl font-bold">Hawa'i Wellness</span>
+        </Link>
+        <Card className="w-full max-w-md shadow-lg text-center">
+          <CardContent className="pt-8 pb-8 space-y-4">
+            <div className="mx-auto w-14 h-14 rounded-full bg-sage/10 flex items-center justify-center">
+              <Mail className="h-7 w-7 text-sage" />
+            </div>
+            <h2 className="font-display text-xl font-bold">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We sent a sign-in link to{' '}
+              <span className="font-medium text-foreground">{email}</span>.
+              Click the link to continue — no password needed.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Didn't get it? Check your spam folder or{' '}
+              <button
+                onClick={() => { setMagicSent(false); setError(''); }}
+                className="text-primary hover:underline font-medium"
+              >
+                try again
+              </button>.
+            </p>
+          </CardContent>
+        </Card>
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          <Link to="/" className="hover:underline">← Back to directory</Link>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary/30 px-4">
-      {/* Logo */}
       <Link to="/" className="mb-8 flex items-center gap-2 text-primary">
         <Leaf className="h-6 w-6" />
         <span className="font-display text-xl font-bold">Hawa'i Wellness</span>
@@ -61,18 +135,24 @@ export default function Auth() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="font-display text-2xl">
-            {mode === 'signin' ? 'Sign in to your account' : 'Create provider account'}
+            {mode === 'magic'
+              ? 'Sign in with email'
+              : isSignUp
+                ? 'Create provider account'
+                : 'Sign in with password'}
           </CardTitle>
           <CardDescription>
-            {mode === 'signin'
-              ? 'Access your provider dashboard to manage listings.'
-              : 'Create an account to list your practice on the directory.'}
+            {mode === 'magic'
+              ? "Enter your email and we'll send you a sign-in link — no password needed."
+              : isSignUp
+                ? 'Create an account to list your practice on the directory.'
+                : 'Access your provider dashboard.'}
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-4">
           {!hasSupabase && (
-            <Alert className="mb-4">
+            <Alert className="mb-2">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Supabase is not configured. Add <code>VITE_SUPABASE_URL</code> and{' '}
@@ -82,75 +162,110 @@ export default function Auth() {
           )}
 
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          {success && (
-            <Alert className="mb-4 border-sage/30 bg-sage/10">
-              <AlertDescription className="text-sage">{success}</AlertDescription>
-            </Alert>
+          {/* Magic link form */}
+          {mode === 'magic' && (
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  disabled={!hasSupabase}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading || !hasSupabase}>
+                {loading ? 'Sending…' : 'Send sign-in link'}
+              </Button>
+            </form>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={!hasSupabase}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                disabled={!hasSupabase}
-              />
-              {mode === 'signup' && (
-                <p className="text-xs text-muted-foreground">Minimum 6 characters.</p>
+          {/* Password form */}
+          {mode === 'password' && (
+            <form onSubmit={handlePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email-pw">Email address</Label>
+                <Input
+                  id="email-pw"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  disabled={!hasSupabase}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  disabled={!hasSupabase}
+                />
+                {isSignUp && (
+                  <p className="text-xs text-muted-foreground">Minimum 6 characters.</p>
+                )}
+              </div>
+              <Button type="submit" className="w-full" disabled={loading || !hasSupabase}>
+                {loading ? 'Please wait…' : isSignUp ? 'Create Account' : 'Sign In'}
+              </Button>
+              {!isSignUp && (
+                <p className="text-center text-sm text-muted-foreground">
+                  No account?{' '}
+                  <button
+                    onClick={() => { setIsSignUp(true); setError(''); }}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Sign up
+                  </button>
+                </p>
               )}
-            </div>
+              {isSignUp && (
+                <p className="text-center text-sm text-muted-foreground">
+                  Already have an account?{' '}
+                  <button
+                    onClick={() => { setIsSignUp(false); setError(''); }}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              )}
+            </form>
+          )}
 
-            <Button type="submit" className="w-full" disabled={loading || !hasSupabase}>
-              {loading ? 'Please wait…' : mode === 'signin' ? 'Sign In' : 'Create Account'}
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center text-sm">
-            {mode === 'signin' ? (
-              <p className="text-muted-foreground">
-                Don't have an account?{' '}
-                <button
-                  onClick={() => { setMode('signup'); setError(''); setSuccess(''); }}
-                  className="font-medium text-primary hover:underline"
-                >
-                  Sign up
-                </button>
-              </p>
+          {/* Toggle between magic link and password */}
+          <div className="pt-2 border-t border-border text-center">
+            {mode === 'magic' ? (
+              <button
+                onClick={() => { setMode('password'); setError(''); }}
+                className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                Sign in with password instead
+              </button>
             ) : (
-              <p className="text-muted-foreground">
-                Already have an account?{' '}
-                <button
-                  onClick={() => { setMode('signin'); setError(''); setSuccess(''); }}
-                  className="font-medium text-primary hover:underline"
-                >
-                  Sign in
-                </button>
-              </p>
+              <button
+                onClick={() => { setMode('magic'); setIsSignUp(false); setError(''); }}
+                className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Use magic link instead
+              </button>
             )}
           </div>
         </CardContent>

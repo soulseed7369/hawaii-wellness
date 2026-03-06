@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Trash2, Eye, EyeOff, Loader2, Upload, X, ImagePlus, Pencil, ChevronLeft, ChevronRight, ArrowLeftRight, CheckCircle, XCircle, FileText, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Eye, EyeOff, Loader2, Upload, X, ImagePlus, Pencil, ChevronLeft, ChevronRight, ArrowLeftRight, CheckCircle, XCircle, FileText, ExternalLink, Flag, Users, Star, Crown, MapPin as MapPinIcon } from 'lucide-react';
 import {
   AdminQueryParams,
   useAllPractitioners,
@@ -32,6 +32,9 @@ import {
   uploadPractitionerImage,
   uploadCenterImage,
 } from '@/hooks/useAdmin';
+import { useAdminFlags, useUpdateFlag, useDeleteFlag, type FlagStatus } from '@/hooks/useListingFlags';
+import { useAdminAccounts, useSetAccountTier, useAdminFeaturedSlots, useRemoveFeaturedSlot, type AccountTier } from '@/hooks/useAccounts';
+import { useSetListingTier } from '@/hooks/useAdmin';
 import type { PractitionerRow, CenterRow } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 
@@ -60,9 +63,9 @@ const CITIES_BY_ISLAND: Record<string, string[]> = {
 
 const MODALITIES_LIST = [
   'Acupuncture', 'Alternative Therapy', 'Astrology', 'Ayurveda',
-  'Bioenergetics', 'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
+  'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
   'Craniosacral', 'Dentistry', 'Energy Healing', 'Functional Medicine',
-  'Gestalt Therapy', 'Herbalism', 'Hypnotherapy', 'Life Coaching',
+  'Herbalism', 'Hypnotherapy', 'Life Coaching',
   'Luminous Practitioner', 'Massage', 'Meditation', 'Midwife',
   'Naturopathic', 'Nervous System Regulation', 'Network Chiropractic',
   'Nutrition', 'Osteopathic', 'Physical Therapy',
@@ -353,6 +356,7 @@ const AdminPanel = () => {
   const convertPractitionerToCenter = useConvertPractitionerToCenter();
   const convertCenterToPractitioner = useConvertCenterToPractitioner();
   const batchPublish = useBatchPublish();
+  const setListingTier = useSetListingTier();
 
   // ── Batch selection helpers ───────────────────────────────────────────────
   const toggleSelectPractitioner = (id: string) =>
@@ -787,10 +791,20 @@ const AdminPanel = () => {
                 <p className="text-xs text-gray-400 mt-1">Updated {formatDate(p.updated_at)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
               <Badge variant={p.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                 {p.status}
               </Badge>
+              {p.tier === 'featured' && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                  <Crown className="h-2.5 w-2.5" /> Featured
+                </span>
+              )}
+              {p.tier === 'premium' && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                  <Star className="h-2.5 w-2.5" /> Premium
+                </span>
+              )}
               <Button variant="ghost" size="sm" onClick={() => openEditPractitionerDialog(p)}>
                 <Pencil className="h-4 w-4 text-blue-500" />
               </Button>
@@ -839,10 +853,20 @@ const AdminPanel = () => {
               <p className="text-xs text-gray-400 mt-1">Updated {formatDate(c.updated_at)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
             <Badge variant={c.status === 'published' ? 'default' : 'secondary'} className="text-xs">
               {c.status}
             </Badge>
+            {c.tier === 'featured' && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                <Crown className="h-2.5 w-2.5" /> Featured
+              </span>
+            )}
+            {c.tier === 'premium' && (
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                <Star className="h-2.5 w-2.5" /> Premium
+              </span>
+            )}
             <Button variant="ghost" size="sm" onClick={() => openEditCenterDialog(c)}>
               <Pencil className="h-4 w-4 text-blue-500" />
             </Button>
@@ -997,7 +1021,7 @@ const AdminPanel = () => {
         setActiveTab(tab);
         if (tab === 'claims') fetchClaims(claimStatusFilter);
       }}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="practitioners">
             Practitioners {practResult ? `(${practTotal})` : ''}
           </TabsTrigger>
@@ -1009,6 +1033,14 @@ const AdminPanel = () => {
           </TabsTrigger>
           <TabsTrigger value="articles">
             Articles
+          </TabsTrigger>
+          <TabsTrigger value="flags" className="gap-1.5">
+            <Flag className="h-3.5 w-3.5" />
+            Flags
+          </TabsTrigger>
+          <TabsTrigger value="accounts" className="gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            Accounts
           </TabsTrigger>
         </TabsList>
 
@@ -1140,6 +1172,91 @@ const AdminPanel = () => {
                       onChange={e => handlePractitionerChange('external_booking_url', e.target.value)} />
                   </div>
 
+                  <div>
+                    <Label>Island</Label>
+                    <Select value={practitionerForm.island || 'big_island'}
+                      onValueChange={v => handlePractitionerChange('island', v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {ISLANDS.map(i => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Session Type</Label>
+                    <Select value={(practitionerForm as any).session_type || 'in_person'}
+                      onValueChange={v => handlePractitionerChange('session_type', v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="in_person">In-Person Only</SelectItem>
+                        <SelectItem value="online">Online Only</SelectItem>
+                        <SelectItem value="both">In-Person & Online</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Affiliated Center</Label>
+                    <Select
+                      value={(practitionerForm as any).center_id ?? 'none'}
+                      onValueChange={v => setPractitionerForm(prev => ({
+                        ...prev,
+                        center_id: v === 'none' ? null : v,
+                      }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="No affiliation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No affiliation</SelectItem>
+                        {allCenters.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Lat/Lng + Geocode */}
+                  <div className="space-y-1">
+                    <Label className="text-sm">Coordinates</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Latitude"
+                        type="number"
+                        step="any"
+                        value={(practitionerForm as any).lat ?? ''}
+                        onChange={e => handlePractitionerChange('lat', e.target.value ? parseFloat(e.target.value) : null)}
+                        className="text-sm h-8 w-32"
+                      />
+                      <Input
+                        placeholder="Longitude"
+                        type="number"
+                        step="any"
+                        value={(practitionerForm as any).lng ?? ''}
+                        onChange={e => handlePractitionerChange('lng', e.target.value ? parseFloat(e.target.value) : null)}
+                        className="text-sm h-8 w-32"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={geocoding}
+                        onClick={() => geocodeAddress(
+                          practitionerForm.address,
+                          practitionerForm.city,
+                          (lat, lng) => {
+                            handlePractitionerChange('lat', lat);
+                            handlePractitionerChange('lng', lng);
+                          }
+                        )}
+                        className="h-8 text-xs gap-1"
+                      >
+                        {geocoding ? <><Loader2 className="h-3 w-3 animate-spin" /> Finding…</> : '📍 Find Coords'}
+                      </Button>
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <Label htmlFor="p-accepts">Accepts New Clients</Label>
                     <Switch id="p-accepts"
@@ -1157,6 +1274,193 @@ const AdminPanel = () => {
                         <SelectItem value="draft">Draft</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Premium Features */}
+                  <div className="border rounded-lg p-4 space-y-4 bg-amber-50 border-amber-200">
+                    <h4 className="font-semibold text-amber-800 text-sm">⭐ Premium Features</h4>
+
+                    {/* Featured toggle */}
+                    <div className="flex items-center justify-between">
+                      <Label>Featured on Homepage</Label>
+                      <Switch
+                        checked={(practitionerForm as any).is_featured || false}
+                        onCheckedChange={v => handlePractitionerChange('is_featured', v)}
+                      />
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Social Links</Label>
+                      {(['instagram', 'facebook', 'linkedin', 'x', 'substack'] as const).map(platform => (
+                        <div key={platform} className="flex items-center gap-2">
+                          <span className="w-20 text-xs text-gray-500 capitalize">{platform === 'x' ? 'X / Twitter' : platform === 'substack' ? 'Substack' : platform}</span>
+                          <Input
+                            placeholder={
+                              platform === 'x' ? 'https://x.com/...' :
+                              platform === 'substack' ? 'https://yourname.substack.com' :
+                              `https://${platform}.com/...`
+                            }
+                            value={((practitionerForm as any).social_links?.[platform]) || ''}
+                            onChange={e => handlePractitionerChange('social_links', {
+                              ...((practitionerForm as any).social_links || {}),
+                              [platform]: e.target.value,
+                            })}
+                            className="text-sm h-8"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Working Hours */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Working Hours</Label>
+                      <div className="space-y-1">
+                        {DAYS.map(({ key, label }) => {
+                          const dayHours = (practitionerForm as any).working_hours?.[key];
+                          const isOpen = dayHours !== null && dayHours !== undefined;
+                          return (
+                            <div key={key} className="flex items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={isOpen}
+                                onChange={e => {
+                                  const wh = { ...((practitionerForm as any).working_hours || {}) };
+                                  wh[key] = e.target.checked ? DEFAULT_HOURS : null;
+                                  handlePractitionerChange('working_hours', wh);
+                                }}
+                                className="w-3.5 h-3.5"
+                              />
+                              <span className="w-24 text-xs text-gray-600">{label}</span>
+                              {isOpen && (
+                                <>
+                                  <Input
+                                    type="text"
+                                    value={dayHours?.open || ''}
+                                    onChange={e => {
+                                      const wh = { ...((practitionerForm as any).working_hours || {}) };
+                                      wh[key] = { ...dayHours, open: e.target.value };
+                                      handlePractitionerChange('working_hours', wh);
+                                    }}
+                                    placeholder="9:00 AM"
+                                    className="h-7 text-xs w-24"
+                                  />
+                                  <span className="text-xs text-gray-400">–</span>
+                                  <Input
+                                    type="text"
+                                    value={dayHours?.close || ''}
+                                    onChange={e => {
+                                      const wh = { ...((practitionerForm as any).working_hours || {}) };
+                                      wh[key] = { ...dayHours, close: e.target.value };
+                                      handlePractitionerChange('working_hours', wh);
+                                    }}
+                                    placeholder="5:00 PM"
+                                    className="h-7 text-xs w-24"
+                                  />
+                                </>
+                              )}
+                              {!isOpen && <span className="text-xs text-gray-400 italic">Closed</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Testimonials */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Testimonials</Label>
+                      {((practitionerForm as any).testimonials || []).map((t: {author: string; text: string; date: string}, idx: number) => (
+                        <div key={idx} className="border rounded p-2 space-y-1 bg-white">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              placeholder="Author name"
+                              value={t.author}
+                              onChange={e => {
+                                const ts = [...((practitionerForm as any).testimonials || [])];
+                                ts[idx] = { ...ts[idx], author: e.target.value };
+                                handlePractitionerChange('testimonials', ts);
+                              }}
+                              className="h-7 text-xs"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const ts = ((practitionerForm as any).testimonials || []).filter((_: unknown, i: number) => i !== idx);
+                                handlePractitionerChange('testimonials', ts);
+                              }}
+                              className="text-red-400 hover:text-red-600"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <Textarea
+                            placeholder="Testimonial text"
+                            value={t.text}
+                            onChange={e => {
+                              const ts = [...((practitionerForm as any).testimonials || [])];
+                              ts[idx] = { ...ts[idx], text: e.target.value };
+                              handlePractitionerChange('testimonials', ts);
+                            }}
+                            className="text-xs min-h-[60px]"
+                          />
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const ts = [...((practitionerForm as any).testimonials || [])];
+                          ts.push({ author: '', text: '', date: new Date().toISOString().slice(0, 10) });
+                          handlePractitionerChange('testimonials', ts);
+                        }}
+                        className="text-xs h-7"
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Add Testimonial
+                      </Button>
+                    </div>
+
+                    {/* Retreat Links */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Retreat Links</Label>
+                      {((practitionerForm as any).retreat_links || []).map((url: string, idx: number) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <Input
+                            placeholder="https://example.com/retreat"
+                            value={url}
+                            onChange={e => {
+                              const links = [...((practitionerForm as any).retreat_links || [])];
+                              links[idx] = e.target.value;
+                              handlePractitionerChange('retreat_links', links);
+                            }}
+                            className="h-7 text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const links = ((practitionerForm as any).retreat_links || []).filter((_: unknown, i: number) => i !== idx);
+                              handlePractitionerChange('retreat_links', links);
+                            }}
+                            className="text-red-400 hover:text-red-600 flex-shrink-0"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const links = [...((practitionerForm as any).retreat_links || [])];
+                          links.push('');
+                          handlePractitionerChange('retreat_links', links);
+                        }}
+                        className="text-xs h-7"
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Add Retreat Link
+                      </Button>
+                    </div>
                   </div>
 
                   <Button type="submit" className="w-full"
@@ -1594,6 +1898,16 @@ const AdminPanel = () => {
         <TabsContent value="articles" className="mt-6">
           <AdminArticles />
         </TabsContent>
+
+        {/* ── FLAGS TAB ── */}
+        <TabsContent value="flags" className="mt-6">
+          <AdminFlags />
+        </TabsContent>
+
+        {/* ── ACCOUNTS TAB ── */}
+        <TabsContent value="accounts" className="mt-6">
+          <AdminAccounts />
+        </TabsContent>
       </Tabs>
 
       {/* ── Edit Practitioner Dialog ── */}
@@ -1832,6 +2146,42 @@ const AdminPanel = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Tier */}
+              {editingPractitioner && (
+                <div>
+                  <Label>Subscription Tier</Label>
+                  <Select
+                    value={(editingPractitioner as any).tier ?? 'free'}
+                    onValueChange={v => {
+                      setListingTier.mutate({
+                        listingId: editingPractitioner.id,
+                        listingType: 'practitioner',
+                        tier: v as 'free' | 'premium' | 'featured',
+                        island: editingPractitioner.island ?? 'big_island',
+                        ownerId: (editingPractitioner as any).owner_id ?? null,
+                        previousTier: (editingPractitioner as any).tier ?? null,
+                      }, {
+                        onSuccess: () => toast.success(`Tier set to ${v}`),
+                        onError: (e: Error) => toast.error(e.message),
+                      });
+                    }}
+                    disabled={setListingTier.isPending}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="premium">⭐ Premium</SelectItem>
+                      <SelectItem value="featured">👑 Featured</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Setting Featured will claim one of the 5 island slots.
+                  </p>
+                </div>
+              )}
 
               {/* Premium Features */}
               <div className="border rounded-lg p-4 space-y-4 bg-amber-50 border-amber-200">
@@ -2240,6 +2590,35 @@ const AdminPanel = () => {
                 </Select>
               </div>
 
+              {/* Subscription Tier */}
+              <div>
+                <Label>Subscription Tier</Label>
+                <Select
+                  value={(editingCenter as any).tier ?? 'free'}
+                  onValueChange={v => {
+                    setListingTier.mutate({
+                      listingId: editingCenter.id,
+                      listingType: 'center',
+                      tier: v as 'free' | 'premium' | 'featured',
+                      island: editingCenter.island ?? 'big_island',
+                      ownerId: (editingCenter as any).owner_id ?? null,
+                      previousTier: (editingCenter as any).tier ?? null,
+                    }, {
+                      onSuccess: () => toast.success(`Tier set to ${v}`),
+                      onError: (e: Error) => toast.error(e.message),
+                    });
+                  }}
+                  disabled={setListingTier.isPending}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="premium">⭐ Premium</SelectItem>
+                    <SelectItem value="featured">👑 Featured</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Premium Features */}
               <div className="border rounded-lg p-4 space-y-4 bg-amber-50 border-amber-200">
                 <h4 className="font-semibold text-amber-800 text-sm">⭐ Premium Features</h4>
@@ -2475,5 +2854,431 @@ const AdminPanel = () => {
     </div>
   );
 };
+
+// ─── Admin Flags Component ────────────────────────────────────────────────────
+
+const REASON_LABELS: Record<string, string> = {
+  closed:     '🚫 Closed / Inactive',
+  inaccurate: '✏️ Inaccurate Info',
+  duplicate:  '📋 Duplicate',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  pending:   'bg-yellow-100 text-yellow-800 border-yellow-200',
+  reviewed:  'bg-blue-100 text-blue-800 border-blue-200',
+  dismissed: 'bg-gray-100 text-gray-500 border-gray-200',
+};
+
+function AdminFlags() {
+  const [flagStatusFilter, setFlagStatusFilter] = useState<FlagStatus | 'all'>('pending');
+  const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
+
+  const { data: flags = [], isLoading: flagsLoading } = useAdminFlags(
+    flagStatusFilter === 'all' ? undefined : flagStatusFilter
+  );
+  const updateFlag = useUpdateFlag();
+  const deleteFlag = useDeleteFlag();
+
+  const handleUpdateStatus = (id: string, status: FlagStatus) => {
+    updateFlag.mutate({ id, status, admin_notes: adminNotes[id] });
+  };
+
+  const pendingCount = flags.filter(f => f.status === 'pending').length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold">Reported Listings</h2>
+          {pendingCount > 0 && (
+            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+              {pendingCount} pending
+            </span>
+          )}
+        </div>
+        <Select
+          value={flagStatusFilter}
+          onValueChange={v => setFlagStatusFilter(v as FlagStatus | 'all')}
+        >
+          <SelectTrigger className="w-36 h-8 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All flags</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="reviewed">Reviewed</SelectItem>
+            <SelectItem value="dismissed">Dismissed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {flagsLoading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-24 rounded-lg bg-gray-100 animate-pulse" />
+          ))}
+        </div>
+      ) : flags.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+          <Flag className="mx-auto mb-3 h-8 w-8 opacity-30" />
+          <p className="text-sm">No {flagStatusFilter !== 'all' ? flagStatusFilter : ''} flags</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {flags.map(flag => (
+            <div key={flag.id} className="rounded-lg border bg-white p-4 space-y-3">
+              {/* Header row */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm truncate">{flag.listing_name || 'Unknown listing'}</span>
+                    <span className="text-xs text-gray-400 capitalize">{flag.listing_type}</span>
+                    <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium ${STATUS_COLORS[flag.status]}`}>
+                      {flag.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    <span className="text-xs font-medium text-gray-700">
+                      {REASON_LABELS[flag.reason] ?? flag.reason}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(flag.created_at).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', year: 'numeric',
+                      })}
+                    </span>
+                    {flag.reporter_email && (
+                      <span className="text-xs text-gray-400">{flag.reporter_email}</span>
+                    )}
+                  </div>
+                  {flag.details && (
+                    <p className="mt-1.5 text-xs text-gray-600 italic">"{flag.details}"</p>
+                  )}
+                </div>
+                {flag.listing_type === 'practitioner' && (
+                  <a
+                    href={`/profile/${flag.listing_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 text-xs text-blue-600 hover:underline flex items-center gap-1"
+                  >
+                    <ExternalLink className="h-3 w-3" /> View
+                  </a>
+                )}
+              </div>
+
+              {/* Admin notes */}
+              <Input
+                placeholder="Admin notes (optional)"
+                value={adminNotes[flag.id] ?? flag.admin_notes ?? ''}
+                onChange={e => setAdminNotes(prev => ({ ...prev, [flag.id]: e.target.value }))}
+                className="text-xs h-8"
+              />
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {flag.status !== 'reviewed' && (
+                  <Button
+                    size="sm" variant="outline"
+                    className="h-7 text-xs text-blue-700 border-blue-300 hover:bg-blue-50"
+                    disabled={updateFlag.isPending}
+                    onClick={() => handleUpdateStatus(flag.id, 'reviewed')}
+                  >
+                    <CheckCircle className="h-3.5 w-3.5 mr-1" /> Mark reviewed
+                  </Button>
+                )}
+                {flag.status !== 'dismissed' && (
+                  <Button
+                    size="sm" variant="outline"
+                    className="h-7 text-xs text-gray-600 border-gray-300 hover:bg-gray-50"
+                    disabled={updateFlag.isPending}
+                    onClick={() => handleUpdateStatus(flag.id, 'dismissed')}
+                  >
+                    <XCircle className="h-3.5 w-3.5 mr-1" /> Dismiss
+                  </Button>
+                )}
+                <Button
+                  size="sm" variant="ghost"
+                  className="h-7 text-xs text-gray-400 hover:text-red-500 ml-auto"
+                  disabled={deleteFlag.isPending}
+                  onClick={() => deleteFlag.mutate(flag.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove flag
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Admin Accounts Component ────────────────────────────────────────────────
+
+const TIER_LABELS: Record<AccountTier, { label: string; color: string; icon: React.ReactNode }> = {
+  free:      { label: 'Free',      color: 'bg-gray-100 text-gray-600 border-gray-200',        icon: null },
+  premium:   { label: 'Premium',   color: 'bg-blue-100 text-blue-700 border-blue-200',         icon: <Star className="h-3 w-3" /> },
+  featured:  { label: 'Featured',  color: 'bg-amber-100 text-amber-700 border-amber-200',      icon: <Crown className="h-3 w-3" /> },
+};
+
+const ISLAND_LABELS: Record<string, string> = {
+  big_island: 'Big Island',
+  oahu:       'Oʻahu',
+  maui:       'Maui',
+  kauai:      'Kauaʻi',
+  molokai:    'Molokaʻi',
+};
+
+function AdminAccounts() {
+  const { data: accounts = [], isLoading: accountsLoading } = useAdminAccounts();
+  const { data: featuredSlots, isLoading: slotsLoading } = useAdminFeaturedSlots();
+  const setTier = useSetAccountTier();
+  const removeSlot = useRemoveFeaturedSlot();
+  const [activeSection, setActiveSection] = useState<'users' | 'featured'>('users');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [tierFilter, setTierFilter] = useState<AccountTier | 'all'>('all');
+
+  const filtered = accounts.filter(a => {
+    const matchesTier = tierFilter === 'all' || a.tier === tierFilter;
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q || a.email.toLowerCase().includes(q);
+    return matchesTier && matchesSearch;
+  });
+
+  function handleSetTier(userId: string, tier: AccountTier) {
+    setTier.mutate({ userId, tier }, {
+      onSuccess: () => toast.success('Tier updated'),
+      onError: (e: Error) => toast.error(e.message),
+    });
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <h2 className="text-xl font-semibold flex-1">Account Management</h2>
+        <div className="flex gap-2">
+          <Button
+            variant={activeSection === 'users' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setActiveSection('users')}
+          >
+            <Users className="h-4 w-4 mr-1.5" />
+            Users
+          </Button>
+          <Button
+            variant={activeSection === 'featured' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setActiveSection('featured')}
+          >
+            <Crown className="h-4 w-4 mr-1.5" />
+            Featured Slots
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Users section ── */}
+      {activeSection === 'users' && (
+        <div className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3">
+            <Input
+              placeholder="Search by email…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="max-w-xs h-8 text-sm"
+            />
+            <div className="flex gap-1">
+              {(['all', 'free', 'premium', 'featured'] as const).map(t => (
+                <Button
+                  key={t}
+                  variant={tierFilter === t ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-8 text-xs capitalize"
+                  onClick={() => setTierFilter(t)}
+                >
+                  {t === 'all' ? `All (${accounts.length})` : `${t} (${accounts.filter(a => a.tier === t).length})`}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {accountsLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+            </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-center text-gray-400 py-10">No accounts found.</p>
+          ) : (
+            <div className="space-y-2">
+              {filtered.map(account => {
+                const tierMeta = TIER_LABELS[account.tier] ?? TIER_LABELS.free;
+                return (
+                  <Card key={account.id} className="p-0 overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4 flex-wrap">
+                        {/* Main info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="font-medium text-sm truncate">{account.email}</span>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${tierMeta.color}`}>
+                              {tierMeta.icon}
+                              {tierMeta.label}
+                            </span>
+                            {account.subscription_status && (
+                              <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                                account.subscription_status === 'active'
+                                  ? 'bg-green-50 text-green-700 border-green-200'
+                                  : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                              }`}>
+                                {account.subscription_status}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                            <span>Joined {new Date(account.created_at).toLocaleDateString()}</span>
+                            {account.subscription_period_end && (
+                              <span>Renews {new Date(account.subscription_period_end).toLocaleDateString()}</span>
+                            )}
+                            <span>{account.practitioner_count} practitioner{account.practitioner_count !== 1 ? 's' : ''}</span>
+                            <span>{account.center_count} center{account.center_count !== 1 ? 's' : ''}</span>
+                          </div>
+                          {/* Listings */}
+                          {account.listings.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {account.listings.map(l => (
+                                <span key={l.id} className="inline-flex items-center gap-1 text-xs bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5">
+                                  <MapPinIcon className="h-2.5 w-2.5 text-gray-400" />
+                                  {l.name}
+                                  <span className={`ml-0.5 ${l.status === 'published' ? 'text-green-600' : 'text-gray-400'}`}>
+                                    ({l.status})
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tier override */}
+                        <div className="flex-shrink-0">
+                          <Select
+                            value={account.tier}
+                            onValueChange={(v) => handleSetTier(account.id, v as AccountTier)}
+                            disabled={setTier.isPending}
+                          >
+                            <SelectTrigger className="h-8 text-xs w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="premium">Premium</SelectItem>
+                              <SelectItem value="featured">Featured</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-[10px] text-gray-400 mt-1 text-center">Override tier</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Featured Slots section ── */}
+      {activeSection === 'featured' && (
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Up to 5 featured listings per island. Featured listings rotate randomly on the homepage.
+          </p>
+          {slotsLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(ISLAND_LABELS).map(([islandKey, islandLabel]) => {
+                const islandData = featuredSlots?.[islandKey] ?? { slots: [], remaining: 5 };
+                const occupancy = islandData.slots.length;
+                const capacity = 5;
+                const pct = Math.round((occupancy / capacity) * 100);
+
+                return (
+                  <Card key={islandKey} className="p-0 overflow-hidden">
+                    <CardContent className="p-4 space-y-3">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-sm">{islandLabel}</h3>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
+                          occupancy >= capacity
+                            ? 'bg-red-50 text-red-600 border-red-200'
+                            : occupancy > 0
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}>
+                          {occupancy}/{capacity} slots
+                        </span>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full transition-all ${
+                            occupancy >= capacity ? 'bg-red-400' : 'bg-amber-400'
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+
+                      {/* Slot list */}
+                      {islandData.slots.length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-2">No featured listings</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {islandData.slots.map(slot => (
+                            <div key={slot.id} className="flex items-center gap-2 bg-amber-50 rounded px-2 py-1.5">
+                              <Crown className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium truncate">{slot.listing_name ?? slot.listing_id}</p>
+                                <p className="text-[10px] text-gray-500 truncate">{slot.owner_email ?? 'unknown owner'}</p>
+                              </div>
+                              <span className="text-[10px] text-gray-400 flex-shrink-0 capitalize">{slot.listing_type}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 text-gray-400 hover:text-red-500 flex-shrink-0"
+                                disabled={removeSlot.isPending}
+                                onClick={() => {
+                                  removeSlot.mutate(slot.id, {
+                                    onSuccess: () => toast.success(`Removed ${slot.listing_name ?? 'slot'}`),
+                                    onError: (e: Error) => toast.error(e.message),
+                                  });
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Remaining indicator */}
+                      {islandData.remaining > 0 && (
+                        <p className="text-[11px] text-gray-400 text-center">
+                          {islandData.remaining} slot{islandData.remaining !== 1 ? 's' : ''} available
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default AdminPanel;

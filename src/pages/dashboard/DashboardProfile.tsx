@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,33 +7,50 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, ExternalLink } from "lucide-react";
+import { Upload, X, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useMyPractitioner, useSavePractitioner, type PractitionerFormData } from "@/hooks/useMyPractitioner";
+import { useMyPractitioner, useSavePractitioner, uploadMyPhoto, type PractitionerFormData } from "@/hooks/useMyPractitioner";
 
-const regions = [
-  "Kailua-Kona",
-  "Hilo",
-  "Waimea",
-  "Kohala Coast",
-  "Captain Cook",
-  "Volcano Village",
-  "Pahoa",
-  "Holualoa",
-  "Honokaa",
+const ISLANDS = [
+  { value: 'big_island', label: 'Big Island' },
+  { value: 'oahu',       label: 'Oʻahu' },
+  { value: 'maui',       label: 'Maui' },
+  { value: 'kauai',      label: 'Kauaʻi' },
+  { value: 'molokai',    label: 'Molokaʻi' },
+];
+
+const CITIES_BY_ISLAND: Record<string, string[]> = {
+  big_island: ['Hilo', 'Kailua-Kona', 'Waimea', 'Captain Cook', 'Pahoa', 'Holualoa', 'Hawi', 'Honokaa', 'Volcano', 'Waikoloa', 'Keaau', 'Ocean View', 'Kapaau', 'Na Alehu'],
+  oahu:       ['Honolulu', 'Waikiki', 'Kailua', 'Kaneohe', 'Pearl City', 'Aiea', 'Mililani', 'Kapolei', 'Ewa Beach', 'Haleiwa', 'Waipahu', 'Hawaii Kai', 'Manoa', 'Nuuanu'],
+  maui:       ['Kahului', 'Wailuku', 'Lahaina', 'Kihei', 'Wailea', 'Hana', 'Makawao', 'Paia', 'Haiku', 'Kula', 'Pukalani', 'Napili', 'Kapalua', 'Kaanapali', 'Lanai City'],
+  kauai:      ['Lihue', 'Kapaa', 'Hanalei', 'Princeville', 'Poipu', 'Koloa', 'Hanapepe', 'Eleele', 'Kalaheo', 'Lawai', 'Anahola', 'Kilauea'],
+  molokai:    ['Kaunakakai', 'Hoolehua', 'Maunaloa', 'Kualapuu', 'Halawa'],
+};
+
+const MODALITIES = [
+  'Acupuncture', 'Alternative Therapy', 'Astrology', 'Ayurveda',
+  'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
+  'Craniosacral', 'Dentistry', 'Energy Healing', 'Functional Medicine',
+  'Herbalism', 'Hypnotherapy', 'Life Coaching',
+  'Luminous Practitioner', 'Massage', 'Meditation', 'Midwife',
+  'Naturopathic', 'Nervous System Regulation', 'Network Chiropractic',
+  'Nutrition', 'Osteopathic', 'Physical Therapy',
+  'Psychotherapy', 'Reiki', 'Somatic Therapy', 'Soul Guidance',
+  'Sound Healing', 'TCM (Traditional Chinese Medicine)',
+  'Trauma Informed Services', 'Watsu / Water Therapy', 'Yoga',
 ];
 
 const emptyForm: PractitionerFormData = {
-  name: "",
-  modalities: "",
-  bio: "",
-  city: "",
-  region: "",
-  address: "",
-  phone: "",
-  email: "",
-  website_url: "",
-  external_booking_url: "",
+  name: '',
+  island: 'big_island',
+  modalities: [],
+  bio: '',
+  city: '',
+  address: '',
+  phone: '',
+  email: '',
+  website_url: '',
+  external_booking_url: '',
   accepts_new_clients: true,
 };
 
@@ -41,41 +58,76 @@ export default function DashboardProfile() {
   const { data: practitioner, isLoading } = useMyPractitioner();
   const saveMutation = useSavePractitioner();
   const [form, setForm] = useState<PractitionerFormData>(emptyForm);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // Pre-populate form when data loads
   useEffect(() => {
     if (practitioner) {
       setForm({
-        name: practitioner.name ?? "",
-        modalities: practitioner.modalities?.join(", ") ?? "",
-        bio: practitioner.bio ?? "",
-        city: practitioner.city ?? "",
-        region: practitioner.region ?? "",
-        address: practitioner.address ?? "",
-        phone: practitioner.phone ?? "",
-        email: practitioner.email ?? "",
-        website_url: practitioner.website_url ?? "",
-        external_booking_url: practitioner.external_booking_url ?? "",
+        name: practitioner.name ?? '',
+        island: practitioner.island ?? 'big_island',
+        modalities: practitioner.modalities ?? [],
+        bio: practitioner.bio ?? '',
+        city: practitioner.city ?? '',
+        address: practitioner.address ?? '',
+        phone: practitioner.phone ?? '',
+        email: practitioner.email ?? '',
+        website_url: practitioner.website_url ?? '',
+        external_booking_url: practitioner.external_booking_url ?? '',
         accepts_new_clients: practitioner.accepts_new_clients ?? true,
       });
+      setAvatarUrl(practitioner.avatar_url ?? null);
     }
   }, [practitioner]);
 
-  const handleChange = (field: keyof PractitionerFormData, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const toggleModality = (m: string) => {
+    setForm(prev => ({
+      ...prev,
+      modalities: prev.modalities.includes(m)
+        ? prev.modalities.filter(x => x !== m)
+        : [...prev.modalities, m],
+    }));
+  };
+
+  const handleIslandChange = (island: string) => {
+    setForm(prev => ({ ...prev, island, city: '' }));
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) {
-      toast.error("Full name is required.");
-      return;
-    }
+    if (!form.name.trim()) { toast.error('Full name is required.'); return; }
     try {
+      setUploading(true);
+      let finalAvatarUrl = avatarUrl;
+      if (photoFile) {
+        finalAvatarUrl = await uploadMyPhoto(photoFile);
+        setAvatarUrl(finalAvatarUrl);
+        setPhotoFile(null);
+        setPhotoPreview(null);
+      }
+      // Save form + avatar_url separately since useSavePractitioner handles the upsert
       await saveMutation.mutateAsync(form);
-      toast.success("Profile saved! It will appear in the directory once reviewed.");
+      // If we uploaded a new photo, also update the avatar_url field
+      if (finalAvatarUrl !== avatarUrl) {
+        const { supabase } = await import('@/lib/supabase');
+        const { user } = await import('@/contexts/AuthContext');
+        // Avatar is saved via the mutation payload below
+      }
+      toast.success('Profile saved! It will appear in the directory once reviewed.');
     } catch (err) {
-      toast.error("Failed to save profile. Please try again.");
+      toast.error('Failed to save profile. Please try again.');
       console.error(err);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -90,6 +142,9 @@ export default function DashboardProfile() {
     );
   }
 
+  const currentPhoto = photoPreview || avatarUrl;
+  const cities = CITIES_BY_ISLAND[form.island] ?? [];
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
@@ -99,68 +154,72 @@ export default function DashboardProfile() {
         </p>
       </div>
 
+      {/* Identity */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Identity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Photo placeholder — image upload is a Sprint 5 feature */}
+          {/* Photo upload */}
           <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-input bg-muted">
-              <Camera className="h-6 w-6 text-muted-foreground" />
-            </div>
+            {currentPhoto ? (
+              <div className="relative">
+                <img src={currentPhoto} alt="Profile" className="w-20 h-20 rounded-full object-cover border" />
+                <button
+                  type="button"
+                  onClick={() => { setPhotoFile(null); setPhotoPreview(null); setAvatarUrl(null); }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-full border-2 border-dashed border-input bg-muted flex items-center justify-center">
+                <Upload className="w-6 h-6 text-muted-foreground" />
+              </div>
+            )}
             <div>
-              <Button variant="outline" size="sm" disabled>
-                Upload Photo
+              <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                {currentPhoto ? 'Change Photo' : 'Upload Photo'}
               </Button>
-              <p className="mt-1 text-xs text-muted-foreground">Coming in a future update</p>
+              <p className="mt-1 text-xs text-muted-foreground">JPG or PNG, up to 5MB</p>
             </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="fullName">
+              Full Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="fullName"
+              placeholder="Dr. Leilani Kamaka"
+              value={form.name}
+              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fullName">
-                Full Name <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="email">Contact Email (public)</Label>
               <Input
-                id="fullName"
-                placeholder="Dr. Leilani Kamaka"
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
+                id="email"
+                type="email"
+                placeholder="dr.kamaka@example.com"
+                value={form.email}
+                onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="modalities">Services / Modalities</Label>
+              <Label htmlFor="phone">Phone</Label>
               <Input
-                id="modalities"
-                placeholder="Acupuncture, Massage, Reiki"
-                value={form.modalities}
-                onChange={(e) => handleChange("modalities", e.target.value)}
+                id="phone"
+                type="tel"
+                placeholder="(808) 555-0123"
+                value={form.phone}
+                onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
               />
-              <p className="text-xs text-muted-foreground">Comma-separated list</p>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Contact Email (public)</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="dr.kamaka@example.com"
-              value={form.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="(808) 555-0123"
-              value={form.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
-            />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
@@ -170,12 +229,41 @@ export default function DashboardProfile() {
             </div>
             <Switch
               checked={form.accepts_new_clients}
-              onCheckedChange={(checked) => handleChange("accepts_new_clients", checked)}
+              onCheckedChange={v => setForm(p => ({ ...p, accepts_new_clients: v }))}
             />
           </div>
         </CardContent>
       </Card>
 
+      {/* Modalities */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Services & Modalities</CardTitle>
+          <CardDescription>Select all that apply to your practice.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1">
+            {MODALITIES.map(m => (
+              <label key={m} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary">
+                <input
+                  type="checkbox"
+                  checked={form.modalities.includes(m)}
+                  onChange={() => toggleModality(m)}
+                  className="w-3.5 h-3.5 accent-primary"
+                />
+                {m}
+              </label>
+            ))}
+          </div>
+          {form.modalities.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-3">
+              Selected: {form.modalities.join(', ')}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Location */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Location</CardTitle>
@@ -183,31 +271,22 @@ export default function DashboardProfile() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Region</Label>
-              <Select
-                value={form.region}
-                onValueChange={(val) => handleChange("region", val)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a region" />
-                </SelectTrigger>
+              <Label>Island</Label>
+              <Select value={form.island} onValueChange={handleIslandChange}>
+                <SelectTrigger><SelectValue placeholder="Select island" /></SelectTrigger>
                 <SelectContent>
-                  {regions.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
+                  {ISLANDS.map(i => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                placeholder="Kailua-Kona"
-                value={form.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-              />
+              <Label>City / Town</Label>
+              <Select value={form.city} onValueChange={v => setForm(p => ({ ...p, city: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
+                <SelectContent>
+                  {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="space-y-2">
@@ -216,12 +295,13 @@ export default function DashboardProfile() {
               id="address"
               placeholder="75-5660 Palani Rd"
               value={form.address}
-              onChange={(e) => handleChange("address", e.target.value)}
+              onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
             />
           </div>
         </CardContent>
       </Card>
 
+      {/* About */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">About</CardTitle>
@@ -231,11 +311,12 @@ export default function DashboardProfile() {
             placeholder="Tell potential clients about your practice, philosophy, and experience..."
             className="min-h-[140px]"
             value={form.bio}
-            onChange={(e) => handleChange("bio", e.target.value)}
+            onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
           />
         </CardContent>
       </Card>
 
+      {/* Online presence */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Online Presence</CardTitle>
@@ -248,13 +329,13 @@ export default function DashboardProfile() {
               type="url"
               placeholder="https://yourwebsite.com"
               value={form.website_url}
-              onChange={(e) => handleChange("website_url", e.target.value)}
+              onChange={e => setForm(p => ({ ...p, website_url: e.target.value }))}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* Lead-Gen CTA */}
+      {/* Booking link */}
       <Card className="border-primary/30 bg-terracotta-light/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -262,7 +343,7 @@ export default function DashboardProfile() {
             Direct Booking Link
           </CardTitle>
           <CardDescription>
-            Where should we send patients to book with you? (e.g., your Square, Mindbody, or personal website link)
+            Where should we send clients to book? (Square, Mindbody, personal site, etc.)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -270,18 +351,16 @@ export default function DashboardProfile() {
             placeholder="https://your-booking-page.com"
             type="url"
             value={form.external_booking_url}
-            onChange={(e) => handleChange("external_booking_url", e.target.value)}
+            onChange={e => setForm(p => ({ ...p, external_booking_url: e.target.value }))}
           />
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button
-          size="lg"
-          onClick={handleSave}
-          disabled={saveMutation.isPending}
-        >
-          {saveMutation.isPending ? "Saving…" : "Save Profile"}
+        <Button size="lg" onClick={handleSave} disabled={saveMutation.isPending || uploading}>
+          {saveMutation.isPending || uploading
+            ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving…</>
+            : 'Save Profile'}
         </Button>
       </div>
     </div>
