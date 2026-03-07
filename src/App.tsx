@@ -23,6 +23,7 @@ const ProfileDetail     = lazy(() => import("./pages/ProfileDetail"));
 const Concierge         = lazy(() => import("./pages/Concierge"));
 const NotFound          = lazy(() => import("./pages/NotFound"));
 const Auth              = lazy(() => import("./pages/Auth"));
+const AuthCallback      = lazy(() => import("./pages/AuthCallback"));
 const Claim             = lazy(() => import("./pages/Claim"));
 const BigIsland         = lazy(() => import("./pages/BigIsland"));
 const MauiHome          = lazy(() => import("./pages/MauiHome"));
@@ -79,6 +80,7 @@ const App = () => (
 
               {/* Auth — full screen, no nav */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
 
               {/* Claim listing — full screen, no nav */}
               <Route path="/claim/:id" element={<Claim />} />
