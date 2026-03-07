@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { supabase as supabaseAdmin } from '@/lib/supabase';
 import type { PractitionerRow, CenterRow, ArticleRow } from '@/types/database';
 
 const PRACTITIONER_BUCKET = 'practitioner-images';
@@ -102,7 +102,7 @@ export const useAllPractitioners = (params: AdminQueryParams = {}) => {
   return useQuery<AdminQueryResult<PractitionerRow>>({
     queryKey: ['admin-practitioners', params],
     queryFn: async () => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
 
       let query = supabaseAdmin
         .from('practitioners')
@@ -153,7 +153,7 @@ export const usePublishPractitioner = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'published' | 'draft' }) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin
         .from('practitioners')
         .update({ status })
@@ -171,7 +171,7 @@ export const useDeletePractitioner = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin
         .from('practitioners')
         .delete()
@@ -191,7 +191,7 @@ export const useInsertPractitioner = () => {
     mutationFn: async (
       practitioner: Omit<PractitionerRow, 'id' | 'created_at' | 'updated_at'>
     ) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { data, error } = await supabaseAdmin
         .from('practitioners')
         .insert(practitioner)
@@ -214,7 +214,7 @@ export const useUpdatePractitioner = () => {
       id,
       ...payload
     }: { id: string } & Partial<Omit<PractitionerRow, 'id' | 'created_at' | 'updated_at'>>) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { data, error } = await supabaseAdmin
         .from('practitioners')
         .update(payload)
@@ -247,7 +247,7 @@ export const useAllCenters = (params: AdminQueryParams = {}) => {
   return useQuery<AdminQueryResult<CenterRow>>({
     queryKey: ['admin-centers', params],
     queryFn: async () => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
 
       let query = supabaseAdmin
         .from('centers')
@@ -308,7 +308,7 @@ export const useBatchPublish = () => {
       ids: string[];
       status: 'published' | 'draft' | 'archived';
     }) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin
         .from(table)
         .update({ status })
@@ -329,7 +329,7 @@ export const useAllCentersSimple = () => {
   return useQuery<{ id: string; name: string }[]>({
     queryKey: ['admin-centers-simple'],
     queryFn: async () => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { data, error } = await supabaseAdmin
         .from('centers')
         .select('id, name')
@@ -346,7 +346,7 @@ export const usePublishCenter = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'published' | 'draft' }) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin
         .from('centers')
         .update({ status })
@@ -365,7 +365,7 @@ export const useDeleteCenter = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin
         .from('centers')
         .delete()
@@ -384,7 +384,7 @@ export const useInsertCenter = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (center: Omit<CenterRow, 'id' | 'created_at' | 'updated_at'>) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { data, error } = await supabaseAdmin
         .from('centers')
         .insert(center)
@@ -408,7 +408,7 @@ export const useUpdateCenter = () => {
       id,
       ...payload
     }: { id: string } & Partial<Omit<CenterRow, 'id' | 'created_at' | 'updated_at'>>) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { data, error } = await supabaseAdmin
         .from('centers')
         .update(payload)
@@ -436,7 +436,7 @@ export const useConvertPractitionerToCenter = () => {
       practitioner: PractitionerRow;
       centerType: 'spa' | 'wellness_center' | 'clinic' | 'retreat_center';
     }) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
 
       // Insert as center
       const { error: insertError } = await supabaseAdmin
@@ -493,7 +493,7 @@ export const useConvertCenterToPractitioner = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (center: CenterRow) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
 
       // Insert as practitioner
       const { error: insertError } = await supabaseAdmin
@@ -581,7 +581,7 @@ export const useAllArticles = (params: { search?: string; status?: 'all' | 'publ
   return useQuery<ArticleRow[]>({
     queryKey: ['admin-articles', params],
     queryFn: async () => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       let query = supabaseAdmin.from('articles').select('*');
       if (search) query = query.ilike('title', `%${search}%`);
       if (status !== 'all') query = query.eq('status', status);
@@ -613,7 +613,7 @@ export const useInsertArticle = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: ArticlePayload) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin.from('articles').insert(payload);
       if (error) throw error;
     },
@@ -628,7 +628,7 @@ export const useUpdateArticle = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, payload }: { id: string; payload: Partial<ArticlePayload> }) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin.from('articles').update(payload).eq('id', id);
       if (error) throw error;
     },
@@ -643,7 +643,7 @@ export const useDeleteArticle = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
       const { error } = await supabaseAdmin.from('articles').delete().eq('id', id);
       if (error) throw error;
     },
@@ -676,7 +676,7 @@ export const useSetListingTier = () => {
       ownerId: string | null;
       previousTier: string | null;
     }) => {
-      if (!supabaseAdmin) throw new Error('Supabase admin not configured');
+      if (!supabaseAdmin) throw new Error('Supabase not configured');
 
       const table = listingType === 'practitioner' ? 'practitioners' : 'centers';
 
