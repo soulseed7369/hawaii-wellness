@@ -1,8 +1,9 @@
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { Home, User, Building, Calendar, CreditCard, Settings, LogOut, Menu, X } from "lucide-react";
+import { Home, User, Building, Calendar, CreditCard, Settings, LogOut, Menu, X, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { isAdmin } from "@/lib/admin";
 
 const sidebarLinks = [
   { label: "Dashboard Home", to: "/dashboard", icon: Home },
@@ -59,6 +60,16 @@ export function DashboardLayout() {
 
         {/* Nav links */}
         <nav className="flex-1 space-y-1 p-3">
+          {isAdmin(user?.email) && (
+            <Link
+              to="/admin"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors bg-primary/10 text-primary hover:bg-primary/20 mb-2"
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              Admin Panel
+            </Link>
+          )}
           {sidebarLinks.map((link) => {
             const isActive =
               link.to === "/dashboard"

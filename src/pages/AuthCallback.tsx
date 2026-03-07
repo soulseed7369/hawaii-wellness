@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { isAdmin } from '@/lib/admin';
 import { Leaf, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -31,9 +32,14 @@ export default function AuthCallback() {
 
     supabase.auth
       .exchangeCodeForSession(code)
-      .then(({ error: exchangeError }) => {
+      .then(({ data, error: exchangeError }) => {
         if (exchangeError) {
           setError(exchangeError.message);
+          return;
+        }
+        // Admin users go straight to the admin panel
+        if (isAdmin(data.session?.user?.email)) {
+          navigate('/admin', { replace: true });
           return;
         }
         // Check for a pending plan or other post-login redirect

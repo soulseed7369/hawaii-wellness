@@ -1,9 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-
-const ADMIN_EMAILS = [
-  'marcuswoo@gmail.com',
-];
+import { isAdmin } from '@/lib/admin';
 
 export function AdminProtectedRoute() {
   const { user, loading } = useAuth();
@@ -18,7 +15,7 @@ export function AdminProtectedRoute() {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  if (!ADMIN_EMAILS.includes(user.email ?? '')) {
+  if (!isAdmin(user.email)) {
     return <Navigate to="/dashboard" replace />;
   }
 
