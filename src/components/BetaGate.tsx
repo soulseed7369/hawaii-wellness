@@ -22,12 +22,23 @@ function grantAccess() {
   }
 }
 
+// Routes that must always be accessible regardless of beta status
+const PUBLIC_PATHS = ['/auth', '/auth/callback'];
+
 export function BetaGate({ children }: { children: ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [allowed, setAllowed] = useState<boolean>(hasBetaAccess());
+  const isPublicPath = PUBLIC_PATHS.some(p => window.location.pathname.startsWith(p));
+  const [allowed, setAllowed] = useState<boolean>(hasBetaAccess() || isPublicPath);
   const [checking, setChecking] = useState<boolean>(!allowed);
 
   useEffect(() => {
+    // 0. Auth routes are always public (need to reach login to become a user)
+    if (isPublicPath) {
+      setAllowed(true);
+      setChecking(false);
+      return;
+    }
+
     // 1. Already unlocked via localStorage
     if (hasBetaAccess()) {
       setAllowed(true);
