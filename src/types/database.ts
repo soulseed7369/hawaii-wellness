@@ -73,7 +73,7 @@ export interface CenterRow {
   // Sprint 2 — Practitioner-First additions (null until backfilled)
   slug: string | null;
   logo: string | null;
-  center_type: 'spa' | 'wellness_center' | 'clinic' | 'retreat_center';
+  center_type: 'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio';
   description: string | null;
   island: string;
   region: string | null;

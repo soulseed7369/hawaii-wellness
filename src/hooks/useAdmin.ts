@@ -434,7 +434,7 @@ export const useConvertPractitionerToCenter = () => {
       centerType,
     }: {
       practitioner: PractitionerRow;
-      centerType: 'spa' | 'wellness_center' | 'clinic' | 'retreat_center';
+      centerType: 'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio';
     }) => {
       if (!supabaseAdmin) throw new Error('Supabase not configured');
 

@@ -47,7 +47,7 @@ MODALITIES = [
     'Nutrition', 'Osteopathic', 'Physical Therapy',
     'Psychotherapy', 'Reiki', 'Somatic Therapy', 'Soul Guidance',
     'Sound Healing', 'TCM (Traditional Chinese Medicine)',
-    'Trauma Informed Services', 'Watsu / Water Therapy', 'Yoga',
+    'Trauma-Informed Care', 'Watsu / Water Therapy', 'Yoga',
 ]
 
 # ── Google type → modality mapping ────────────────────────────────────────────
@@ -101,7 +101,7 @@ NAME_KEYWORDS: list[tuple[str, str]] = [
     ("physiotherap",     "Physical Therapy"),
     ("craniosacral",     "Craniosacral"),
     ("somatic",          "Somatic Therapy"),
-    ("trauma",           "Trauma Informed Services"),
+    ("trauma",           "Trauma-Informed Care"),
     ("psychotherap",     "Psychotherapy"),
     ("counseling",       "Counseling"),
     ("counsellor",       "Counseling"),

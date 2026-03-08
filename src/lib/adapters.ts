@@ -23,6 +23,7 @@ const PLACEHOLDER_ARTICLE      = PLACEHOLDER_STOCK;
 const CENTER_TYPE_LABELS: Record<CenterRow['center_type'], string> = {
   spa: 'Spa',
   wellness_center: 'Wellness Center',
+  yoga_studio: 'Yoga Studio',
   clinic: 'Clinic',
   retreat_center: 'Retreat Center',
 };

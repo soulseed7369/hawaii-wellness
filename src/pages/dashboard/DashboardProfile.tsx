@@ -37,7 +37,7 @@ const MODALITIES = [
   'Nutrition', 'Osteopathic', 'Physical Therapy',
   'Psychotherapy', 'Reiki', 'Somatic Therapy', 'Soul Guidance',
   'Sound Healing', 'TCM (Traditional Chinese Medicine)',
-  'Trauma Informed Services', 'Watsu / Water Therapy', 'Yoga',
+  'Trauma-Informed Care', 'Watsu / Water Therapy', 'Yoga',
 ];
 
 const emptyForm: PractitionerFormData = {

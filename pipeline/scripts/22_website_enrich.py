@@ -83,7 +83,7 @@ MODALITY_KEYWORDS: dict[str, list[str]] = {
     "Sound Healing":            ["sound healing", "sound bath", "singing bowl", "vibrational"],
     "TCM (Traditional Chinese Medicine)": ["tcm", "traditional chinese medicine",
                                            "chinese medicine", "acuherb"],
-    "Trauma Informed Services": ["trauma informed", "trauma-informed", "trauma therapy",
+    "Trauma-Informed Care": ["trauma informed", "trauma-informed", "trauma therapy",
                                  "emdr", "ptsd"],
     "Watsu / Water Therapy":    ["watsu", "water therapy", "aquatic bodywork",
                                  "aquatic therapy"],

@@ -71,7 +71,7 @@ const MODALITIES_LIST = [
   'Nutrition', 'Osteopathic', 'Physical Therapy',
   'Psychotherapy', 'Reiki', 'Somatic Therapy', 'Soul Guidance',
   'Sound Healing', 'TCM (Traditional Chinese Medicine)',
-  'Trauma Informed Services', 'Watsu / Water Therapy', 'Yoga',
+  'Trauma-Informed Care', 'Watsu / Water Therapy', 'Yoga',
 ];
 
 const ISLANDS = [
@@ -187,7 +187,7 @@ const AdminPanel = () => {
   const [editingPractitioner, setEditingPractitioner] = useState<PractitionerRow | null>(null);
   const [editingCenter, setEditingCenter] = useState<CenterRow | null>(null);
   const [convertingPractitioner, setConvertingPractitioner] = useState<PractitionerRow | null>(null);
-  const [convertCenterType, setConvertCenterType] = useState<'spa' | 'wellness_center' | 'clinic' | 'retreat_center'>('wellness_center');
+  const [convertCenterType, setConvertCenterType] = useState<'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio'>('wellness_center');
   const [convertingCenter, setConvertingCenter] = useState<CenterRow | null>(null);
   const [geocoding, setGeocoding] = useState(false);
 
@@ -263,7 +263,7 @@ const AdminPanel = () => {
   const [centerForm, setCenterForm] = useState({
     name: '',
     description: '',
-    center_type: 'wellness_center' as 'spa' | 'wellness_center' | 'clinic' | 'retreat_center',
+    center_type: 'wellness_center' as 'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio',
     city: '',
     address: '',
     phone: '',
@@ -291,7 +291,7 @@ const AdminPanel = () => {
   const [editCenterForm, setEditCenterForm] = useState({
     name: '',
     description: '',
-    center_type: 'wellness_center' as 'spa' | 'wellness_center' | 'clinic' | 'retreat_center',
+    center_type: 'wellness_center' as 'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio',
     city: '',
     address: '',
     phone: '',
@@ -1607,6 +1607,7 @@ const AdminPanel = () => {
                         <SelectContent>
                           <SelectItem value="spa">Spa</SelectItem>
                           <SelectItem value="wellness_center">Wellness Center</SelectItem>
+                          <SelectItem value="yoga_studio">Yoga Studio</SelectItem>
                           <SelectItem value="clinic">Clinic</SelectItem>
                           <SelectItem value="retreat_center">Retreat Center</SelectItem>
                         </SelectContent>
@@ -2466,6 +2467,7 @@ const AdminPanel = () => {
                     <SelectContent>
                       <SelectItem value="spa">Spa</SelectItem>
                       <SelectItem value="wellness_center">Wellness Center</SelectItem>
+                      <SelectItem value="yoga_studio">Yoga Studio</SelectItem>
                       <SelectItem value="clinic">Clinic</SelectItem>
                       <SelectItem value="retreat_center">Retreat Center</SelectItem>
                     </SelectContent>
@@ -2793,6 +2795,7 @@ const AdminPanel = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="wellness_center">Wellness Center</SelectItem>
+                  <SelectItem value="yoga_studio">Yoga Studio</SelectItem>
                   <SelectItem value="clinic">Clinic</SelectItem>
                   <SelectItem value="spa">Spa</SelectItem>
                   <SelectItem value="retreat_center">Retreat Center</SelectItem>
