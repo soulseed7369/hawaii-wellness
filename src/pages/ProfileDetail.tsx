@@ -232,8 +232,11 @@ const ProfileDetail = () => {
               className="-mt-16 h-32 w-32 rounded-xl border-4 border-background object-cover shadow-lg"
             />
             <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl font-bold md:text-3xl">{p.name}</h1>
+              <h1 className="font-display text-2xl font-bold md:text-3xl">{p.name}</h1>
+              {p.businessName && (
+                <p className="mt-0.5 text-base font-medium text-muted-foreground">{p.businessName}</p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 {p.verified && (
                   <Badge className="gap-1 bg-sage text-white">
                     <CheckCircle className="h-3 w-3" /> Verified
@@ -243,7 +246,6 @@ const ProfileDetail = () => {
                   <Badge variant="secondary">Accepting New Clients</Badge>
                 )}
               </div>
-              <p className="mt-1 text-muted-foreground">{p.title}</p>
               <div className="mt-3">
                 <ShareProfileButton name={p.name} />
               </div>
@@ -400,15 +402,14 @@ const ProfileDetail = () => {
           {p.externalBookingUrl ? (
             <Button className="w-full gap-2" size="lg" asChild>
               <a href={p.externalBookingUrl} target="_blank" rel="noopener noreferrer">
-                Book / Request Appointment
+                {p.bookingLabel || 'Book Appointment'}
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>
           ) : (
-            <Button className="w-full gap-2" size="lg" asChild>
-              <Link to="/list-your-practice">
-                <ArrowLeft className="h-4 w-4 rotate-180" />
-                Contact Practitioner
+            <Button className="w-full gap-2" size="lg" variant="outline" asChild>
+              <Link to="/concierge">
+                Request a Recommendation
               </Link>
             </Button>
           )}

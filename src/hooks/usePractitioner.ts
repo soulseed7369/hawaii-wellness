@@ -10,6 +10,7 @@ import type { PractitionerRow } from '@/types/database';
 export interface PractitionerProfile {
   id: string;
   name: string;
+  businessName: string | null;  // practice / business name shown under practitioner name
   title: string;
   coverImage: string;
   profileImage: string;
@@ -21,6 +22,7 @@ export interface PractitionerProfile {
   email: string | null;
   website: string | null;
   externalBookingUrl: string | null;
+  bookingLabel: string | null;  // custom button label (premium/featured only)
   lat: number | null;
   lng: number | null;
   about: string | null;
@@ -48,6 +50,7 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
   return {
     id: row.id,
     name: row.name,
+    businessName: (row as any).business_name ?? null,
     title: row.modalities.join(', ') || 'Wellness Practitioner',
     coverImage: PLACEHOLDER_COVER,
     profileImage: row.avatar_url || PLACEHOLDER_PROFILE,
@@ -59,6 +62,7 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     email: row.email,
     website: row.website_url,
     externalBookingUrl: row.external_booking_url,
+    bookingLabel: (row as any).booking_label ?? null,
     lat: row.lat,
     lng: row.lng,
     about: row.bio,
@@ -88,6 +92,7 @@ export function usePractitioner(id: string | undefined) {
         return {
           id: profileData.id,
           name: profileData.name,
+          businessName: null,
           title: profileData.title,
           coverImage: profileData.coverImage,
           profileImage: profileData.profileImage,
@@ -99,6 +104,7 @@ export function usePractitioner(id: string | undefined) {
           email: profileData.email,
           website: profileData.website,
           externalBookingUrl: null,
+          bookingLabel: null,
           lat: profileData.lat,
           lng: profileData.lng,
           about: profileData.about,

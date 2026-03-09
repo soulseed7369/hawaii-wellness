@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, X, ExternalLink, Loader2 } from "lucide-react";
+import { Upload, X, ExternalLink, Loader2, Lock, Crown } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import { useMyPractitioner, useSavePractitioner, uploadMyPhoto, type PractitionerFormData } from "@/hooks/useMyPractitioner";
 
 const ISLANDS = [
@@ -40,7 +41,14 @@ const MODALITIES = [
   'Trauma-Informed Care', 'Watsu / Water Therapy', 'Yoga',
 ];
 
-const emptyForm: PractitionerFormData = {
+const BOOKING_LABELS = [
+  { value: 'Book Appointment', label: 'Book Appointment' },
+  { value: 'Schedule Discovery Call', label: 'Schedule Discovery Call' },
+  { value: 'Book a Session', label: 'Book a Session' },
+  { value: 'Request a Consultation', label: 'Request a Consultation' },
+];
+
+const emptyForm: PractitionerFormData & { booking_label: string } = {
   name: '',
   island: 'big_island',
   modalities: [],
@@ -51,13 +59,14 @@ const emptyForm: PractitionerFormData = {
   email: '',
   website_url: '',
   external_booking_url: '',
+  booking_label: '',
   accepts_new_clients: true,
 };
 
 export default function DashboardProfile() {
   const { data: practitioner, isLoading } = useMyPractitioner();
   const saveMutation = useSavePractitioner();
-  const [form, setForm] = useState<PractitionerFormData>(emptyForm);
+  const [form, setForm] = useState<PractitionerFormData & { booking_label: string }>(emptyForm);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -77,6 +86,7 @@ export default function DashboardProfile() {
         email: practitioner.email ?? '',
         website_url: practitioner.website_url ?? '',
         external_booking_url: practitioner.external_booking_url ?? '',
+        booking_label: (practitioner as any).booking_label ?? '',
         accepts_new_clients: practitioner.accepts_new_clients ?? true,
       });
       setAvatarUrl(practitioner.avatar_url ?? null);
@@ -144,6 +154,8 @@ export default function DashboardProfile() {
 
   const currentPhoto = photoPreview || avatarUrl;
   const cities = CITIES_BY_ISLAND[form.island] ?? [];
+  const tier = practitioner?.tier ?? 'free';
+  const isPremiumOrFeatured = tier === 'premium' || tier === 'featured';
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -335,24 +347,71 @@ export default function DashboardProfile() {
         </CardContent>
       </Card>
 
-      {/* Booking link */}
-      <Card className="border-primary/30 bg-terracotta-light/30">
+      {/* Booking link — Premium / Featured only */}
+      <Card className={isPremiumOrFeatured ? "border-primary/30 bg-terracotta-light/30" : "border-border"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <ExternalLink className="h-4 w-4 text-primary" />
+            {isPremiumOrFeatured
+              ? <ExternalLink className="h-4 w-4 text-primary" />
+              : <Lock className="h-4 w-4 text-muted-foreground" />}
             Direct Booking Link
+            {!isPremiumOrFeatured && (
+              <span className="ml-auto flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                <Crown className="h-3 w-3" /> Premium
+              </span>
+            )}
           </CardTitle>
           <CardDescription>
-            Where should we send clients to book? (Square, Mindbody, personal site, etc.)
+            {isPremiumOrFeatured
+              ? "Paste your Calendly, Acuity, Square, or booking page URL. Clients will see a button on your profile."
+              : "Add a direct link to your booking calendar so clients can schedule with one click."}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Input
-            placeholder="https://your-booking-page.com"
-            type="url"
-            value={form.external_booking_url}
-            onChange={e => setForm(p => ({ ...p, external_booking_url: e.target.value }))}
-          />
+        <CardContent className="space-y-4">
+          {isPremiumOrFeatured ? (
+            <>
+              <div className="space-y-1.5">
+                <Label>Booking URL</Label>
+                <Input
+                  placeholder="https://calendly.com/your-name"
+                  type="url"
+                  value={form.external_booking_url}
+                  onChange={e => setForm(p => ({ ...p, external_booking_url: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Button label</Label>
+                <Select
+                  value={form.booking_label || 'Book Appointment'}
+                  onValueChange={v => setForm(p => ({ ...p, booking_label: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Book Appointment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOOKING_LABELS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  This is the text shown on the button visitors see on your profile.
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center">
+              <p className="mb-3 text-sm text-muted-foreground">
+                Upgrade to Premium to add a direct booking link and custom button label to your profile.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/list-your-practice">
+                  <Crown className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                  Upgrade to Premium
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
