@@ -35,6 +35,7 @@ const KauaiHome         = lazy(() => import("./pages/KauaiHome"));
 const PrivacyPolicy     = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService    = lazy(() => import("./pages/TermsOfService"));
 const HelpCenter        = lazy(() => import("./pages/HelpCenter"));
+const About             = lazy(() => import("./pages/About"));
 
 // Dashboard pages (split separately — only loaded when user visits /dashboard)
 import AdminPanel from "./pages/admin/AdminPanel";
@@ -99,9 +100,6 @@ const App = () => (
         <AuthProvider>
           <Suspense fallback={<PageSpinner />}>
             <Routes>
-              {/* Concierge — own full-screen dark layout */}
-              <Route path="/concierge" element={<Concierge />} />
-
               {/* Auth — full screen, no nav */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
@@ -142,6 +140,8 @@ const App = () => (
                 <Route path="/articles/:slug"     element={<ArticleDetail />} />
                 <Route path="/list-your-practice" element={<ListYourPractice />} />
                 <Route path="/profile/:id"        element={<ProfileDetail />} />
+                <Route path="/concierge"          element={<Concierge />} />
+                <Route path="/about"              element={<About />} />
                 <Route path="/privacy-policy"     element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service"   element={<TermsOfService />} />
                 <Route path="/help"               element={<HelpCenter />} />

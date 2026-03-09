@@ -2,17 +2,23 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { IslandSelector } from "@/components/IslandSelector";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navLinks = [
   { label: "Directory", to: "/directory" },
-  { label: "Retreats & Immersions", to: "/retreats" },
-  { label: "Articles / News", to: "/articles" },
+  { label: "Retreats", to: "/retreats" },
+  { label: "Articles", to: "/articles" },
+  { label: "About", to: "/about" },
 ];
 
 export function Header() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile menu on route change (e.g. browser back/forward)
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -21,7 +27,7 @@ export function Header() {
         <Link to="/" className="flex-shrink-0">
           <img
             src="/hawaii-wellness-logo.png"
-            alt="Hawa'i Wellness"
+            alt="Hawaiʻi Wellness"
             className="h-10 w-auto"
           />
         </Link>
@@ -60,7 +66,8 @@ export function Header() {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
-            className="rounded-md p-1.5 transition-colors hover:bg-muted"
+            aria-expanded={mobileOpen}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md transition-colors hover:bg-muted"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -75,20 +82,19 @@ export function Header() {
               <Link
                 key={link.to}
                 to={link.to}
-                onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-muted-foreground hover:text-primary"
+                className="min-h-[44px] flex items-center text-sm font-medium text-muted-foreground hover:text-primary"
               >
                 {link.label}
               </Link>
             ))}
             <hr className="border-border" />
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/auth" onClick={() => setMobileOpen(false)}>
+            <Button asChild variant="outline" className="w-full min-h-[44px]">
+              <Link to="/auth">
                 Provider Login
               </Link>
             </Button>
-            <Button asChild className="w-full">
-              <Link to="/list-your-practice" onClick={() => setMobileOpen(false)}>
+            <Button asChild className="w-full min-h-[44px]">
+              <Link to="/list-your-practice">
                 List Your Practice
               </Link>
             </Button>

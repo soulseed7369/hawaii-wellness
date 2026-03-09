@@ -3,6 +3,14 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { ArrowLeft, Facebook, Twitter, Link2, Check } from 'lucide-react';
 import { useArticleBySlug } from '@/hooks/useArticles';
 import { usePageMeta } from '@/hooks/usePageMeta';
@@ -138,14 +146,23 @@ export default function ArticleDetail() {
     <div className="mx-auto max-w-3xl px-4 py-10">
         <JsonLd id="article-schema" data={articleSchema} />
         <JsonLd id="article-breadcrumb" data={breadcrumbSchema} />
-        {/* Back link */}
-        <Link
-          to="/articles"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Articles
-        </Link>
+
+        {/* Breadcrumb nav */}
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/articles">Articles</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="max-w-[200px] truncate">{article.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Category badge */}
         <Badge variant="secondary" className="mb-4">

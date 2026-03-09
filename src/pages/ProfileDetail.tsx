@@ -1,14 +1,103 @@
 import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
 import { usePractitioner } from "@/hooks/usePractitioner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft, Quote, Flag, Instagram, Facebook, Linkedin } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft,
+  Quote, Flag, Instagram, Facebook, Linkedin, Link2, Check, Clock,
+} from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
+
+// ── Share button ──────────────────────────────────────────────────────────────
+function ShareProfileButton({ name }: { name: string }) {
+  const [copied, setCopied] = useState(false);
+  const url = window.location.href;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  const xUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out ${name} on Hawaiʻi Wellness`)}`;
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-muted-foreground">Share:</span>
+      <a href={fbUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#1877F2] text-white hover:bg-[#1877F2]/90 transition-colors">
+        <Facebook className="h-4 w-4" />
+      </a>
+      <a href={xUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on X"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-black/80 transition-colors">
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      </a>
+      <button onClick={handleCopy} aria-label="Copy link"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/70 transition-colors">
+        {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
+// ── Working hours ─────────────────────────────────────────────────────────────
+const DAY_LABELS: Record<string, string> = {
+  mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday",
+  fri: "Friday", sat: "Saturday", sun: "Sunday",
+};
+
+function WorkingHours({ hours }: { hours: Record<string, { open: string; close: string } | null> }) {
+  const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  return (
+    <div>
+      <h2 className="mb-3 font-display text-xl font-bold flex items-center gap-2">
+        <Clock className="h-5 w-5 text-muted-foreground" />
+        Hours
+      </h2>
+      <ul className="grid gap-0 text-sm">
+        {days.map((day) => {
+          const slot = hours[day];
+          return (
+            <li key={day} className="flex justify-between gap-4 py-1.5 border-b border-border/40 last:border-0">
+              <span className="font-medium w-24">{DAY_LABELS[day]}</span>
+              {slot ? (
+                <span className="text-muted-foreground">{slot.open} – {slot.close}</span>
+              ) : (
+                <span className="text-muted-foreground/50 italic">Closed</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 const ProfileDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -101,13 +190,37 @@ const ProfileDetail = () => {
     ],
   };
 
+  // ── Working hours (present if usePractitioner exposes it) ────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const workingHours = (p as any).workingHours as Record<string, { open: string; close: string } | null> | undefined;
+  const hasHours = workingHours && Object.values(workingHours).some(Boolean);
+
   return (
     <main>
       <JsonLd id="profile-localbusiness" data={localBusinessSchema} />
       <JsonLd id="profile-breadcrumb" data={breadcrumbSchema} />
 
+      {/* Breadcrumb nav */}
+      <div className="container pt-4">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/directory">Directory</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="max-w-[240px] truncate">{p.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
       {/* Hero */}
-      <section className="relative">
+      <section className="relative mt-4">
         <div className="h-48 overflow-hidden md:h-64">
           <img src={p.coverImage} alt={`${p.name} cover`} className="h-full w-full object-cover" loading="eager" />
         </div>
@@ -131,6 +244,9 @@ const ProfileDetail = () => {
                 )}
               </div>
               <p className="mt-1 text-muted-foreground">{p.title}</p>
+              <div className="mt-3">
+                <ShareProfileButton name={p.name} />
+              </div>
             </div>
           </div>
         </div>
@@ -159,6 +275,11 @@ const ProfileDetail = () => {
                 ))}
               </ul>
             </div>
+          )}
+
+          {/* Working Hours */}
+          {hasHours && workingHours && (
+            <WorkingHours hours={workingHours} />
           )}
 
           {p.gallery.length > 0 && (
@@ -301,12 +422,7 @@ const ProfileDetail = () => {
                 <p className="mb-3 text-xs text-muted-foreground">
                   Claim this listing to manage your profile, add photos, and respond to clients.
                 </p>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
+                <Button asChild variant="outline" size="sm" className="w-full">
                   <Link to={`/auth?claim=${id}`}>
                     Claim this listing
                   </Link>
@@ -325,6 +441,16 @@ const ProfileDetail = () => {
           </div>
         </div>
       </section>
+
+      {/* Bottom nav */}
+      <div className="container pb-8">
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/directory">
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Back to Directory
+          </Link>
+        </Button>
+      </div>
     </main>
   );
 };

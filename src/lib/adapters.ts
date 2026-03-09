@@ -51,13 +51,17 @@ export function practitionerRowToProvider(row: PractitionerRowWithBusiness): Pro
   // business_name = free text; business.name = joined from business_id FK
   const businessName = row.business_name || row.business?.name || undefined;
 
+  const modalitiesArr = [...new Set(row.modalities ?? [])].filter(Boolean);
   return {
     id: row.id,
     name: displayName,
     businessName,
     image: row.avatar_url || PLACEHOLDER_PRACTITIONER,
     type: 'practitioner' as const,
-    modality: [...new Set(row.modalities)].join(', ') || 'Wellness Practitioner',
+    modality: modalitiesArr.join(', ') || 'Wellness Practitioner',
+    modalities: modalitiesArr.length > 0 ? modalitiesArr : undefined,
+    sessionType: row.session_type ?? undefined,
+    acceptsNewClients: row.accepts_new_clients ?? undefined,
     location: row.city || row.region || row.island,
     rating: 5.0,
     lat: row.lat ?? 0,
@@ -71,14 +75,16 @@ export function practitionerRowToProvider(row: PractitionerRowWithBusiness): Pro
  * Convert a centers DB row to the Center shape used by CenterCard.
  */
 export function centerRowToCenter(row: CenterRow): Center {
-  const modalityLabel = row.modalities?.length
-    ? [...new Set(row.modalities)].join(', ')
+  const modalitiesArr = [...new Set(row.modalities ?? [])].filter(Boolean);
+  const modalityLabel = modalitiesArr.length
+    ? modalitiesArr.join(', ')
     : CENTER_TYPE_LABELS[row.center_type] ?? row.center_type;
   return {
     id: row.id,
     name: row.name,
     image: row.avatar_url || PLACEHOLDER_CENTER,
     modality: modalityLabel,
+    modalities: modalitiesArr.length > 0 ? modalitiesArr : undefined,
     location: row.city || row.region || row.island,
     rating: 5.0,
     lat: row.lat ?? 0,

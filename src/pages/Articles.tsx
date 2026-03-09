@@ -4,14 +4,15 @@ import { useArticles } from "@/hooks/useArticles";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 const Articles = () => {
-  usePageMeta("Wellness Articles & Resources", "Read about holistic wellness, traditional Hawaiian healing, and healthy living on the Big Island of Hawaiʻi.");
+  usePageMeta("Wellness Articles & Resources", "Read about holistic wellness, traditional Hawaiian healing, and healthy living across the islands of Hawaiʻi.");
   const { data: articles = [], isLoading } = useArticles();
   const [featured, ...rest] = articles;
 
   if (isLoading) {
     return (
       <main className="container py-10">
-        <h1 className="mb-8 font-display text-3xl font-bold md:text-4xl">The Big Island Health Scene</h1>
+        <h1 className="mb-2 font-display text-3xl font-bold md:text-4xl">Wellness Articles &amp; Guides</h1>
+        <p className="mb-8 text-muted-foreground">Holistic health insights from across the Hawaiian Islands.</p>
         <Skeleton className="mb-12 h-64 w-full rounded-xl" />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -24,9 +25,10 @@ const Articles = () => {
 
   return (
     <main className="container py-10">
-      <h1 className="mb-8 font-display text-3xl font-bold md:text-4xl">
-        The Big Island Health Scene
+      <h1 className="mb-2 font-display text-3xl font-bold md:text-4xl">
+        Wellness Articles &amp; Guides
       </h1>
+      <p className="mb-8 text-muted-foreground">Holistic health insights from across the Hawaiian Islands.</p>
 
       {featured && (
         <section className="mb-12">

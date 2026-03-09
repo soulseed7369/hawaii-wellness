@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { SearchBar } from "@/components/SearchBar";
-import { PractitionerCard } from "@/components/PractitionerCard";
+import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,30 +50,17 @@ export function IslandHome({ config }: IslandHomeProps) {
   const { data: centers = [], isLoading: loadingCenters } = useCenters(config.island);
   const { data: articles = [], isLoading: loadingArticles } = useArticles();
 
-  const practitionerCardData = practitioners.map((p) => ({
-    id: p.id,
-    name: p.name,
-    image: p.image,
-    modality: p.modality,
-    location: p.location,
-    rating: p.rating,
-    verified: false,
-    acceptingClients: true,
-    lat: p.lat,
-    lng: p.lng,
-  }));
-
   const articleCardData = articles.slice(0, 3);
 
   // ── ItemList schema for practitioner listings ────────────────────────────
-  const itemListSchema = practitionerCardData.length > 0
+  const itemListSchema = practitioners.length > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
         name: `${config.displayName} Wellness Practitioners`,
         url: `${SITE_URL}/${config.island === 'big_island' ? 'big-island' : config.island}`,
-        numberOfItems: practitionerCardData.length,
-        itemListElement: practitionerCardData.slice(0, 10).map((p, i) => ({
+        numberOfItems: practitioners.length,
+        itemListElement: practitioners.slice(0, 10).map((p, i) => ({
           '@type': 'ListItem',
           position: i + 1,
           url: `${SITE_URL}/profile/${p.id}`,
@@ -111,27 +98,32 @@ export function IslandHome({ config }: IslandHomeProps) {
 
       {/* Practitioners */}
       <section className="container py-12">
-        <h2 className="mb-6 font-display text-2xl font-bold md:text-3xl">
-          {config.displayName} Practitioners
-        </h2>
-        <div className="px-12">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-display text-2xl font-bold md:text-3xl">
+            {config.displayName} Practitioners
+          </h2>
+          <Link to={`/directory?island=${config.island}`} className="text-sm text-primary hover:underline">
+            View all →
+          </Link>
+        </div>
+        <div className="px-10 sm:px-12">
           {loadingPractitioners ? (
             <div className="flex gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-48 w-56 flex-shrink-0 rounded-xl" />
+                <Skeleton key={i} className="h-28 w-56 flex-shrink-0 rounded-xl" />
               ))}
             </div>
-          ) : practitionerCardData.length > 0 ? (
+          ) : practitioners.length > 0 ? (
             <Carousel opts={{ align: "start", loop: true }}>
               <CarouselContent>
-                {practitionerCardData.map((practitioner) => (
+                {practitioners.map((practitioner) => (
                   <CarouselItem key={practitioner.id} className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                    <PractitionerCard practitioner={practitioner} />
+                    <ProviderCard provider={practitioner} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+              <CarouselPrevious className="h-10 w-10" />
+              <CarouselNext className="h-10 w-10" />
             </Carousel>
           ) : (
             <p className="text-muted-foreground text-sm py-8">No practitioners listed yet for {config.displayName}.</p>
@@ -142,14 +134,19 @@ export function IslandHome({ config }: IslandHomeProps) {
       {/* Centers */}
       <section className="bg-secondary/30 py-12">
         <div className="container">
-          <h2 className="mb-6 font-display text-2xl font-bold md:text-3xl">
-            {config.displayName} Wellness Centers
-          </h2>
-          <div className="px-12">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-display text-2xl font-bold md:text-3xl">
+              {config.displayName} Wellness Centers
+            </h2>
+            <Link to={`/directory?island=${config.island}`} className="text-sm text-primary hover:underline">
+              View all →
+            </Link>
+          </div>
+          <div className="px-10 sm:px-12">
             {loadingCenters ? (
               <div className="flex gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-64 flex-shrink-0 rounded-xl" />
+                  <Skeleton key={i} className="h-28 w-64 flex-shrink-0 rounded-xl" />
                 ))}
               </div>
             ) : centers.length > 0 ? (
@@ -161,8 +158,8 @@ export function IslandHome({ config }: IslandHomeProps) {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+                <CarouselPrevious className="h-10 w-10" />
+                <CarouselNext className="h-10 w-10" />
               </Carousel>
             ) : (
               <p className="text-muted-foreground text-sm py-8">No wellness centers listed yet for {config.displayName}.</p>
@@ -173,10 +170,15 @@ export function IslandHome({ config }: IslandHomeProps) {
 
       {/* Articles */}
       <section className="container py-12">
-        <h2 className="mb-6 font-display text-2xl font-bold md:text-3xl">
-          Latest Wellness News
-        </h2>
-        <div className="px-12">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-display text-2xl font-bold md:text-3xl">
+            Latest Wellness Articles
+          </h2>
+          <Link to="/articles" className="text-sm text-primary hover:underline">
+            View all →
+          </Link>
+        </div>
+        <div className="px-10 sm:px-12">
           {loadingArticles ? (
             <div className="flex gap-4">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -192,8 +194,8 @@ export function IslandHome({ config }: IslandHomeProps) {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+              <CarouselPrevious className="h-10 w-10" />
+              <CarouselNext className="h-10 w-10" />
             </Carousel>
           ) : (
             <p className="text-muted-foreground text-sm py-8">No articles yet.</p>
@@ -245,11 +247,17 @@ export function IslandHome({ config }: IslandHomeProps) {
       {/* ── List Your Practice CTA ─────────────────────────────────────────── */}
       <section className="bg-primary py-14 text-primary-foreground" aria-label="List your practice">
         <div className="container text-center">
+          {/* Trust signal */}
+          {practitioners.length > 0 && (
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-primary-foreground/90">
+              <span className="font-bold text-white">{practitioners.length}+</span> practitioners already listed on {config.displayName}
+            </div>
+          )}
           <h2 className="mb-3 font-display text-2xl font-bold md:text-3xl">
             Are you a {config.displayName} wellness practitioner?
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-primary-foreground/80">
-            Join hundreds of holistic health providers already listed on Hawaiʻi Wellness.
+            Join the growing community of holistic health providers on Hawaiʻi Wellness.
             Free to list — upgrade anytime for premium visibility.
           </p>
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

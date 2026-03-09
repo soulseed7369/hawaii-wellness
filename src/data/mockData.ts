@@ -42,6 +42,11 @@ export interface Provider {
   image: string;
   type: "practitioner" | "center" | "retreat";
   modality: string;
+  /** Full array of modalities for display as pills */
+  modalities?: string[];
+  /** 'in_person' | 'online' | 'both' */
+  sessionType?: string;
+  acceptsNewClients?: boolean;
   location: string;
   rating: number;
   lat: number;
@@ -53,6 +58,8 @@ export interface Center {
   name: string;
   image: string;
   modality: string;
+  /** Full array of modalities for display as pills */
+  modalities?: string[];
   location: string;
   rating: number;
   lat: number;
