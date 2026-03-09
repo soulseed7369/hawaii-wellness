@@ -399,18 +399,12 @@ const ProfileDetail = () => {
             </CardContent>
           </Card>
 
-          {p.externalBookingUrl ? (
+          {p.externalBookingUrl && (
             <Button className="w-full gap-2" size="lg" asChild>
               <a href={p.externalBookingUrl} target="_blank" rel="noopener noreferrer">
                 {p.bookingLabel || 'Book Appointment'}
                 <ExternalLink className="h-4 w-4" />
               </a>
-            </Button>
-          ) : (
-            <Button className="w-full gap-2" size="lg" variant="outline" asChild>
-              <Link to="/concierge">
-                Request a Recommendation
-              </Link>
             </Button>
           )}
 

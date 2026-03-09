@@ -55,7 +55,6 @@ export function Footer() {
             <h4 className="font-display text-sm font-semibold uppercase tracking-wider opacity-70">Company</h4>
             <nav className="flex flex-col gap-2 text-sm">
               <Link to="/about" className="opacity-80 hover:opacity-100">About Us</Link>
-              <Link to="/concierge" className="opacity-80 hover:opacity-100">Concierge Service</Link>
               <Link to="/help" className="opacity-80 hover:opacity-100">Help Center</Link>
               <a href="mailto:aloha@hawaiiwellness.net" className="opacity-80 hover:opacity-100">Contact Us</a>
               <Link to="/privacy-policy" className="opacity-80 hover:opacity-100">Privacy Policy</Link>
