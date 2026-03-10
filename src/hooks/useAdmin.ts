@@ -13,6 +13,9 @@ export interface AdminQueryParams {
   island?: string;
   status?: 'all' | 'published' | 'draft';
   modality?: string;
+  // Centers-only filters
+  centerType?: string;           // 'all' | 'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio'
+  missingData?: string;          // 'all' | 'phone' | 'email' | 'phone_or_email' | 'description' | 'photo'
   page?: number;
   pageSize?: number;
 }
@@ -240,6 +243,8 @@ export const useAllCenters = (params: AdminQueryParams = {}) => {
     island = '',
     status = 'all',
     modality = '',
+    centerType = 'all',
+    missingData = 'all',
     page = 0,
     pageSize = 50,
   } = params;
@@ -267,6 +272,18 @@ export const useAllCenters = (params: AdminQueryParams = {}) => {
 
       if (modality && modality !== 'all') {
         query = query.contains('modalities', [modality]);
+      }
+
+      if (centerType && centerType !== 'all') {
+        query = query.eq('center_type', centerType);
+      }
+
+      if (missingData && missingData !== 'all') {
+        if (missingData === 'phone') query = query.is('phone', null);
+        else if (missingData === 'email') query = query.is('email', null);
+        else if (missingData === 'phone_or_email') query = query.or('phone.is.null,email.is.null');
+        else if (missingData === 'description') query = query.or('description.is.null,description.eq.');
+        else if (missingData === 'photo') query = query.is('avatar_url', null);
       }
 
       switch (sort) {

@@ -159,6 +159,9 @@ const AdminPanel = () => {
   const [island, setIsland] = useState('all');
   const [statusFilter, setStatusFilter] = useState<AdminQueryParams['status']>('all');
   const [modalityFilter, setModalityFilter] = useState('all');
+  // ── Centers-only filters ──────────────────────────────────────────────────
+  const [centerTypeFilter, setCenterTypeFilter] = useState('all');
+  const [missingDataFilter, setMissingDataFilter] = useState('all');
 
   // ── Batch selection ───────────────────────────────────────────────────────
   const [selectedPractitioners, setSelectedPractitioners] = useState<Set<string>>(new Set());
@@ -332,6 +335,8 @@ const AdminPanel = () => {
     island,
     status: statusFilter,
     modality: modalityFilter,
+    centerType: centerTypeFilter,
+    missingData: missingDataFilter,
     page: centerPage,
     pageSize: PAGE_SIZE,
   };
@@ -848,7 +853,37 @@ const AdminPanel = () => {
     );
   };
 
-  const renderCenterRow = (c: CenterRow) => (
+  // ── Center quality score (Part 2) ─────────────────────────────────────────
+  const CENTER_QUALITY_FIELDS = [
+    { key: 'description', label: 'Description' },
+    { key: 'phone',       label: 'Phone' },
+    { key: 'email',       label: 'Email' },
+    { key: 'website_url', label: 'Website' },
+    { key: 'avatar_url',  label: 'Photo' },
+    { key: 'modalities',  label: 'Modalities' },
+    { key: 'address',     label: 'Address' },
+  ] as const;
+
+  const getCenterQuality = (c: CenterRow) => {
+    const filled = CENTER_QUALITY_FIELDS.filter(f => {
+      const val = (c as Record<string, unknown>)[f.key];
+      if (Array.isArray(val)) return val.length > 0;
+      return val !== null && val !== undefined && val !== '';
+    });
+    return { filled: filled.length, total: CENTER_QUALITY_FIELDS.length, missing: CENTER_QUALITY_FIELDS.filter(f => {
+      const val = (c as Record<string, unknown>)[f.key];
+      if (Array.isArray(val)) return val.length === 0;
+      return val === null || val === undefined || val === '';
+    }).map(f => f.label) };
+  };
+
+  const renderCenterRow = (c: CenterRow) => {
+    const quality = getCenterQuality(c);
+    const qualityColor =
+      quality.filled >= 6 ? 'text-green-600 bg-green-50 border-green-200' :
+      quality.filled >= 4 ? 'text-yellow-600 bg-yellow-50 border-yellow-200' :
+                            'text-red-600 bg-red-50 border-red-200';
+    return (
     <Card key={c.id} className={`mb-3 ${selectedCenters.has(c.id) ? 'ring-2 ring-blue-400' : ''}`}>
       <CardContent className="p-4">
         <div className="flex justify-between items-start gap-4">
@@ -859,20 +894,34 @@ const AdminPanel = () => {
               checked={selectedCenters.has(c.id)}
               onChange={() => toggleSelectCenter(c.id)}
             />
-            {c.avatar_url && (
-              <img src={c.avatar_url} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
-            )}
+            {c.avatar_url
+              ? <img src={c.avatar_url} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+              : <div className="w-12 h-12 rounded flex-shrink-0 bg-gray-100 flex items-center justify-center text-gray-400 text-lg font-semibold">{c.name.charAt(0)}</div>
+            }
             <div className="min-w-0">
-              <h3 className="font-semibold truncate">{c.name}</h3>
-              <p className="text-sm text-gray-500">{c.city}</p>
-              <p className="text-sm text-gray-600 line-clamp-1 mt-0.5">{c.description}</p>
-              {c.photos && c.photos.length > 1 && (
-                <p className="text-xs text-gray-400">{c.photos.length} photos</p>
-              )}
-              <p className="text-xs text-gray-400 mt-1">Updated {formatDate(c.updated_at)}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold truncate">{c.name}</h3>
+                <span className="text-xs text-gray-400 capitalize">{c.center_type?.replace(/_/g, ' ')}</span>
+              </div>
+              <p className="text-sm text-gray-500">{c.city}{c.city && c.island ? ', ' : ''}{c.island?.replace(/_/g, ' ')}</p>
+              <p className="text-sm text-gray-600 line-clamp-1 mt-0.5">{c.description || <span className="text-gray-300 italic">No description</span>}</p>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <p className="text-xs text-gray-400">Updated {formatDate(c.updated_at)}</p>
+                {/* Missing data indicators */}
+                {!c.phone && <span className="text-xs text-orange-500">No phone</span>}
+                {!c.email && <span className="text-xs text-orange-500">No email</span>}
+                {(!c.modalities || c.modalities.length === 0) && <span className="text-xs text-orange-500">No modalities</span>}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+            {/* Quality score badge (Part 2) */}
+            <span
+              className={`inline-flex items-center px-1.5 py-0.5 rounded border text-xs font-medium ${qualityColor}`}
+              title={quality.missing.length > 0 ? `Missing: ${quality.missing.join(', ')}` : 'Complete'}
+            >
+              {quality.filled}/{quality.total}
+            </span>
             <Badge variant={c.status === 'published' ? 'default' : 'secondary'} className="text-xs">
               {c.status}
             </Badge>
@@ -906,7 +955,8 @@ const AdminPanel = () => {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   // ── Claims handlers ───────────────────────────────────────────────────────
   const fetchClaims = async (status: 'pending' | 'approved' | 'denied') => {
@@ -1708,6 +1758,44 @@ const AdminPanel = () => {
                 </form>
               </DialogContent>
             </Dialog>
+          </div>
+
+          {/* Centers-specific filters (Part 1) */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Select value={centerTypeFilter} onValueChange={v => { setCenterTypeFilter(v); setCenterPage(0); }}>
+              <SelectTrigger className="min-w-44 h-8 text-sm">
+                <SelectValue placeholder="All center types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All center types</SelectItem>
+                <SelectItem value="spa">Spa</SelectItem>
+                <SelectItem value="wellness_center">Wellness Center</SelectItem>
+                <SelectItem value="yoga_studio">Yoga Studio</SelectItem>
+                <SelectItem value="clinic">Clinic</SelectItem>
+                <SelectItem value="retreat_center">Retreat Center</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={missingDataFilter} onValueChange={v => { setMissingDataFilter(v); setCenterPage(0); }}>
+              <SelectTrigger className="min-w-52 h-8 text-sm">
+                <SelectValue placeholder="All records" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All records</SelectItem>
+                <SelectItem value="phone">Missing phone</SelectItem>
+                <SelectItem value="email">Missing email</SelectItem>
+                <SelectItem value="phone_or_email">Missing phone or email</SelectItem>
+                <SelectItem value="description">Missing description</SelectItem>
+                <SelectItem value="photo">Missing photo</SelectItem>
+              </SelectContent>
+            </Select>
+            {(centerTypeFilter !== 'all' || missingDataFilter !== 'all') && (
+              <button
+                className="text-xs text-blue-600 hover:underline px-2"
+                onClick={() => { setCenterTypeFilter('all'); setMissingDataFilter('all'); setCenterPage(0); }}
+              >
+                Clear filters
+              </button>
+            )}
           </div>
 
           {/* Batch action bar — centers */}
