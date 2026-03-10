@@ -573,7 +573,8 @@ const AdminPanel = () => {
       setEditingPractitioner(null);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update practitioner');
+      const msg = err instanceof Error ? err.message : 'Failed to update practitioner';
+      toast.error(msg);
     } finally {
       setEditPractitionerUploading(false);
     }
@@ -711,7 +712,8 @@ const AdminPanel = () => {
       setEditingCenter(null);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update center');
+      const msg = err instanceof Error ? err.message : 'Failed to update center';
+      toast.error(msg);
     } finally {
       setEditCenterUploading(false);
     }

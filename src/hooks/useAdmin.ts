@@ -48,11 +48,12 @@ export async function uploadPractitionerImage(file: File): Promise<string> {
 
   // Sanitize extension to prevent path traversal
   const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-  const path = `avatars/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  // Use 'practitioners/' prefix — matches the bucket RLS policy used by uploadMyPhoto
+  const path = `practitioners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await supabaseAdmin.storage
     .from(IMAGE_BUCKET)
     .upload(path, file, { upsert: true });
-  if (error) throw error;
+  if (error) throw new Error(`Storage upload failed: ${error.message}`);
   const { data } = supabaseAdmin.storage.from(IMAGE_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
@@ -79,11 +80,12 @@ export async function uploadCenterImage(file: File): Promise<string> {
 
   // Sanitize extension to prevent path traversal
   const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-  const path = `centers/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  // Use 'practitioners/' prefix — matches the bucket RLS policy
+  const path = `practitioners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await supabaseAdmin.storage
     .from(IMAGE_BUCKET)
     .upload(path, file, { upsert: true });
-  if (error) throw error;
+  if (error) throw new Error(`Storage upload failed: ${error.message}`);
   const { data } = supabaseAdmin.storage.from(IMAGE_BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
