@@ -21,12 +21,12 @@ type DirectoryTab = "practitioners" | "centers";
 
 // ── Canonical modalities (subset shown in filter) ─────────────────────────────
 const FILTER_MODALITIES = [
-  "Acupuncture", "Art Therapy", "Ayurveda", "Breathwork", "Chiropractic", "Counseling",
-  "Energy Healing", "Family Constellation", "Functional Medicine", "Herbalism", "Hypnotherapy",
-  "IV Therapy", "Life Coaching", "Lomilomi / Hawaiian Healing", "Longevity", "Massage", "Meditation",
-  "Nature Therapy", "Naturopathic", "Nutrition", "Physical Therapy",
-  "Psychic", "Psychotherapy", "Reiki", "Somatic Therapy", "Sound Healing",
-  "TCM (Traditional Chinese Medicine)", "Trauma-Informed Care", "Yoga",
+  "Acupuncture", "Art Therapy", "Astrology", "Ayurveda", "Breathwork", "Chiropractic", "Counseling",
+  "Energy Healing", "Family Constellation", "Functional Medicine", "Hawaiian Healing", "Herbalism",
+  "Hypnotherapy", "IV Therapy", "Life Coaching", "Lomilomi / Hawaiian Healing", "Longevity",
+  "Massage", "Meditation", "Nature Therapy", "Naturopathic", "Nutrition", "Physical Therapy",
+  "Psychic", "Psychotherapy", "Reiki", "Ritualist", "Somatic Therapy", "Soul Guidance",
+  "Sound Healing", "TCM (Traditional Chinese Medicine)", "Trauma-Informed Care", "Yoga",
 ];
 
 // ── Island / city lookup for smart search ─────────────────────────────────────
@@ -97,57 +97,119 @@ const ISLANDS = [
 // Maps user search phrases → canonical modality names (or fragments thereof).
 // Keys are lowercase; values are appended to the search target so the normal
 // token matcher can find them.  Order doesn't matter — all matches are applied.
+// Also fixes stemmer gaps: "guidance" doesn't stem to match "guide", so we
+// add explicit phrase entries for those cases.
 
 const MODALITY_SYNONYMS: Record<string, string> = {
-  // Soul / spiritual
+
+  // ── Soul / Spiritual ────────────────────────────────────────────────────────
   'soul retrieval':        'soul guidance',
   'soul work':             'soul guidance',
   'soul healing':          'soul guidance',
+  'soul guide':            'soul guidance',      // stemmer gap: guide ≠ guidance
+  'soul coach':            'soul guidance',
   'spirit':                'soul guidance',
-  'shamanic':              'soul guidance energy healing',
-  'shaman':                'soul guidance energy healing',
+  'spiritual':             'soul guidance energy healing',
+  'sacred':                'soul guidance energy healing ritualist',
+  'ceremony':              'ritualist soul guidance',
+  'ritual':                'ritualist soul guidance',
+  'medicine woman':        'ritualist hawaiian healing soul guidance',
+  'medicine man':          'ritualist hawaiian healing soul guidance',
+  'akashic':               'soul guidance',
+  'channeling':            'soul guidance psychic',
+  'channelling':           'soul guidance psychic',
 
-  // Energy
+  // ── Shamanic / Ritualist ────────────────────────────────────────────────────
+  'shamanic':              'soul guidance energy healing ritualist',
+  'shaman':                'soul guidance energy healing ritualist',
+  'shamanism':             'soul guidance energy healing ritualist',
+  'curandera':             'ritualist hawaiian healing herbalism',
+  'curandero':             'ritualist hawaiian healing herbalism',
+  'medicine wheel':        'ritualist soul guidance',
+
+  // ── Hawaiian Healing ────────────────────────────────────────────────────────
+  'lomi':                  'lomilomi hawaiian healing massage',
+  'lomilomi':              'lomilomi hawaiian healing massage',
+  'hawaiian massage':      'lomilomi hawaiian healing massage',
+  'hawaiian healing':      'hawaiian healing lomilomi',
+  'ho oponopono':          'hawaiian healing soul guidance',
+  "ho'oponopono":          'hawaiian healing soul guidance',
+  'huna':                  'hawaiian healing soul guidance energy healing',
+  'kahuna':                'hawaiian healing ritualist',
+  'aloha spirit':          'hawaiian healing',
+  'indigenous healing':    'hawaiian healing ritualist',
+
+  // ── Energy Healing ──────────────────────────────────────────────────────────
   'energy work':           'energy healing',
+  'energy heal':           'energy healing',     // stemmer gap
+  'energy healer':         'energy healing reiki',
   'energy medicine':       'energy healing',
   'biofield':              'energy healing',
   'quantum healing':       'energy healing',
+  'quantum':               'energy healing',
   'pranic':                'energy healing',
+  'prana':                 'energy healing breathwork yoga',
   'matrix':                'energy healing',
+  'aura':                  'energy healing reiki',
+  'chakra':                'energy healing reiki yoga',
+  'hands on healing':      'energy healing reiki',
+  'healing touch':         'energy healing reiki',
 
-  // Bodywork / massage
+  // ── Reiki ────────────────────────────────────────────────────────────────────
+  'reiki master':          'reiki',
+  'reiki heal':            'reiki energy healing',
+
+  // ── Bodywork / Massage ──────────────────────────────────────────────────────
   'bodywork':              'massage',
   'body work':             'massage',
-  'lomi':                  'lomilomi',
-  'lomilomi':              'lomilomi hawaiian healing',
-  'hawaiian massage':      'lomilomi hawaiian healing',
   'deep tissue':           'massage',
   'swedish massage':       'massage',
   'therapeutic massage':   'massage',
   'sports massage':        'massage',
   'hot stone':             'massage',
+  'myofascial':            'massage somatic therapy',
+  'trigger point':         'massage',
+  'neuromuscular':         'massage',
+  'lymphatic':             'massage',
+  'lymph':                 'massage',
 
-  // Water
+  // ── Craniosacral ────────────────────────────────────────────────────────────
+  'craniosacral':          'craniosacral',
+  'cranio sacral':         'craniosacral',
+  'cranio':                'craniosacral',
+  'cst':                   'craniosacral',
+  'biodynamic':            'craniosacral',
+
+  // ── Water Therapy ───────────────────────────────────────────────────────────
   'water therapy':         'watsu water therapy',
   'watsu':                 'watsu water therapy',
   'aquatic':               'watsu water therapy',
+  'water healing':         'watsu water therapy',
 
-  // Sound
+  // ── Sound Healing ───────────────────────────────────────────────────────────
   'sound bath':            'sound healing',
+  'sound heal':            'sound healing',      // stemmer gap
   'gong bath':             'sound healing',
   'singing bowl':          'sound healing',
   'tuning fork':           'sound healing',
   'vibrational':           'sound healing',
+  'frequency':             'sound healing energy healing',
+  'tibetan bowl':          'sound healing',
 
-  // Nervous system / somatic / trauma
-  'nervous system':        'nervous system regulation somatic therapy trauma',
+  // ── Nervous System / Somatic / Trauma ───────────────────────────────────────
+  'nervous system':        'nervous system regulation somatic therapy',
   'somatic':               'somatic therapy nervous system regulation',
+  'soma':                  'somatic therapy',
+  'regulation':            'nervous system regulation',
+  'dysregulation':         'nervous system regulation somatic therapy',
+  'polyvagal':             'nervous system regulation somatic therapy',
   'trauma':                'trauma-informed care',
   'emdr':                  'trauma-informed care psychotherapy counseling',
   'ptsd':                  'trauma-informed care psychotherapy',
-  'polyvagal':             'nervous system regulation somatic therapy',
+  'inner child':           'psychotherapy counseling somatic therapy',
+  'shadow work':           'psychotherapy counseling soul guidance',
 
-  // Mental health / therapy
+  // ── Mental Health / Therapy ─────────────────────────────────────────────────
   'therapist':             'psychotherapy counseling somatic therapy',
   'therapy':               'psychotherapy counseling somatic therapy',
   'psychologist':          'psychotherapy counseling',
@@ -157,52 +219,77 @@ const MODALITY_SYNONYMS: Record<string, string> = {
   'depression':            'counseling psychotherapy',
   'marriage':              'counseling psychotherapy',
   'couples':               'counseling psychotherapy',
+  'family therapy':        'counseling psychotherapy family constellation',
+  'relationship':          'counseling psychotherapy',
+  'addiction':             'counseling psychotherapy',
+  'eating disorder':       'counseling psychotherapy nutrition',
 
-  // Coaching
+  // ── Life Coaching ───────────────────────────────────────────────────────────
   'life coach':            'life coaching',
   'coach':                 'life coaching',
   'coaching':              'life coaching',
+  'guide':                 'life coaching soul guidance',
+  'guidance':              'life coaching soul guidance', // stemmer gap
+  'mentor':                'life coaching',
   'mindset':               'life coaching',
   'executive coach':       'life coaching',
+  'business coach':        'life coaching',
+  'wellness coach':        'life coaching',
+  'transformation':        'life coaching soul guidance',
 
-  // Chiropractic
+  // ── Chiropractic ────────────────────────────────────────────────────────────
   'chiropractor':          'chiropractic',
   'chiro':                 'chiropractic',
   'spinal':                'chiropractic',
   'adjustment':            'chiropractic',
   'network':               'network chiropractic',
+  'nse':                   'network chiropractic',
 
-  // Acupuncture / TCM
+  // ── Acupuncture / TCM ───────────────────────────────────────────────────────
   'acupuncturist':         'acupuncture',
   'chinese medicine':      'tcm traditional chinese medicine acupuncture',
   'oriental medicine':     'tcm traditional chinese medicine',
   'tcm':                   'tcm traditional chinese medicine',
   'cupping':               'tcm acupuncture',
   'moxibustion':           'tcm acupuncture',
+  'herbs':                 'herbalism tcm',
 
-  // Naturopathic / functional
+  // ── Naturopathic / Functional Medicine ──────────────────────────────────────
   'naturopath':            'naturopathic',
   'functional medicine':   'functional medicine naturopathic',
   'integrative medicine':  'functional medicine naturopathic',
   'holistic doctor':       'functional medicine naturopathic',
   'holistic medicine':     'functional medicine naturopathic',
+  'regenerative medicine': 'longevity functional medicine',
+  'biohack':               'longevity functional medicine',
+  'biohacking':            'longevity functional medicine',
+  'anti-aging':            'longevity',
+  'longevity':             'longevity functional medicine',
 
-  // Nutrition
+  // ── Nutrition ───────────────────────────────────────────────────────────────
   'nutritionist':          'nutrition',
   'nutritional':           'nutrition',
   'dietitian':             'nutrition',
   'diet':                  'nutrition',
+  'gut health':            'nutrition functional medicine',
+  'weight loss':           'nutrition life coaching',
 
-  // Herbalism / plant medicine
+  // ── Herbalism / Plant Medicine ──────────────────────────────────────────────
   'herbalist':             'herbalism',
-  'plant medicine':        'herbalism naturopathic ayurveda',
+  'plant medicine':        'herbalism naturopathic ayurveda ritualist',
   'botanical':             'herbalism',
+  'apothecary':            'herbalism',
+  'flower essence':        'herbalism energy healing',
 
-  // Ayurveda
+  // ── Ayurveda ────────────────────────────────────────────────────────────────
   'ayurvedic':             'ayurveda',
+  'panchakarma':           'ayurveda',
+  'dosha':                 'ayurveda',
 
-  // Yoga / breathwork
+  // ── Yoga / Breathwork ───────────────────────────────────────────────────────
   'pranayama':             'breathwork yoga',
+  'breath work':           'breathwork',
+  'wim hof':               'breathwork',
   'yoga teacher':          'yoga',
   'yogi':                  'yoga',
   'vinyasa':               'yoga',
@@ -210,53 +297,58 @@ const MODALITY_SYNONYMS: Record<string, string> = {
   'hatha':                 'yoga',
   'yin yoga':              'yoga',
 
-  // Meditation
+  // ── Meditation ──────────────────────────────────────────────────────────────
   'mindfulness':           'meditation',
   'guided meditation':     'meditation',
+  'zen':                   'meditation',
+  'stillness':             'meditation',
 
-  // Hypnotherapy
+  // ── Hypnotherapy ────────────────────────────────────────────────────────────
   'hypnosis':              'hypnotherapy',
   'hypnotist':             'hypnotherapy',
+  'nlp':                   'hypnotherapy life coaching',
 
-  // Craniosacral
-  'craniosacral':          'craniosacral',
-  'cranio':                'craniosacral',
-  'cst':                   'craniosacral',
-
-  // Birth / women's health
+  // ── Birth / Women's Health ──────────────────────────────────────────────────
   'doula':                 'birth doula',
   'birth support':         'birth doula midwife',
   'midwifery':             'midwife',
   'prenatal':              'birth doula midwife',
   'postpartum':            'birth doula',
+  'fertility':             'birth doula midwife naturopathic',
+  'womens health':         'birth doula midwife naturopathic',
+  "women's health":        'birth doula midwife naturopathic',
 
-  // Astrology / psychic
+  // ── Astrology / Psychic ─────────────────────────────────────────────────────
   'astrologer':            'astrology',
   'birth chart':           'astrology',
   'psychic reading':       'psychic',
-  'tarot':                 'psychic soul guidance',
-  'oracle':                'psychic soul guidance',
+  'tarot':                 'psychic soul guidance ritualist',
+  'oracle':                'psychic soul guidance ritualist',
   'intuitive':             'psychic soul guidance energy healing',
   'medium':                'psychic',
   'clairvoyant':           'psychic',
+  'numerology':            'astrology psychic',
+  'human design':          'astrology soul guidance',
+  'gene keys':             'soul guidance',
 
-  // Physical therapy / osteopathic
+  // ── Physical Therapy / Osteopathic ──────────────────────────────────────────
   'physical therapist':    'physical therapy',
-  'pt ':                   'physical therapy',
+  'rehab':                 'physical therapy',
+  'rehabilitation':        'physical therapy',
+  'sports injury':         'physical therapy chiropractic',
   'osteopath':             'osteopathic',
   'osteopathy':            'osteopathic',
 
-  // Misc
-  'reiki master':          'reiki',
+  // ── Nature Therapy ──────────────────────────────────────────────────────────
   'nature':                'nature therapy',
   'forest bathing':        'nature therapy',
   'ecotherapy':            'nature therapy',
+
+  // ── Misc ────────────────────────────────────────────────────────────────────
   'art therapy':           'art therapy',
   'family constellation':  'family constellation',
   'iv therapy':            'iv therapy',
   'iv drip':               'iv therapy',
-  'longevity':             'longevity functional medicine',
-  'anti-aging':            'longevity',
   'dental':                'dentistry',
   'dentist':               'dentistry',
 };
