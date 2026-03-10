@@ -136,7 +136,7 @@ function filterProviders(
   acceptsClients: boolean,
 ): Provider[] {
   return items.filter(p => {
-    if (!smartFilter(`${p.name} ${p.modality} ${p.location || ''}`, query)) return false;
+    if (!smartFilter(`${p.name} ${p.modality} ${p.location || ''} ${p.bio || ''}`, query)) return false;
     if (modality) {
       const allMods = (p.modalities ?? [p.modality]).join(' ').toLowerCase();
       if (!allMods.includes(modality.toLowerCase())) return false;

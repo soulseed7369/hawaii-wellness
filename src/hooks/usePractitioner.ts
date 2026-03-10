@@ -26,6 +26,7 @@ export interface PractitionerProfile {
   lat: number | null;
   lng: number | null;
   about: string | null;
+  whatToExpect: string | null;
   services: string[];
   modalities: string[];
   gallery: string[];
@@ -66,6 +67,7 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     lat: row.lat,
     lng: row.lng,
     about: row.bio,
+    whatToExpect: row.what_to_expect ?? null,
     services: row.modalities,
     modalities: row.modalities,
     gallery: [],
@@ -108,6 +110,7 @@ export function usePractitioner(id: string | undefined) {
           lat: profileData.lat,
           lng: profileData.lng,
           about: profileData.about,
+          whatToExpect: null,
           services: profileData.services,
           modalities: profileData.services,
           gallery: profileData.gallery,

@@ -279,6 +279,13 @@ const ProfileDetail = () => {
             </div>
           )}
 
+          {p.whatToExpect && (
+            <div>
+              <h2 className="mb-3 font-display text-xl font-bold">What to Expect</h2>
+              <p className="leading-relaxed text-muted-foreground">{p.whatToExpect}</p>
+            </div>
+          )}
+
           {/* Working Hours */}
           {hasHours && workingHours && (
             <WorkingHours hours={workingHours} />

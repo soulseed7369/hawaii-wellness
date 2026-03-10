@@ -62,6 +62,7 @@ export function practitionerRowToProvider(row: PractitionerRowWithBusiness): Pro
     modalities: modalitiesArr.length > 0 ? modalitiesArr : undefined,
     sessionType: row.session_type ?? undefined,
     acceptsNewClients: row.accepts_new_clients ?? undefined,
+    bio: row.bio ?? undefined,
     location: row.city || row.region || row.island,
     rating: 5.0,
     lat: row.lat ?? 0,

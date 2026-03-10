@@ -47,6 +47,7 @@ export interface Provider {
   /** 'in_person' | 'online' | 'both' */
   sessionType?: string;
   acceptsNewClients?: boolean;
+  bio?: string;
   location: string;
   rating: number;
   lat: number;

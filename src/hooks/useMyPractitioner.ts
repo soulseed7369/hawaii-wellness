@@ -27,6 +27,7 @@ export type PractitionerFormData = {
   island: string;
   modalities: string[];
   bio: string;
+  what_to_expect: string;
   city: string;
   address: string;
   phone: string;
@@ -50,6 +51,7 @@ export function useSavePractitioner() {
         island: formData.island || 'big_island',
         modalities: formData.modalities.filter(Boolean),
         bio: formData.bio.trim() || null,
+        what_to_expect: formData.what_to_expect.trim() || null,
         city: formData.city.trim() || null,
         address: formData.address.trim() || null,
         phone: formData.phone.trim() || null,

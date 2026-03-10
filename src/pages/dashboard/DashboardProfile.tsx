@@ -53,6 +53,7 @@ const emptyForm: PractitionerFormData & { booking_label: string } = {
   island: 'big_island',
   modalities: [],
   bio: '',
+  what_to_expect: '',
   city: '',
   address: '',
   phone: '',
@@ -80,6 +81,7 @@ export default function DashboardProfile() {
         island: practitioner.island ?? 'big_island',
         modalities: practitioner.modalities ?? [],
         bio: practitioner.bio ?? '',
+        what_to_expect: (practitioner as any).what_to_expect ?? '',
         city: practitioner.city ?? '',
         address: practitioner.address ?? '',
         phone: practitioner.phone ?? '',
@@ -324,6 +326,24 @@ export default function DashboardProfile() {
             className="min-h-[140px]"
             value={form.bio}
             onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+          />
+        </CardContent>
+      </Card>
+
+      {/* What to Expect */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">What to Expect</CardTitle>
+          <CardDescription>
+            Help clients understand what a session with you looks like — format, duration, what to bring, how to prepare.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="e.g. Sessions are 60–90 minutes. We begin with a brief intake conversation, followed by hands-on bodywork..."
+            className="min-h-[120px]"
+            value={form.what_to_expect}
+            onChange={e => setForm(p => ({ ...p, what_to_expect: e.target.value }))}
           />
         </CardContent>
       </Card>
