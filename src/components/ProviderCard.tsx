@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import type { Provider } from "@/data/mockData";
 import { Link } from "react-router-dom";
+import { formatDistance } from "@/lib/geoUtils";
 
 // ── Avatar fallback: initials on a gradient background ───────────────────────
 const GRADIENT_PAIRS = [
@@ -72,11 +73,16 @@ export function ProviderCard({ provider }: ProviderCardProps) {
               </p>
             )}
 
-            {/* Location */}
+            {/* Location + distance */}
             <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
               <span className="sr-only">Location: </span>
               <span className="truncate">{provider.location}</span>
+              {provider.distanceMiles != null && (
+                <span className="ml-1 flex-shrink-0 text-xs text-muted-foreground/70">
+                  · {formatDistance(provider.distanceMiles)}
+                </span>
+              )}
             </div>
 
             {/* Modality pills */}
@@ -94,6 +100,28 @@ export function ProviderCard({ provider }: ProviderCardProps) {
                 )}
               </div>
             )}
+
+            {/* Match explanation labels (new search only) */}
+            {(provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
+              <p className="mb-2 text-xs text-muted-foreground italic">
+                {provider.matchedConcerns && provider.matchedConcerns.length > 0 && (
+                  <span>
+                    Helps with: {provider.matchedConcerns.slice(0, 3).join(", ")}
+                    {provider.matchedConcerns.length > 3 && ` +${provider.matchedConcerns.length - 3} more`}
+                  </span>
+                )}
+                {provider.matchedConcerns && provider.matchedConcerns.length > 0 &&
+                 provider.matchedApproaches && provider.matchedApproaches.length > 0 && (
+                  <span className="mx-1">·</span>
+                )}
+                {provider.matchedApproaches && provider.matchedApproaches.length > 0 && (
+                  <span>
+                    Approach: {provider.matchedApproaches.slice(0, 3).join(", ")}
+                    {provider.matchedApproaches.length > 3 && ` +${provider.matchedApproaches.length - 3} more`}
+                  </span>
+                )}
+              </p>
+            ) : null}
 
             {/* Session type + accepting badge row */}
             <div className="flex flex-wrap items-center gap-1.5">

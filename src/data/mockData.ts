@@ -54,6 +54,11 @@ export interface Provider {
   lng: number;
   /** Subscription tier — used for priority sorting in directory */
   tier?: 'free' | 'premium' | 'featured';
+  /** Match explanation labels from new search (optional) */
+  matchedConcerns?: string[];
+  matchedApproaches?: string[];
+  /** Distance from user in miles — set when user location is known */
+  distanceMiles?: number;
 }
 
 export interface Center {
@@ -70,6 +75,8 @@ export interface Center {
   services: string[];
   /** Subscription tier — used for priority sorting in directory */
   tier?: 'free' | 'premium' | 'featured';
+  /** Distance from user in miles — set when user location is known */
+  distanceMiles?: number;
 }
 
 export interface RetreatEvent {

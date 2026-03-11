@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Building2 } from "lucide-react";
 import type { Center } from "@/data/mockData";
 import { Link } from "react-router-dom";
+import { formatDistance } from "@/lib/geoUtils";
 
 // ── Avatar fallback ──────────────────────────────────────────────────────────
 const GRADIENT_PAIRS = [
@@ -55,11 +56,16 @@ export function CenterCard({ center }: CenterCardProps) {
               {center.name}
             </h3>
 
-            {/* Location */}
+            {/* Location + distance */}
             <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
               <span className="sr-only">Location: </span>
               <span className="truncate">{center.location}</span>
+              {center.distanceMiles != null && (
+                <span className="ml-1 flex-shrink-0 text-xs text-muted-foreground/70">
+                  · {formatDistance(center.distanceMiles)}
+                </span>
+              )}
             </div>
 
             {/* Modality / service pills */}

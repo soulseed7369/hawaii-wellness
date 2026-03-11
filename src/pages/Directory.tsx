@@ -13,13 +13,19 @@ import { DirectoryMap } from "@/components/DirectoryMap";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePractitioners } from "@/hooks/usePractitioners";
 import { useCenters, useCentersAsProviders } from "@/hooks/useCenters";
+import { useDirectorySearch, DirectoryResult } from "@/hooks/useDirectorySearch";
+import { useSearchListings } from "@/hooks/useSearchListings";
 import type { Provider, Center } from "@/data/mockData";
-import { Map, Search, SlidersHorizontal, X } from "lucide-react";
+import { haversineDistance } from "@/lib/geoUtils";
+import { Map, Search, SlidersHorizontal, X, Frown, Navigation } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 type DirectoryTab = "practitioners" | "centers";
 
-// ── Canonical modalities (subset shown in filter) ─────────────────────────────
+// Feature flag: set VITE_USE_NEW_SEARCH=false in .env to revert to old client-side search
+const USE_NEW_SEARCH = import.meta.env.VITE_USE_NEW_SEARCH !== 'false';
+
+// ── Canonical modalities (shown in filter dropdown) ──────────────────────────
 const FILTER_MODALITIES = [
   "Acupuncture", "Art Therapy", "Astrology", "Ayurveda", "Breathwork", "Chiropractic", "Counseling",
   "Energy Healing", "Family Constellation", "Functional Medicine", "Hawaiian Healing", "Herbalism",
@@ -29,33 +35,7 @@ const FILTER_MODALITIES = [
   "Sound Healing", "TCM (Traditional Chinese Medicine)", "Trauma-Informed Care", "Yoga",
 ];
 
-// ── Island / city lookup for smart search ─────────────────────────────────────
-
-const TOWN_TO_ISLAND: Record<string, string> = {};
-
-const ISLAND_TOWNS: Record<string, string[]> = {
-  big_island: [
-    'hilo', 'kailua-kona', 'kona', 'waimea', 'captain cook', 'pahoa', 'holualoa',
-    'hawi', 'honokaa', 'volcano', 'waikoloa', 'keaau', 'ocean view', 'kapaau',
-    'kawaihae', 'na alehu', 'milolii', 'napoopoo', 'kealakekua', 'kamuela',
-  ],
-  oahu: [
-    'honolulu', 'waikiki', 'kailua', 'kaneohe', 'pearl city', 'aiea', 'mililani',
-    'kapolei', 'ewa beach', 'haleiwa', 'waipahu', 'hawaii kai', 'manoa', 'nuuanu',
-  ],
-  maui: [
-    'lahaina', 'kihei', 'wailea', 'kahului', 'wailuku', 'hana', 'makawao', 'paia',
-    'haiku', 'kula', 'upcountry', 'pukalani', 'napili', 'kapalua', 'kaanapali',
-    'lanai city',
-  ],
-  kauai: [
-    'lihue', 'kapaa', 'hanalei', 'princeville', 'poipu', 'koloa', 'hanapepe',
-    'eleele', 'kalaheo', 'lawai', 'anahola', 'kilauea', 'haena',
-    // Note: 'waimea' intentionally omitted — it exists on both Big Island and Kauai.
-    // Big Island's waimea is also called 'kamuela' (already in big_island list).
-  ],
-  molokai: ['kaunakakai', 'hoolehua', 'maunaloa', 'kualapuu', 'halawa', 'pukoo'],
-};
+// ── Island / city lookup ─────────────────────────────────────────────────────
 
 const ISLAND_CITIES: Record<string, string[]> = {
   big_island: ['Kailua-Kona', 'Hilo', 'Waimea', 'Pahoa', 'Captain Cook', 'Keaau', 'Holualoa', 'Volcano', 'Waikoloa', 'Hawi', 'Honokaa', 'Ocean View'],
@@ -65,12 +45,6 @@ const ISLAND_CITIES: Record<string, string[]> = {
   molokai: ['Kaunakakai'],
 };
 
-for (const [isl, towns] of Object.entries(ISLAND_TOWNS)) {
-  for (const town of towns) {
-    TOWN_TO_ISLAND[town] = isl;
-  }
-}
-
 function detectIslandFromText(text: string): string | null {
   const lower = text.toLowerCase();
   if (/\bbig island\b/.test(lower)) return 'big_island';
@@ -78,7 +52,13 @@ function detectIslandFromText(text: string): string | null {
   if (/\bmaui\b/.test(lower)) return 'maui';
   if (/\bkauai\b/.test(lower)) return 'kauai';
   if (/\bmolokai\b/.test(lower)) return 'molokai';
-  for (const [town, isl] of Object.entries(TOWN_TO_ISLAND)) {
+  const townMap: Record<string, string> = {
+    kona: 'big_island', hilo: 'big_island', waimea: 'big_island', pahoa: 'big_island',
+    honolulu: 'oahu', waikiki: 'oahu', kailua: 'oahu', kaneohe: 'oahu',
+    lahaina: 'maui', kihei: 'maui', wailea: 'maui', kahului: 'maui', paia: 'maui',
+    lihue: 'kauai', kapaa: 'kauai', hanalei: 'kauai', poipu: 'kauai',
+  };
+  for (const [town, isl] of Object.entries(townMap)) {
     if (lower.includes(town)) return isl;
   }
   return null;
@@ -93,295 +73,84 @@ const ISLANDS = [
   { value: 'molokai', label: "Molokaʻi" },
 ];
 
-// ── Semantic synonym map ──────────────────────────────────────────────────────
-// Maps user search phrases → canonical modality names (or fragments thereof).
-// Keys are lowercase; values are appended to the search target so the normal
-// token matcher can find them.  Order doesn't matter — all matches are applied.
-// Also fixes stemmer gaps: "guidance" doesn't stem to match "guide", so we
-// add explicit phrase entries for those cases.
+// ── Adapters: DirectoryResult → Provider / Center shapes ─────────────────────
+
+function resultToProvider(r: DirectoryResult): Provider {
+  return {
+    id: r.id,
+    name: r.name,
+    bio: r.bio || '',
+    modality: (r.modality_labels?.[0]) || (r.modalities?.[0]) || '',
+    modalities: r.modality_labels?.length ? r.modality_labels : (r.modalities || []),
+    location: r.city || '',
+    photo: r.photo_url || '',
+    lat: r.lat ?? 0,
+    lng: r.lng ?? 0,
+    tier: r.tier || 'free',
+    sessionType: r.session_type || '',
+    acceptsNewClients: r.accepts_new_clients ?? undefined,
+    phone: r.phone || '',
+    email: r.email || '',
+    website: r.website_url || '',
+    bookingUrl: r.external_booking_url || '',
+    matchedConcerns: r.concern_labels?.length ? r.concern_labels : undefined,
+    matchedApproaches: r.approach_labels?.length ? r.approach_labels : undefined,
+  };
+}
+
+function resultToCenter(r: DirectoryResult): Center {
+  return {
+    id: r.id,
+    name: r.name,
+    description: r.bio || '',
+    modality: (r.modality_labels?.[0]) || (r.modalities?.[0]) || '',
+    modalities: r.modality_labels?.length ? r.modality_labels : (r.modalities || []),
+    location: r.city || '',
+    photo: r.photo_url || '',
+    lat: 0,
+    lng: 0,
+    tier: r.tier || 'free',
+    services: [],
+    centerType: '',
+  };
+}
+
+// ── OLD SEARCH — kept for feature flag fallback ──────────────────────────────
+// (only loaded when USE_NEW_SEARCH is false)
 
 const MODALITY_SYNONYMS: Record<string, string> = {
-
-  // ── Soul / Spiritual ────────────────────────────────────────────────────────
-  'soul retrieval':        'soul guidance',
-  'soul work':             'soul guidance',
-  'soul healing':          'soul guidance',
-  'soul guide':            'soul guidance',      // stemmer gap: guide ≠ guidance
-  'soul coach':            'soul guidance',
-  'spirit':                'soul guidance',
-  'spiritual':             'soul guidance energy healing',
-  'sacred':                'soul guidance energy healing ritualist',
-  'ceremony':              'ritualist soul guidance',
-  'ritual':                'ritualist soul guidance',
-  'medicine woman':        'ritualist hawaiian healing soul guidance',
-  'medicine man':          'ritualist hawaiian healing soul guidance',
-  'akashic':               'soul guidance',
-  'channeling':            'soul guidance psychic',
-  'channelling':           'soul guidance psychic',
-
-  // ── Shamanic / Ritualist ────────────────────────────────────────────────────
-  'shamanic':              'soul guidance energy healing ritualist',
-  'shaman':                'soul guidance energy healing ritualist',
-  'shamanism':             'soul guidance energy healing ritualist',
-  'curandera':             'ritualist hawaiian healing herbalism',
-  'curandero':             'ritualist hawaiian healing herbalism',
-  'medicine wheel':        'ritualist soul guidance',
-
-  // ── Hawaiian Healing ────────────────────────────────────────────────────────
-  'lomi':                  'lomilomi hawaiian healing massage',
-  'lomilomi':              'lomilomi hawaiian healing massage',
-  'hawaiian massage':      'lomilomi hawaiian healing massage',
-  'hawaiian healing':      'hawaiian healing lomilomi',
-  'ho oponopono':          'hawaiian healing soul guidance',
-  "ho'oponopono":          'hawaiian healing soul guidance',
-  'huna':                  'hawaiian healing soul guidance energy healing',
-  'kahuna':                'hawaiian healing ritualist',
-  'aloha spirit':          'hawaiian healing',
-  'indigenous healing':    'hawaiian healing ritualist',
-
-  // ── Energy Healing ──────────────────────────────────────────────────────────
-  'energy work':           'energy healing',
-  'energy heal':           'energy healing',     // stemmer gap
-  'energy healer':         'energy healing reiki',
-  'energy medicine':       'energy healing',
-  'biofield':              'energy healing',
-  'quantum healing':       'energy healing',
-  'quantum':               'energy healing',
-  'pranic':                'energy healing',
-  'prana':                 'energy healing breathwork yoga',
-  'matrix':                'energy healing',
-  'aura':                  'energy healing reiki',
-  'chakra':                'energy healing reiki yoga',
-  'hands on healing':      'energy healing reiki',
-  'healing touch':         'energy healing reiki',
-
-  // ── Reiki ────────────────────────────────────────────────────────────────────
-  'reiki master':          'reiki',
-  'reiki heal':            'reiki energy healing',
-
-  // ── Bodywork / Massage ──────────────────────────────────────────────────────
-  'bodywork':              'massage',
-  'body work':             'massage',
-  'deep tissue':           'massage',
-  'swedish massage':       'massage',
-  'therapeutic massage':   'massage',
-  'sports massage':        'massage',
-  'hot stone':             'massage',
-  'myofascial':            'massage somatic therapy',
-  'trigger point':         'massage',
-  'neuromuscular':         'massage',
-  'lymphatic':             'massage',
-  'lymph':                 'massage',
-
-  // ── Craniosacral ────────────────────────────────────────────────────────────
-  'craniosacral':          'craniosacral',
-  'cranio sacral':         'craniosacral',
-  'cranio':                'craniosacral',
-  'cst':                   'craniosacral',
-  'biodynamic':            'craniosacral',
-
-  // ── Water Therapy ───────────────────────────────────────────────────────────
-  'water therapy':         'watsu water therapy',
-  'watsu':                 'watsu water therapy',
-  'aquatic':               'watsu water therapy',
-  'water healing':         'watsu water therapy',
-
-  // ── Sound Healing ───────────────────────────────────────────────────────────
-  'sound bath':            'sound healing',
-  'sound heal':            'sound healing',      // stemmer gap
-  'gong bath':             'sound healing',
-  'singing bowl':          'sound healing',
-  'tuning fork':           'sound healing',
-  'vibrational':           'sound healing',
-  'frequency':             'sound healing energy healing',
-  'tibetan bowl':          'sound healing',
-
-  // ── Nervous System / Somatic / Trauma ───────────────────────────────────────
-  'nervous system':        'nervous system regulation somatic therapy',
-  'somatic':               'somatic therapy nervous system regulation',
-  'soma':                  'somatic therapy',
-  'regulation':            'nervous system regulation',
-  'dysregulation':         'nervous system regulation somatic therapy',
-  'polyvagal':             'nervous system regulation somatic therapy',
-  'trauma':                'trauma-informed care',
-  'emdr':                  'trauma-informed care psychotherapy counseling',
-  'ptsd':                  'trauma-informed care psychotherapy',
-  'inner child':           'psychotherapy counseling somatic therapy',
-  'shadow work':           'psychotherapy counseling soul guidance',
-
-  // ── Mental Health / Therapy ─────────────────────────────────────────────────
-  'therapist':             'psychotherapy counseling somatic therapy',
-  'therapy':               'psychotherapy counseling somatic therapy',
-  'psychologist':          'psychotherapy counseling',
-  'talk therapy':          'psychotherapy counseling',
-  'grief':                 'counseling psychotherapy',
-  'anxiety':               'counseling psychotherapy nervous system regulation',
-  'depression':            'counseling psychotherapy',
-  'marriage':              'counseling psychotherapy',
-  'couples':               'counseling psychotherapy',
-  'family therapy':        'counseling psychotherapy family constellation',
-  'relationship':          'counseling psychotherapy',
-  'addiction':             'counseling psychotherapy',
-  'eating disorder':       'counseling psychotherapy nutrition',
-
-  // ── Life Coaching ───────────────────────────────────────────────────────────
-  'life coach':            'life coaching',
-  'coach':                 'life coaching',
-  'coaching':              'life coaching',
-  'guide':                 'life coaching soul guidance',
-  'guidance':              'life coaching soul guidance', // stemmer gap
-  'mentor':                'life coaching',
-  'mindset':               'life coaching',
-  'executive coach':       'life coaching',
-  'business coach':        'life coaching',
-  'wellness coach':        'life coaching',
-  'transformation':        'life coaching soul guidance',
-
-  // ── Chiropractic ────────────────────────────────────────────────────────────
-  'chiropractor':          'chiropractic',
-  'chiro':                 'chiropractic',
-  'spinal':                'chiropractic',
-  'adjustment':            'chiropractic',
-  'network':               'network chiropractic',
-  'nse':                   'network chiropractic',
-
-  // ── Acupuncture / TCM ───────────────────────────────────────────────────────
-  'acupuncturist':         'acupuncture',
-  'chinese medicine':      'tcm traditional chinese medicine acupuncture',
-  'oriental medicine':     'tcm traditional chinese medicine',
-  'tcm':                   'tcm traditional chinese medicine',
-  'cupping':               'tcm acupuncture',
-  'moxibustion':           'tcm acupuncture',
-  'herbs':                 'herbalism tcm',
-
-  // ── Naturopathic / Functional Medicine ──────────────────────────────────────
-  'naturopath':            'naturopathic',
-  'functional medicine':   'functional medicine naturopathic',
-  'integrative medicine':  'functional medicine naturopathic',
-  'holistic doctor':       'functional medicine naturopathic',
-  'holistic medicine':     'functional medicine naturopathic',
-  'regenerative medicine': 'longevity functional medicine',
-  'biohack':               'longevity functional medicine',
-  'biohacking':            'longevity functional medicine',
-  'anti-aging':            'longevity',
-  'longevity':             'longevity functional medicine',
-
-  // ── Nutrition ───────────────────────────────────────────────────────────────
-  'nutritionist':          'nutrition',
-  'nutritional':           'nutrition',
-  'dietitian':             'nutrition',
-  'diet':                  'nutrition',
-  'gut health':            'nutrition functional medicine',
-  'weight loss':           'nutrition life coaching',
-
-  // ── Herbalism / Plant Medicine ──────────────────────────────────────────────
-  'herbalist':             'herbalism',
-  'plant medicine':        'herbalism naturopathic ayurveda ritualist',
-  'botanical':             'herbalism',
-  'apothecary':            'herbalism',
-  'flower essence':        'herbalism energy healing',
-
-  // ── Ayurveda ────────────────────────────────────────────────────────────────
-  'ayurvedic':             'ayurveda',
-  'panchakarma':           'ayurveda',
-  'dosha':                 'ayurveda',
-
-  // ── Yoga / Breathwork ───────────────────────────────────────────────────────
-  'pranayama':             'breathwork yoga',
-  'breath work':           'breathwork',
-  'wim hof':               'breathwork',
-  'yoga teacher':          'yoga',
-  'yogi':                  'yoga',
-  'vinyasa':               'yoga',
-  'kundalini':             'yoga breathwork',
-  'hatha':                 'yoga',
-  'yin yoga':              'yoga',
-
-  // ── Meditation ──────────────────────────────────────────────────────────────
-  'mindfulness':           'meditation',
-  'guided meditation':     'meditation',
-  'zen':                   'meditation',
-  'stillness':             'meditation',
-
-  // ── Hypnotherapy ────────────────────────────────────────────────────────────
-  'hypnosis':              'hypnotherapy',
-  'hypnotist':             'hypnotherapy',
-  'nlp':                   'hypnotherapy life coaching',
-
-  // ── Birth / Women's Health ──────────────────────────────────────────────────
-  'doula':                 'birth doula',
-  'birth support':         'birth doula midwife',
-  'midwifery':             'midwife',
-  'prenatal':              'birth doula midwife',
-  'postpartum':            'birth doula',
-  'fertility':             'birth doula midwife naturopathic',
-  'womens health':         'birth doula midwife naturopathic',
-  "women's health":        'birth doula midwife naturopathic',
-
-  // ── Astrology / Psychic ─────────────────────────────────────────────────────
-  'astrologer':            'astrology',
-  'birth chart':           'astrology',
-  'psychic reading':       'psychic',
-  'tarot':                 'psychic soul guidance ritualist',
-  'oracle':                'psychic soul guidance ritualist',
-  'intuitive':             'psychic soul guidance energy healing',
-  'medium':                'psychic',
-  'clairvoyant':           'psychic',
-  'numerology':            'astrology psychic',
-  'human design':          'astrology soul guidance',
-  'gene keys':             'soul guidance',
-
-  // ── Physical Therapy / Osteopathic ──────────────────────────────────────────
-  'physical therapist':    'physical therapy',
-  'rehab':                 'physical therapy',
-  'rehabilitation':        'physical therapy',
-  'sports injury':         'physical therapy chiropractic',
-  'osteopath':             'osteopathic',
-  'osteopathy':            'osteopathic',
-
-  // ── Nature Therapy ──────────────────────────────────────────────────────────
-  'nature':                'nature therapy',
-  'forest bathing':        'nature therapy',
-  'ecotherapy':            'nature therapy',
-
-  // ── Misc ────────────────────────────────────────────────────────────────────
-  'art therapy':           'art therapy',
-  'family constellation':  'family constellation',
-  'iv therapy':            'iv therapy',
-  'iv drip':               'iv therapy',
-  'dental':                'dentistry',
-  'dentist':               'dentistry',
+  'soul retrieval': 'soul guidance', 'spiritual': 'soul guidance energy healing',
+  'lomi': 'lomilomi hawaiian healing massage', 'lomilomi': 'lomilomi hawaiian healing massage',
+  'energy work': 'energy healing', 'reiki master': 'reiki', 'bodywork': 'massage',
+  'deep tissue': 'massage', 'cranio': 'craniosacral', 'sound bath': 'sound healing',
+  'nervous system': 'nervous system regulation somatic therapy', 'somatic': 'somatic therapy',
+  'trauma': 'trauma-informed care', 'therapist': 'psychotherapy counseling',
+  'therapy': 'psychotherapy counseling', 'life coach': 'life coaching',
+  'coaching': 'life coaching', 'chiropractor': 'chiropractic', 'acupuncturist': 'acupuncture',
+  'chinese medicine': 'tcm traditional chinese medicine', 'naturopath': 'naturopathic',
+  'functional medicine': 'functional medicine naturopathic', 'nutritionist': 'nutrition',
+  'herbalist': 'herbalism', 'ayurvedic': 'ayurveda', 'doula': 'birth doula',
+  'midwifery': 'midwife', 'astrologer': 'astrology', 'tarot': 'psychic soul guidance',
+  'physical therapist': 'physical therapy', 'watsu': 'watsu water therapy',
+  'yoga teacher': 'yoga', 'breathwork': 'breathwork', 'meditation': 'meditation',
+  'mindfulness': 'meditation', 'hypnosis': 'hypnotherapy',
 };
 
-/**
- * Expand the raw query by appending any synonym matches.
- * e.g. "soul retrieval kona" → "soul retrieval kona soul guidance"
- * The original query is preserved so name/location tokens still work.
- */
 function expandQuery(query: string): string {
   const lower = query.toLowerCase();
   const extras: string[] = [];
   for (const [phrase, expansion] of Object.entries(MODALITY_SYNONYMS)) {
-    if (lower.includes(phrase)) {
-      extras.push(expansion);
-    }
+    if (lower.includes(phrase)) extras.push(expansion);
   }
   return extras.length > 0 ? `${query} ${extras.join(' ')}` : query;
 }
-
-// ── Smart filter with stemming ────────────────────────────────────────────────
 
 function stem(word: string): string {
   if (word.length <= 3) return word;
   if (word.endsWith('ing')) return word.slice(0, -3);
   if (word.endsWith('tion')) return word.slice(0, -4);
-  if (word.endsWith('ation')) return word.slice(0, -5);
   if (word.endsWith('er')) return word.slice(0, -2);
-  if (word.endsWith('ors')) return word.slice(0, -3);
-  if (word.endsWith('or')) return word.slice(0, -2);
   if (word.endsWith('ist')) return word.slice(0, -3);
-  if (word.endsWith('ists')) return word.slice(0, -4);
-  if (word.endsWith('ies')) return word.slice(0, -3) + 'y';
   if (word.endsWith('es')) return word.slice(0, -2);
   if (word.endsWith('s') && word.length > 4) return word.slice(0, -1);
   return word;
@@ -401,32 +170,17 @@ function tokenMatch(target: string, queryToken: string): boolean {
 
 function smartFilter(target: string, query: string): boolean {
   if (!query.trim()) return true;
-  // Expand query with synonym aliases, then filter on original tokens only
-  // (expanded aliases are added to the TARGET so the original tokens still match)
   const tokens = query.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
   if (tokens.length === 0) return true;
   return tokens.every(token => tokenMatch(target, token));
 }
 
-function filterProviders(
-  items: Provider[],
-  query: string,
-  modality: string,
-  sessionType: string,
-  acceptsClients: boolean,
-): Provider[] {
-  // Expand the query semantically, then append expansions to each listing's
-  // match target — bio is intentionally excluded to avoid false positives.
+function filterProviders(items: Provider[], query: string, modality: string, sessionType: string, acceptsClients: boolean): Provider[] {
   const expanded = expandQuery(query);
   return items.filter(p => {
-    // Search target: name + modalities + city — no bio
     const modalityText = (p.modalities ?? [p.modality]).join(' ');
     const target = `${p.name} ${modalityText} ${p.location || ''}`;
-    // Append synonym expansions to the target so tokens in the expanded query
-    // can match canonical modality names even if the user typed an alias.
-    const expandedTarget = expanded !== query
-      ? `${target} ${expanded.slice(query.length).trim()}`
-      : target;
+    const expandedTarget = expanded !== query ? `${target} ${expanded.slice(query.length).trim()}` : target;
     if (!smartFilter(expandedTarget, query)) return false;
     if (modality) {
       const allMods = (p.modalities ?? [p.modality]).join(' ').toLowerCase();
@@ -445,9 +199,7 @@ function filterCenters(items: Center[], query: string, modality: string): Center
   return items.filter(c => {
     const modalityText = (c.modalities ?? [c.modality]).join(' ');
     const target = `${c.name} ${modalityText} ${c.location || ''}`;
-    const expandedTarget = expanded !== query
-      ? `${target} ${expanded.slice(query.length).trim()}`
-      : target;
+    const expandedTarget = expanded !== query ? `${target} ${expanded.slice(query.length).trim()}` : target;
     if (!smartFilter(expandedTarget, query)) return false;
     if (modality) {
       const allMods = (c.modalities ?? [c.modality]).join(' ').toLowerCase();
@@ -456,6 +208,8 @@ function filterCenters(items: Center[], query: string, modality: string): Center
     return true;
   });
 }
+
+const tierWeight = (tier?: string) => tier === 'featured' ? 0 : tier === 'premium' ? 1 : 2;
 
 // ── Filter panel UI ───────────────────────────────────────────────────────────
 
@@ -535,14 +289,9 @@ function FilterPanel({
               { value: 'both', label: 'Both' },
             ].map(opt => (
               <label key={opt.value} className="flex items-center gap-2 cursor-pointer text-sm">
-                <input
-                  type="radio"
-                  name="sessionType"
-                  value={opt.value}
-                  checked={sessionType === opt.value}
-                  onChange={() => onSessionType(opt.value)}
-                  className="accent-primary"
-                />
+                <input type="radio" name="sessionType" value={opt.value}
+                  checked={sessionType === opt.value} onChange={() => onSessionType(opt.value)}
+                  className="accent-primary" />
                 {opt.label}
               </label>
             ))}
@@ -553,14 +302,58 @@ function FilterPanel({
       {/* Accepting clients (practitioners only) */}
       {tab === 'practitioners' && (
         <div className="flex items-center justify-between gap-3">
-          <Label htmlFor="acceptsClients" className="text-sm cursor-pointer">
-            Accepting new clients
-          </Label>
-          <Switch
-            id="acceptsClients"
-            checked={acceptsClients}
-            onCheckedChange={onAcceptsClients}
-          />
+          <Label htmlFor="acceptsClients" className="text-sm cursor-pointer">Accepting new clients</Label>
+          <Switch id="acceptsClients" checked={acceptsClients} onCheckedChange={onAcceptsClients} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── NoResultsState ────────────────────────────────────────────────────────────
+
+interface NoResultsStateProps {
+  query: string;
+  island: string;
+  onClear: () => void;
+  suggestions: import("@/hooks/useSearchListings").SearchResult[];
+  tab: DirectoryTab;
+}
+
+function NoResultsState({ query, island, onClear, suggestions, tab }: NoResultsStateProps) {
+  const displayQuery = query.trim();
+  return (
+    <div className="py-8">
+      <div className="mb-6 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-8 text-center">
+        <Frown className="mx-auto mb-3 h-8 w-8 text-muted-foreground/50" />
+        <p className="text-base font-semibold text-foreground">
+          {displayQuery
+            ? <>No results for &ldquo;{displayQuery}&rdquo; on {island}</>
+            : <>No results match your filters on {island}</>}
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Try a different term, broaden your search, or browse all listings.
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <Button variant="outline" size="sm" onClick={onClear}>
+            <X className="mr-1.5 h-3.5 w-3.5" />
+            Clear search
+          </Button>
+        </div>
+      </div>
+
+      {suggestions.length > 0 && (
+        <div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            You might be interested in
+          </p>
+          <div className="space-y-3">
+            {suggestions.map(s =>
+              tab === 'practitioners'
+                ? <ProviderCard key={s.id} provider={resultToProvider(s as any)} />
+                : <CenterCard key={s.id} center={resultToCenter(s as any)} />
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -574,43 +367,64 @@ const Directory = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const urlQ = searchParams.get('q') || '';
-  const urlLocation = searchParams.get('location') || '';
   const urlIsland = searchParams.get('island') || 'big_island';
   const urlModality = searchParams.get('modality') || '';
   const urlCity = searchParams.get('city') || '';
   const urlSessionType = searchParams.get('sessionType') || '';
   const urlAcceptsClients = searchParams.get('acceptsClients') === '1';
 
+  // User location: prefer URL params (set by SearchBar "Near me"), fall back to localStorage
+  // so location persists when navigating directly to /directory or using the inline search
+  const userLocation = useMemo(() => {
+    const urlULat = parseFloat(searchParams.get('ulat') || '');
+    const urlULng = parseFloat(searchParams.get('ulng') || '');
+    if (!isNaN(urlULat) && !isNaN(urlULng)) {
+      return { lat: urlULat, lng: urlULng };
+    }
+    try {
+      const saved = localStorage.getItem('aloha_user_location');
+      if (saved) {
+        const { lat, lng } = JSON.parse(saved);
+        if (typeof lat === 'number' && typeof lng === 'number') {
+          return { lat, lng };
+        }
+      }
+    } catch { /* ignore malformed storage */ }
+    return null;
+  }, [searchParams]);
+
   const detectedIsland = useMemo(() => {
-    const combined = `${urlLocation} ${urlQ}`;
-    return detectIslandFromText(combined);
-  }, [urlLocation, urlQ]);
+    return detectIslandFromText(urlQ);
+  }, [urlQ]);
 
   const [tab, setTab] = useState<DirectoryTab>("practitioners");
   const [showMap, setShowMap] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlQ);
   const [island, setIsland] = useState(detectedIsland || urlIsland);
+  // Default to sorting by distance when user has location set
+  const [sortByDistance, setSortByDistance] = useState(() => {
+    try {
+      return !!localStorage.getItem('aloha_user_location');
+    } catch { return false; }
+  });
   const [modality, setModality] = useState(urlModality);
   const [city, setCity] = useState(urlCity);
   const [sessionType, setSessionType] = useState(urlSessionType);
   const [acceptsClients, setAcceptsClients] = useState(urlAcceptsClients);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [accumulatedResults, setAccumulatedResults] = useState<DirectoryResult[]>([]);
 
-  // Sync island — explicit URL param always wins; only use detectedIsland as
-  // a fallback when the user hasn't explicitly chosen an island.
   useEffect(() => {
     if (searchParams.get('island')) {
-      // User (or SearchBar) explicitly set the island — respect it.
       setIsland(urlIsland);
     } else if (detectedIsland) {
-      // No explicit island in URL; infer from location/query text.
       setIsland(detectedIsland);
     } else {
       setIsland(urlIsland);
     }
   }, [detectedIsland, urlIsland, searchParams]);
 
-  // Persist filters to URL params
   const updateParam = useCallback((key: string, value: string) => {
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
@@ -634,59 +448,135 @@ const Directory = () => {
   };
 
   const activeFilterCount = [modality, city, sessionType, acceptsClients ? '1' : ''].filter(Boolean).length;
+  const effectiveQuery = searchQuery.trim();
 
+  // Reset pagination when any filter changes
+  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, sessionType, acceptsClients, tab]);
+
+  // ── NEW SEARCH PATH ────────────────────────────────────────────────────────
+  const newSearch = useDirectorySearch({
+    searchQuery: effectiveQuery,
+    island,
+    modality,
+    city,
+    sessionType,
+    acceptsClients,
+    tab,
+    page,
+    pageSize: 20,
+  });
+
+  // Accumulate results across pages
+  useEffect(() => {
+    if (newSearch.isLoading) return;
+    if (page === 0) {
+      setAccumulatedResults(newSearch.results);
+    } else {
+      setAccumulatedResults(prev => {
+        const existingIds = new Set(prev.map(r => r.id));
+        const fresh = newSearch.results.filter(r => !existingIds.has(r.id));
+        return [...prev, ...fresh];
+      });
+    }
+  }, [newSearch.results, newSearch.isLoading, page]);
+
+  const newTotalCount = newSearch.totalCount ?? 0;
+
+  // Detect true no-results: search was active but nothing matched
+  const hasActiveSearch = effectiveQuery.trim() !== '' || modality !== '' || sessionType !== '' || acceptsClients;
+  const isNoResults = USE_NEW_SEARCH && !newSearch.isLoading && hasActiveSearch && accumulatedResults.length === 0;
+
+  // Fallback suggestions: browse top listings on same island (shown when no results)
+  const { data: fallbackData } = useSearchListings(
+    {
+      island: island !== 'all' ? island : 'big_island',
+      listingType: tab === 'practitioners' ? 'practitioner' : 'center',
+      pageSize: 4,
+    },
+    isNoResults // only fetch when actually showing no-results state
+  );
+  const fallbackSuggestions = useMemo(() =>
+    (fallbackData?.results ?? []).slice(0, 4),
+    [fallbackData]
+  );
+
+  const newProviders = useMemo(() => {
+    const list = accumulatedResults
+      .filter(r => r.listing_type === 'practitioner')
+      .map(r => {
+        const p = resultToProvider(r);
+        if (userLocation && r.lat && r.lng) {
+          p.distanceMiles = haversineDistance(userLocation.lat, userLocation.lng, r.lat, r.lng);
+        }
+        return p;
+      });
+    if (sortByDistance && userLocation) {
+      return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
+    }
+    return list;
+  }, [accumulatedResults, userLocation, sortByDistance]);
+
+  const newCenters = useMemo(() => {
+    const list = accumulatedResults
+      .filter(r => r.listing_type === 'center')
+      .map(r => {
+        const c = resultToCenter(r);
+        if (userLocation && r.lat && r.lng) {
+          c.distanceMiles = haversineDistance(userLocation.lat, userLocation.lng, r.lat, r.lng);
+        }
+        return c;
+      });
+    if (sortByDistance && userLocation) {
+      return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
+    }
+    return list;
+  }, [accumulatedResults, userLocation, sortByDistance]);
+
+  // ── OLD SEARCH PATH (fallback) ────────────────────────────────────────────
   const fetchIsland = island === 'all' ? 'big_island' : island;
-  const { data: practitioners = [], isLoading: loadingPractitioners } = usePractitioners(fetchIsland);
-  const { data: centers = [], isLoading: loadingCenters } = useCenters(fetchIsland);
+  const { data: oldPractitioners = [], isLoading: loadingOldP } = usePractitioners(fetchIsland);
+  const { data: oldCenters = [], isLoading: loadingOldC } = useCenters(fetchIsland);
   const { data: centersAsProviders = [] } = useCentersAsProviders(fetchIsland);
 
-  const isLoading = tab === "practitioners" ? loadingPractitioners : loadingCenters;
-
-  const effectiveQuery = [searchQuery, urlLocation].filter(Boolean).join(' ');
-
-  // Tier sort weight: featured = 0 (top), premium = 1, free/undefined = 2
-  const tierWeight = (tier?: string) =>
-    tier === 'featured' ? 0 : tier === 'premium' ? 1 : 2;
-
-  // Client-side filtering
-  // Premium & featured listings are never excluded by city — they always surface
-  // island-wide for any matching modality, even if they're in a different city.
-  const filteredPractitioners = useMemo(() => {
+  const oldFilteredPractitioners = useMemo(() => {
+    if (USE_NEW_SEARCH) return [];
     const cityFiltered = city
-      ? practitioners.filter(p =>
-          p.location?.toLowerCase() === city.toLowerCase() ||
-          p.tier === 'premium' || p.tier === 'featured'
-        )
-      : practitioners;
+      ? oldPractitioners.filter(p => p.location?.toLowerCase() === city.toLowerCase() || p.tier === 'premium' || p.tier === 'featured')
+      : oldPractitioners;
     const results = filterProviders(cityFiltered, effectiveQuery, modality, sessionType, acceptsClients);
-    // Sort: featured → premium → free, then alphabetical within each tier
     return [...results].sort((a, b) => {
       const td = tierWeight(a.tier) - tierWeight(b.tier);
       return td !== 0 ? td : a.name.localeCompare(b.name);
     });
-  }, [practitioners, effectiveQuery, modality, city, sessionType, acceptsClients]);
+  }, [oldPractitioners, effectiveQuery, modality, city, sessionType, acceptsClients]);
 
-  const filteredCenters = useMemo(() => {
+  const oldFilteredCenters = useMemo(() => {
+    if (USE_NEW_SEARCH) return [];
     const cityFiltered = city
-      ? centers.filter(c =>
-          c.location?.toLowerCase() === city.toLowerCase() ||
-          c.tier === 'premium' || c.tier === 'featured'
-        )
-      : centers;
+      ? oldCenters.filter(c => c.location?.toLowerCase() === city.toLowerCase() || c.tier === 'premium' || c.tier === 'featured')
+      : oldCenters;
     const results = filterCenters(cityFiltered, effectiveQuery, modality);
-    // Sort: featured → premium → free, then alphabetical within each tier
     return [...results].sort((a, b) => {
       const td = tierWeight(a.tier) - tierWeight(b.tier);
       return td !== 0 ? td : a.name.localeCompare(b.name);
     });
-  }, [centers, effectiveQuery, modality, city]);
+  }, [oldCenters, effectiveQuery, modality, city]);
+
+  // ── Unified: pick old or new ──────────────────────────────────────────────
+  const practitioners = USE_NEW_SEARCH ? newProviders : oldFilteredPractitioners;
+  const centers = USE_NEW_SEARCH ? newCenters : oldFilteredCenters;
+  const isLoading = USE_NEW_SEARCH
+    ? newSearch.isLoading
+    : (tab === "practitioners" ? loadingOldP : loadingOldC);
+  const resultCount = tab === "practitioners" ? practitioners.length : centers.length;
 
   const mapLocations = useMemo(() => {
-    const raw = tab === "practitioners" ? filteredPractitioners : filteredCenters;
-    return raw.filter(l => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
-  }, [tab, filteredPractitioners, filteredCenters]);
+    const raw = tab === "practitioners"
+      ? (USE_NEW_SEARCH ? newProviders : oldFilteredPractitioners)
+      : (USE_NEW_SEARCH ? newCenters : oldFilteredCenters);
+    return raw.filter((l: any) => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
+  }, [tab, newProviders, newCenters, oldFilteredPractitioners, oldFilteredCenters]);
 
-  const resultCount = tab === "practitioners" ? filteredPractitioners.length : filteredCenters.length;
   const crossIslandNote = detectedIsland && detectedIsland !== urlIsland
     ? `Showing results from ${ISLANDS.find(i => i.value === detectedIsland)?.label} based on your search location.`
     : null;
@@ -706,32 +596,23 @@ const Directory = () => {
       {/* Tab Bar + Controls */}
       <div className="border-b border-border bg-background px-4 py-3">
         <div className="container space-y-2">
-          {/* Row 1: island selector + map toggle (mobile) */}
           <div className="flex items-center gap-2">
             <Select value={island} onValueChange={handleIsland}>
-              <SelectTrigger className="w-36 flex-shrink-0 text-sm">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="w-36 flex-shrink-0 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {ISLANDS.map(opt => (
                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
             <div className="flex-1" />
-
-            {/* Mobile map toggle */}
-            <button
-              onClick={() => setShowMap(!showMap)}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted lg:hidden"
-            >
+            <button onClick={() => setShowMap(!showMap)}
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted lg:hidden">
               <Map className="h-4 w-4" />
               {showMap ? "List" : "Map"}
             </button>
           </div>
 
-          {/* Row 2: tabs — full width on all screen sizes */}
           <Tabs value={tab} onValueChange={(v) => setTab(v as DirectoryTab)}>
             <TabsList className="w-full">
               <TabsTrigger value="practitioners" className="flex-1 text-xs sm:text-sm">
@@ -757,20 +638,13 @@ const Directory = () => {
 
         {/* List */}
         <div className={`flex-1 overflow-y-auto p-4 lg:block lg:max-h-[calc(100vh-8rem)] lg:max-w-lg xl:max-w-xl ${showMap ? "hidden" : "block"}`}>
-          {/* Search + mobile filter button */}
           <div className="mb-3 flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Filter by name, modality, city…"
-                value={searchQuery}
+              <input type="text" placeholder="Filter by name, modality, city…" value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+                className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
             </div>
-
-            {/* Mobile filters button */}
             <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="sm" className="flex-shrink-0 lg:hidden gap-1.5">
@@ -782,9 +656,7 @@ const Directory = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-xl">
-                <SheetHeader className="mb-4">
-                  <SheetTitle>Filter Results</SheetTitle>
-                </SheetHeader>
+                <SheetHeader className="mb-4"><SheetTitle>Filter Results</SheetTitle></SheetHeader>
                 <FilterPanel {...filterPanelProps} />
                 <Button className="mt-6 w-full" onClick={() => setFilterSheetOpen(false)}>
                   Show {resultCount} result{resultCount !== 1 ? "s" : ""}
@@ -793,18 +665,15 @@ const Directory = () => {
             </Sheet>
           </div>
 
-          {/* Active filter chips (mobile + desktop) */}
           {activeFilterCount > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
               {modality && (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  {modality}
+                <Badge variant="secondary" className="gap-1 text-xs">{modality}
                   <button onClick={() => handleModality('')} aria-label="Remove modality filter"><X className="h-3 w-3" /></button>
                 </Badge>
               )}
               {city && (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  {city}
+                <Badge variant="secondary" className="gap-1 text-xs">{city}
                   <button onClick={() => handleCity('')} aria-label="Remove city filter"><X className="h-3 w-3" /></button>
                 </Badge>
               )}
@@ -815,8 +684,7 @@ const Directory = () => {
                 </Badge>
               )}
               {acceptsClients && (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  Accepting Clients
+                <Badge variant="secondary" className="gap-1 text-xs">Accepting Clients
                   <button onClick={() => handleAcceptsClients(false)} aria-label="Remove accepting clients filter"><X className="h-3 w-3" /></button>
                 </Badge>
               )}
@@ -825,13 +693,27 @@ const Directory = () => {
 
           {crossIslandNote && (
             <p className="mb-2 rounded bg-blue-50 px-3 py-2 text-xs text-blue-700">
-              🏝️ {crossIslandNote}
+              {crossIslandNote}
             </p>
           )}
 
-          <p className="mb-4 text-sm text-muted-foreground">
-            {isLoading ? "Loading…" : `${resultCount} result${resultCount !== 1 ? "s" : ""} found`}
-          </p>
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">
+              {isLoading ? "Loading…" : `${resultCount} result${resultCount !== 1 ? "s" : ""} found`}
+            </p>
+            {userLocation && !isLoading && resultCount > 0 && (
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors select-none">
+                <Navigation className="h-3.5 w-3.5" />
+                <input
+                  type="checkbox"
+                  className="accent-primary"
+                  checked={sortByDistance}
+                  onChange={e => setSortByDistance(e.target.checked)}
+                />
+                Nearest first
+              </label>
+            )}
+          </div>
 
           {isLoading ? (
             <div className="space-y-3">
@@ -839,25 +721,44 @@ const Directory = () => {
                 <Skeleton key={i} className="h-28 w-full rounded-lg" />
               ))}
             </div>
+          ) : isNoResults ? (
+            /* ── No-results state ───────────────────────────────────────── */
+            <NoResultsState
+              query={effectiveQuery}
+              island={ISLANDS.find(i => i.value === island)?.label || 'this island'}
+              onClear={handleClearFilters}
+              suggestions={fallbackSuggestions}
+              tab={tab}
+            />
           ) : (
             <div className="space-y-3">
               {tab === "practitioners"
-                ? filteredPractitioners.map((p) => (
-                    <ProviderCard key={p.id} provider={p} />
-                  ))
-                : filteredCenters.map((c) => (
-                    <CenterCard key={c.id} center={c} />
-                  ))}
+                ? practitioners.map((p) => <ProviderCard key={p.id} provider={p} />)
+                : centers.map((c) => <CenterCard key={c.id} center={c} />)}
 
-              {resultCount === 0 && (
+              {resultCount === 0 && !hasActiveSearch && (
                 <div className="py-12 text-center">
-                  <p className="text-sm text-muted-foreground">No listings match your filters on {ISLANDS.find(i => i.value === island)?.label || 'this island'}.</p>
-                  <button
-                    onClick={handleClearFilters}
-                    className="mt-2 text-xs text-primary hover:underline"
+                  <p className="text-sm text-muted-foreground">No listings on {ISLANDS.find(i => i.value === island)?.label || 'this island'} yet.</p>
+                </div>
+              )}
+
+              {USE_NEW_SEARCH && accumulatedResults.length < newTotalCount && (
+                <div className="flex justify-center pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={newSearch.isLoading}
+                    className="min-w-40"
                   >
-                    Clear filters
-                  </button>
+                    {newSearch.isLoading && page > 0 ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Loading…
+                      </span>
+                    ) : (
+                      `Load more (${newTotalCount - accumulatedResults.length} remaining)`
+                    )}
+                  </Button>
                 </div>
               )}
             </div>

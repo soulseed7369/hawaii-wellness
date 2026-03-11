@@ -348,6 +348,57 @@ pipeline/
 
 ---
 
+## Search/Taxonomy Rebuild (Sprint 1–4 complete, Sprint 5 pending)
+
+### New tables (migrations in `supabase/migrations/20260310*`)
+- `taxonomy_axes` — 7 axes: modality, concern, approach, provider_type, format, audience, geography
+- `taxonomy_terms` — ~130 terms with parent-child hierarchy for modalities
+- `taxonomy_aliases` — ~315 aliases for fuzzy matching
+- `taxonomy_relationships` — ~256 cross-axis edges (modality→treats→concern, modality→related→approach) with strength scores
+- `listing_modalities`, `listing_concerns`, `listing_approaches`, `listing_formats`, `listing_audiences` — join tables
+- Added `search_tsv tsvector` + `search_embedding vector(384)` + `profile_completeness int` columns to practitioners/centers
+
+### New hooks
+- `useAliasMap()` — loads all taxonomy terms+aliases, builds client-side `AliasMap` (Map<string, TaxonomyTerm>), staleTime: Infinity
+- `useSearchListings(params, enabled)` — calls `search_listings` Supabase RPC
+- `useParsedSearch(rawQuery)` — alias map + parser → `SearchIntent`
+- `useDirectorySearch(filters)` — bridge hook connecting old filter UI to new search RPC
+- `useTaxonomyFacets()` — grouped modality parents/children for faceted UI
+
+### SearchBar autocomplete
+`src/components/SearchBar.tsx` now has a taxonomy-powered autocomplete dropdown on the "What?" input. Uses `useAliasMap()` for client-side filtering (no extra DB calls). Grouped by axis. Max 8 suggestions. 200ms debounce. Arrow key navigation.
+
+### Feature flag
+`VITE_USE_NEW_SEARCH` — set to `'false'` to revert to old client-side search in Directory.tsx. Default is new search enabled.
+
+### Match explanation labels
+`Provider` type now has optional `matchedConcerns?: string[]` and `matchedApproaches?: string[]`. ProviderCard shows "Helps with: ..." and "Approach: ..." when available (new search only).
+
+### Key file: `src/lib/parseSearchQuery.ts`
+Client-side query parser: tokenize → geography detection → stop word removal → n-gram alias matching → residual freeText. Returns `SearchIntent` with modalities/concerns/approaches as term IDs + island/city.
+
+### Key RPC: `search_listings`
+14-parameter hybrid search: FTS (30%) + embedding (20%) + taxonomy overlap (20%) + completeness (10%) + tier (10%) + freshness (10%). Paginated. Returns total_count.
+
+### Pipeline scripts (in `pipeline/scripts/`)
+- `30_backfill_taxonomy.py` — 5-step backfill: modalities→joins, infer concerns, bio-scan approaches, session_type→formats, center_type→provider_type
+- `31_rebuild_search_docs.py` — touches all rows to fire tsvector triggers + runs profile completeness
+- `32_generate_embeddings.py` — generates 384-dim embeddings
+- `run_backfill.sh` — orchestrator
+
+### Sprint 5 TODO
+- Apply all migration files (000000–000007) to Supabase via dashboard SQL editor
+- Run backfill pipeline (`pipeline/scripts/run_backfill.sh`)
+- QA: test search on all 4 islands, verify autocomplete, check map
+- Tuning: adjust composite score weights based on real results
+- Documentation
+
+### Sprint 5 DONE
+- ✅ lat/lng added to `search_listings` RPC return + TypeScript types + Directory adapter
+- ✅ Build passes cleanly
+
+---
+
 ## Common Gotchas
 
 - **`modalities` is `text[]`** (Postgres array), not a comma-separated string. Always handle as array in TypeScript and pass as array to Supabase.
@@ -360,6 +411,9 @@ pipeline/
 - **`pendingPlan` localStorage key** must be validated against a whitelist of known price IDs before acting on it (security: prevents open redirect abuse).
 - **Hero images for Maui/Oahu/Kauai** are local public assets with spaces in filenames — use URL-encoded paths (`/maui%20hero.jpg` etc.) in `heroImageUrl` config.
 - **AdminPanel.tsx is ~2800+ lines** — always use offset/limit when reading it, or grep for specific sections.
+- **Supabase client import path is `@/lib/supabase`** — NOT `@/integrations/supabase/client`. The latter doesn't exist and will cause build failures.
+- **LM Studio host for qwen** is `LM_HOST=192.168.68.65` (user's current network). Always pass this env var when calling `lm_code.py`.
+- **Qwen limitations**: Works well for focused, spec-driven tasks (new hooks, type additions). Fails badly on "preserve existing code and modify" tasks (rewrites UI from scratch instead of patching). For complex refactors, write directly.
 
 ---
 
