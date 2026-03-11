@@ -38,11 +38,21 @@ const SESSION_TYPE_LABELS: Record<string, string> = {
 
 interface ProviderCardProps {
   provider: Provider;
+  highlightModality?: string;
 }
 
-export function ProviderCard({ provider }: ProviderCardProps) {
+export function ProviderCard({ provider, highlightModality }: ProviderCardProps) {
   const displayModalities = provider.modalities ?? (provider.modality ? [provider.modality] : []);
-  const visibleModalities = displayModalities.slice(0, 3);
+  // Bubble the searched/matched modality to the front so users see it first
+  const sorted = highlightModality
+    ? [...displayModalities].sort((a, b) => {
+        const hl = highlightModality.toLowerCase();
+        const aMatch = a.toLowerCase().includes(hl) || hl.includes(a.toLowerCase());
+        const bMatch = b.toLowerCase().includes(hl) || hl.includes(b.toLowerCase());
+        return aMatch === bMatch ? 0 : aMatch ? -1 : 1;
+      })
+    : displayModalities;
+  const visibleModalities = sorted.slice(0, 3);
   const extraCount = displayModalities.length - visibleModalities.length;
   const hasImage = !!provider.image && !provider.image.includes("no%20image") && !provider.image.includes("no image");
 

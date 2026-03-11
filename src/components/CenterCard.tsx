@@ -26,11 +26,20 @@ function AvatarFallback({ name, className }: { name: string; className?: string 
 
 interface CenterCardProps {
   center: Center;
+  highlightModality?: string;
 }
 
-export function CenterCard({ center }: CenterCardProps) {
+export function CenterCard({ center, highlightModality }: CenterCardProps) {
   const displayModalities = center.modalities ?? (center.modality ? [center.modality] : []);
-  const visibleModalities = displayModalities.slice(0, 3);
+  const sorted = highlightModality
+    ? [...displayModalities].sort((a, b) => {
+        const hl = highlightModality.toLowerCase();
+        const aMatch = a.toLowerCase().includes(hl) || hl.includes(a.toLowerCase());
+        const bMatch = b.toLowerCase().includes(hl) || hl.includes(b.toLowerCase());
+        return aMatch === bMatch ? 0 : aMatch ? -1 : 1;
+      })
+    : displayModalities;
+  const visibleModalities = sorted.slice(0, 3);
   const extraCount = displayModalities.length - visibleModalities.length;
   const hasImage = !!center.image && !center.image.includes("no%20image") && !center.image.includes("no image");
 
