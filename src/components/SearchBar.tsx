@@ -427,8 +427,8 @@ export function SearchBar({
             </div>
           </div>
 
-          {/* ── Popular search chips ─────────────────────────────── */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          {/* ── Popular search chips — hidden while autocomplete dropdown is open ── */}
+          <div className={`mt-4 flex flex-wrap items-center justify-center gap-2 transition-opacity duration-150 ${showDropdown ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <span className="text-xs text-primary-foreground/60 font-medium">Try:</span>
             {POPULAR_SEARCHES.map(({ label, emoji }) => (
               <button
