@@ -348,8 +348,8 @@ function NoResultsState({ query, island, onClear, suggestions, tab, highlightMod
           <div className="space-y-3">
             {suggestions.map(s =>
               tab === 'practitioners'
-                ? <ProviderCard key={s.id} provider={resultToProvider(s as any)} highlightModality={highlightModality} />
-                : <CenterCard key={s.id} center={resultToCenter(s as any)} highlightModality={highlightModality} />
+                ? <ProviderCard key={s.id} provider={resultToProvider(s as any)} highlightModality={highlightModality} compact />
+                : <CenterCard key={s.id} center={resultToCenter(s as any)} highlightModality={highlightModality} compact />
             )}
           </div>
         </div>
@@ -732,8 +732,8 @@ const Directory = () => {
           ) : (
             <div className="space-y-3">
               {tab === "practitioners"
-                ? practitioners.map((p) => <ProviderCard key={p.id} provider={p} highlightModality={effectiveQuery} />)
-                : centers.map((c) => <CenterCard key={c.id} center={c} highlightModality={effectiveQuery} />)}
+                ? practitioners.map((p) => <ProviderCard key={p.id} provider={p} highlightModality={effectiveQuery} compact />)
+                : centers.map((c) => <CenterCard key={c.id} center={c} highlightModality={effectiveQuery} compact />)}
 
               {resultCount === 0 && !hasActiveSearch && (
                 <div className="py-12 text-center">
