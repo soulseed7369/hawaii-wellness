@@ -2097,17 +2097,48 @@ const AdminPanel = () => {
           {editingPractitioner && (
             <form onSubmit={handleEditPractitionerSubmit} className="space-y-4">
 
-              {/* Status — first for quick admin triage */}
-              <div>
-                <Label>Status</Label>
-                <Select value={editPractitionerForm.status}
-                  onValueChange={v => handleEditPractitionerChange('status', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Status + Tier — top row for quick admin triage */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={editPractitionerForm.status}
+                    onValueChange={v => handleEditPractitionerChange('status', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Subscription Tier</Label>
+                  <Select
+                    value={(editingPractitioner as any)?.tier ?? 'free'}
+                    onValueChange={v => {
+                      if (!editingPractitioner) return;
+                      setListingTier.mutate({
+                        listingId: editingPractitioner.id,
+                        listingType: 'practitioner',
+                        tier: v as 'free' | 'premium' | 'featured',
+                        island: editingPractitioner.island ?? 'big_island',
+                        ownerId: (editingPractitioner as any).owner_id ?? null,
+                        previousTier: (editingPractitioner as any).tier ?? null,
+                      }, {
+                        onSuccess: () => toast.success(`Tier set to ${v}`),
+                        onError: (e: Error) => toast.error(e.message),
+                      });
+                    }}
+                    disabled={setListingTier.isPending}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="premium">⭐ Premium</SelectItem>
+                      <SelectItem value="featured">👑 Featured</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">Featured claims one of 5 island slots.</p>
+                </div>
               </div>
 
               {/* Photo upload */}
@@ -2318,42 +2349,6 @@ const AdminPanel = () => {
                   checked={editPractitionerForm.accepts_new_clients}
                   onCheckedChange={v => handleEditPractitionerChange('accepts_new_clients', v)} />
               </div>
-
-              {/* Tier */}
-              {editingPractitioner && (
-                <div>
-                  <Label>Subscription Tier</Label>
-                  <Select
-                    value={(editingPractitioner as any).tier ?? 'free'}
-                    onValueChange={v => {
-                      setListingTier.mutate({
-                        listingId: editingPractitioner.id,
-                        listingType: 'practitioner',
-                        tier: v as 'free' | 'premium' | 'featured',
-                        island: editingPractitioner.island ?? 'big_island',
-                        ownerId: (editingPractitioner as any).owner_id ?? null,
-                        previousTier: (editingPractitioner as any).tier ?? null,
-                      }, {
-                        onSuccess: () => toast.success(`Tier set to ${v}`),
-                        onError: (e: Error) => toast.error(e.message),
-                      });
-                    }}
-                    disabled={setListingTier.isPending}
-                  >
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="free">Free</SelectItem>
-                      <SelectItem value="premium">⭐ Premium</SelectItem>
-                      <SelectItem value="featured">👑 Featured</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Setting Featured will claim one of the 5 island slots.
-                  </p>
-                </div>
-              )}
 
               {/* Premium Features */}
               <div className="border rounded-lg p-4 space-y-4 bg-amber-50 border-amber-200">
