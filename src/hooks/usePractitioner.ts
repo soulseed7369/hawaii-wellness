@@ -32,6 +32,7 @@ export interface PractitionerProfile {
   gallery: string[];
   tier: string;
   ownerId: string | null;
+  updatedAt: string | null;
   testimonials: Array<{ author: string; text: string; date: string }>;
   socialLinks: {
     instagram?: string;
@@ -73,6 +74,7 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     gallery: [],
     tier: row.tier,
     ownerId: row.owner_id,
+    updatedAt: row.updated_at ?? null,
     testimonials: row.testimonials ?? [],
     socialLinks: row.social_links ?? null,
   };
@@ -116,6 +118,7 @@ export function usePractitioner(id: string | undefined) {
           gallery: profileData.gallery,
           tier: 'free',
           ownerId: null,
+          updatedAt: null,
           testimonials: [],
           socialLinks: null,
         };

@@ -7,7 +7,7 @@ const config = {
   heroTitle: "Maui Wellness Directory",
   heroSubtitle: "Discover holistic practitioners, spas & wellness centers across the Valley Isle",
   pageTitle: "Maui Wellness Directory – Valley Isle Holistic Health",
-  pageDescription: "Find holistic health practitioners, wellness centers, and retreats on Maui, Hawaii.",
+  pageDescription: "Find massage, yoga, acupuncture & holistic health practitioners in Lahaina, Kihei & Makawao. Maui's growing wellness directory — practitioners across the Valley Isle.",
 };
 
 export default function MauiHome() {

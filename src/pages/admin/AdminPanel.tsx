@@ -788,6 +788,12 @@ const AdminPanel = () => {
   const renderPractitionerRow = (p: PractitionerRow) => {
     const shown = (p.modalities || []).slice(0, 3);
     const extra = (p.modalities || []).length - 3;
+    const quality = getPractitionerQuality(p);
+    const qualityPct = Math.round((quality.filled / quality.total) * 100);
+    const qualityColor =
+      qualityPct >= 83 ? 'text-green-600 bg-green-50 border-green-200' :
+      qualityPct >= 50 ? 'text-yellow-600 bg-yellow-50 border-yellow-200' :
+                         'text-red-600 bg-red-50 border-red-200';
     return (
       <Card key={p.id} className={`mb-3 ${selectedPractitioners.has(p.id) ? 'ring-2 ring-blue-400' : ''}`}>
         <CardContent className="p-4">
@@ -799,9 +805,10 @@ const AdminPanel = () => {
                 checked={selectedPractitioners.has(p.id)}
                 onChange={() => toggleSelectPractitioner(p.id)}
               />
-              {p.avatar_url && (
-                <img src={p.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-              )}
+              {p.avatar_url
+                ? <img src={p.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                : <div className="w-12 h-12 rounded-full flex-shrink-0 bg-gray-100 flex items-center justify-center text-gray-400 text-lg font-semibold">{p.name.charAt(0)}</div>
+              }
               <div className="min-w-0">
                 <h3 className="font-semibold truncate">{p.name}</h3>
                 <p className="text-sm text-gray-500">{p.city}</p>
@@ -814,10 +821,24 @@ const AdminPanel = () => {
                   {shown.map(m => <Badge key={m} variant="secondary" className="text-xs">{m}</Badge>)}
                   {extra > 0 && <Badge variant="outline" className="text-xs">+{extra} more</Badge>}
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Updated {formatDate(p.updated_at)}</p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <p className="text-xs text-gray-400">Updated {formatDate(p.updated_at)}</p>
+                  {quality.missing.length > 0 && (
+                    <span className="text-xs text-orange-500" title={`Missing: ${quality.missing.join(', ')}`}>
+                      Missing: {quality.missing.join(', ')}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+              {/* Completeness score */}
+              <span
+                className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${qualityColor}`}
+                title={quality.missing.length > 0 ? `Missing: ${quality.missing.join(', ')}` : 'Profile complete'}
+              >
+                {qualityPct}%
+              </span>
               <Badge variant={p.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                 {p.status}
               </Badge>
@@ -853,6 +874,30 @@ const AdminPanel = () => {
         </CardContent>
       </Card>
     );
+  };
+
+  // ── Practitioner completeness score ──────────────────────────────────────
+  const PRACTITIONER_QUALITY_FIELDS = [
+    { key: 'avatar_url',           label: 'Photo' },
+    { key: 'bio',                  label: 'Bio' },
+    { key: 'phone',                label: 'Phone' },
+    { key: 'email',                label: 'Email' },
+    { key: 'modalities',           label: 'Modalities' },
+    { key: 'external_booking_url', label: 'Booking link' },
+  ] as const;
+
+  const getPractitionerQuality = (p: PractitionerRow) => {
+    const filled = PRACTITIONER_QUALITY_FIELDS.filter(f => {
+      const val = (p as Record<string, unknown>)[f.key];
+      if (Array.isArray(val)) return val.length > 0;
+      return val !== null && val !== undefined && val !== '';
+    });
+    const missing = PRACTITIONER_QUALITY_FIELDS.filter(f => {
+      const val = (p as Record<string, unknown>)[f.key];
+      if (Array.isArray(val)) return val.length === 0;
+      return val === null || val === undefined || val === '';
+    }).map(f => f.label);
+    return { filled: filled.length, total: PRACTITIONER_QUALITY_FIELDS.length, missing };
   };
 
   // ── Center quality score (Part 2) ─────────────────────────────────────────

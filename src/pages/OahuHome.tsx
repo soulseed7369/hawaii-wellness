@@ -7,7 +7,7 @@ const config = {
   heroTitle: "Oahu Wellness Directory",
   heroSubtitle: "Find holistic health practitioners, spas & wellness centers on the Gathering Place",
   pageTitle: "Oahu Wellness Directory – Holistic Health on Oahu",
-  pageDescription: "Find holistic health practitioners, wellness centers, and retreats on Oahu, Hawaii.",
+  pageDescription: "Find acupuncture, massage, counseling & holistic health practitioners in Honolulu, Kailua & North Shore. Oahu's comprehensive wellness directory.",
 };
 
 export default function OahuHome() {

@@ -8,7 +8,7 @@ const config = {
   heroTitle: "Find Your Path to Wellness",
   heroSubtitle: "Discover holistic practitioners, retreats & wellness centers on the Big Island",
   pageTitle: "Big Island Wellness Directory – Hawaiʻi Island",
-  pageDescription: "Find holistic health practitioners, wellness centers, and retreats on the Big Island of Hawaiʻi.",
+  pageDescription: "Find acupuncture, massage, yoga, reiki & naturopathic practitioners in Kona, Hilo & Waimea. Hawaiʻi Island's largest holistic wellness directory — 500+ practitioners, 34 specialties.",
 };
 
 export default function BigIsland() {

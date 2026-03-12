@@ -16,8 +16,10 @@ import {
 import {
   CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft,
   Quote, Flag, Instagram, Facebook, Linkedin, Link2, Check, Clock,
+  CalendarClock,
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
+import { RequestInfoModal } from "@/components/RequestInfoModal";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
@@ -190,6 +192,38 @@ const ProfileDetail = () => {
     ],
   };
 
+  // ── Review schema — only when testimonials exist ─────────────────────────
+  const reviewSchema = p.testimonials.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: p.name,
+    url: p.website ?? profileUrl,
+    review: p.testimonials.map(t => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: t.author },
+      reviewBody: t.text,
+      ...(t.date ? { datePublished: t.date } : {}),
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: 5,
+        bestRating: 5,
+      },
+    })),
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5',
+      reviewCount: String(p.testimonials.length),
+    },
+  } : null;
+
+  // ── Last updated label ────────────────────────────────────────────────────
+  const lastUpdatedLabel = (() => {
+    if (!p.updatedAt) return null;
+    try {
+      return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(p.updatedAt));
+    } catch { return null; }
+  })();
+
   // ── Working hours (present if usePractitioner exposes it) ────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const workingHours = (p as any).workingHours as Record<string, { open: string; close: string } | null> | undefined;
@@ -199,6 +233,7 @@ const ProfileDetail = () => {
     <main>
       <JsonLd id="profile-localbusiness" data={localBusinessSchema} />
       <JsonLd id="profile-breadcrumb" data={breadcrumbSchema} />
+      {reviewSchema && <JsonLd id="profile-reviews" data={reviewSchema} />}
 
       {/* Breadcrumb nav */}
       <div className="container pt-4">
@@ -246,8 +281,14 @@ const ProfileDetail = () => {
                   <Badge variant="secondary">Accepting New Clients</Badge>
                 )}
               </div>
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap items-center gap-4">
                 <ShareProfileButton name={p.name} />
+                {lastUpdatedLabel && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CalendarClock className="h-3.5 w-3.5" />
+                    {isClaimed ? 'Managed by practitioner' : 'Profile updated'} · {lastUpdatedLabel}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -336,14 +377,21 @@ const ProfileDetail = () => {
 
         {/* Right Sidebar */}
         <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-          {/* Book Appointment — top of sidebar (desktop) */}
-          {p.externalBookingUrl && (
+          {/* Primary CTA — top of sidebar (desktop) */}
+          {p.externalBookingUrl ? (
             <Button className="w-full gap-2" size="lg" asChild>
               <a href={p.externalBookingUrl} target="_blank" rel="noopener noreferrer">
                 {p.bookingLabel || 'Book Appointment'}
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>
+          ) : (
+            <RequestInfoModal
+              practitionerName={p.name}
+              practitionerEmail={p.email}
+              practitionerWebsite={p.website}
+              fullWidth
+            />
           )}
 
           <Card>
@@ -455,17 +503,24 @@ const ProfileDetail = () => {
         </Button>
       </div>
 
-      {/* Mobile sticky booking CTA — only on small screens, only when booking URL exists */}
-      {p.externalBookingUrl && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 p-3 backdrop-blur-sm lg:hidden">
+      {/* Mobile sticky CTA — always visible on mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 p-3 backdrop-blur-sm lg:hidden">
+        {p.externalBookingUrl ? (
           <Button className="w-full gap-2" size="lg" asChild>
             <a href={p.externalBookingUrl} target="_blank" rel="noopener noreferrer">
               {p.bookingLabel || 'Book Appointment'}
               <ExternalLink className="h-4 w-4" />
             </a>
           </Button>
-        </div>
-      )}
+        ) : (
+          <RequestInfoModal
+            practitionerName={p.name}
+            practitionerEmail={p.email}
+            practitionerWebsite={p.website}
+            fullWidth
+          />
+        )}
+      </div>
     </main>
   );
 };

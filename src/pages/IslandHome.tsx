@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
@@ -10,6 +11,9 @@ import { useArticles } from "@/hooks/useArticles";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 
 
 // Popular modalities shown as clickable chips for quick browse
@@ -76,10 +80,26 @@ function CardSkeleton() {
 
 export function IslandHome({ config }: IslandHomeProps) {
   usePageMeta(config.pageTitle, config.pageDescription);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistState, setWaitlistState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
 
   const { data: practitioners = [], isLoading: loadingPractitioners } = usePractitioners(config.island);
   const { data: centers = [], isLoading: loadingCenters } = useCenters(config.island);
   const { data: articles = [], isLoading: loadingArticles } = useArticles();
+
+  const handleWaitlist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!waitlistEmail.trim()) return;
+    setWaitlistState('loading');
+    try {
+      if (supabase) {
+        await supabase.from('island_waitlist').upsert({ email: waitlistEmail.trim(), island: config.island }, { onConflict: 'email' });
+      }
+      setWaitlistState('done');
+    } catch {
+      setWaitlistState('error');
+    }
+  };
 
   // Tier-grouped random order: featured first, then premium, then free (each group shuffled)
   const homePractitioners = shuffledTierSort(practitioners).slice(0, 4);
@@ -261,31 +281,16 @@ export function IslandHome({ config }: IslandHomeProps) {
               <p className="font-semibold text-primary">{config.displayName} <span className="ml-1 text-xs font-normal text-primary/70">— you are here</span></p>
               <p className="mt-1 text-sm text-muted-foreground">Browse all practitioners &amp; centers</p>
             </Link>
-            {/* Other islands */}
-            {areasServed.map(island => (
-              island.comingSoon ? (
-                <div
-                  key={island.slug}
-                  className="rounded-xl border border-border bg-background p-5 opacity-60 cursor-default"
-                >
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">{island.label}</p>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Coming Soon
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{island.description}</p>
-                </div>
-              ) : (
-                <Link
-                  key={island.slug}
-                  to={`/${island.slug}`}
-                  className="rounded-xl border border-border bg-background p-5 transition-colors hover:border-primary/50 hover:bg-primary/5"
-                >
-                  <p className="font-semibold">{island.label}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{island.description}</p>
-                </Link>
-              )
+            {/* Live islands */}
+            {areasServed.filter(i => !i.comingSoon).map(island => (
+              <Link
+                key={island.slug}
+                to={`/${island.slug}`}
+                className="rounded-xl border border-border bg-background p-5 transition-colors hover:border-primary/50 hover:bg-primary/5"
+              >
+                <p className="font-semibold">{island.label}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{island.description}</p>
+              </Link>
             ))}
             {/* Full directory link */}
             <Link
@@ -295,6 +300,36 @@ export function IslandHome({ config }: IslandHomeProps) {
               <p className="font-semibold">All Islands Directory</p>
               <p className="mt-1 text-sm text-muted-foreground">Search across the entire state</p>
             </Link>
+          </div>
+
+          {/* Coming-soon email capture — replaces greyed-out tiles */}
+          <div className="mt-6 rounded-xl border border-border bg-background px-5 py-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Maui · Oahu · Kauai</span> directories launching soon —
+                get notified when your island goes live.
+              </p>
+              {waitlistState === 'done' ? (
+                <p className="text-sm font-medium text-green-600 flex-shrink-0">✓ You&apos;re on the list!</p>
+              ) : (
+                <form onSubmit={handleWaitlist} className="flex gap-2 flex-shrink-0">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={waitlistEmail}
+                    onChange={e => setWaitlistEmail(e.target.value)}
+                    className="h-9 w-48 text-sm"
+                    required
+                  />
+                  <Button type="submit" size="sm" className="h-9" disabled={waitlistState === 'loading'}>
+                    {waitlistState === 'loading' ? '…' : 'Notify me'}
+                  </Button>
+                </form>
+              )}
+            </div>
+            {waitlistState === 'error' && (
+              <p className="mt-2 text-xs text-destructive">Something went wrong — please try again.</p>
+            )}
           </div>
         </div>
       </section>
