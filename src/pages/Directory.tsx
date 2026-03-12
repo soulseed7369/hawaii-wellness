@@ -80,7 +80,7 @@ function resultToProvider(r: DirectoryResult): Provider {
     modality: (r.modality_labels?.[0]) || (r.modalities?.[0]) || '',
     modalities: r.modality_labels?.length ? r.modality_labels : (r.modalities || []),
     location: r.city || '',
-    photo: r.photo_url || '',
+    image: r.photo_url || '',
     lat: r.lat ?? 0,
     lng: r.lng ?? 0,
     tier: r.tier || 'free',
@@ -103,9 +103,9 @@ function resultToCenter(r: DirectoryResult): Center {
     modality: (r.modality_labels?.[0]) || (r.modalities?.[0]) || '',
     modalities: r.modality_labels?.length ? r.modality_labels : (r.modalities || []),
     location: r.city || '',
-    photo: r.photo_url || '',
-    lat: 0,
-    lng: 0,
+    image: r.photo_url || '',
+    lat: r.lat ?? 0,
+    lng: r.lng ?? 0,
     tier: r.tier || 'free',
     services: [],
     centerType: '',
@@ -461,7 +461,7 @@ const Directory = () => {
     acceptsClients,
     tab,
     page,
-    pageSize: 20,
+    pageSize: 25,
   });
 
   // Accumulate results across pages
@@ -498,6 +498,9 @@ const Directory = () => {
     [fallbackData]
   );
 
+  // Tier rank: featured=0, premium=1, free/other=2 — used as stable secondary sort
+  function tierRank(tier?: string) { return tier === 'featured' ? 0 : tier === 'premium' ? 1 : 2; }
+
   const newProviders = useMemo(() => {
     const list = accumulatedResults
       .filter(r => r.listing_type === 'practitioner')
@@ -511,7 +514,8 @@ const Directory = () => {
     if (sortByDistance && userLocation) {
       return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
     }
-    return list;
+    // Always keep featured before premium in display order
+    return [...list].sort((a, b) => tierRank(a.tier) - tierRank(b.tier));
   }, [accumulatedResults, userLocation, sortByDistance]);
 
   const newCenters = useMemo(() => {
@@ -527,7 +531,8 @@ const Directory = () => {
     if (sortByDistance && userLocation) {
       return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
     }
-    return list;
+    // Always keep featured before premium in display order
+    return [...list].sort((a, b) => tierRank(a.tier) - tierRank(b.tier));
   }, [accumulatedResults, userLocation, sortByDistance]);
 
   // ── OLD SEARCH PATH (fallback) ────────────────────────────────────────────

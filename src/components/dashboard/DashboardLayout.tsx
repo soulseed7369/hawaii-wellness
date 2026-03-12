@@ -47,8 +47,12 @@ export function DashboardLayout() {
       >
         {/* Sidebar header */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-5">
-          <Link to="/" className="font-display text-lg font-bold text-accent">
-            Hawa'i Wellness
+          <Link to="/" className="flex-shrink-0">
+            <img
+              src="/hawaii-wellness-logo.png"
+              alt="Hawaiʻi Wellness"
+              className="h-8 w-auto"
+            />
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
