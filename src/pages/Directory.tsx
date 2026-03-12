@@ -318,9 +318,10 @@ interface NoResultsStateProps {
   onClear: () => void;
   suggestions: import("@/hooks/useSearchListings").SearchResult[];
   tab: DirectoryTab;
+  highlightModality?: string;
 }
 
-function NoResultsState({ query, island, onClear, suggestions, tab }: NoResultsStateProps) {
+function NoResultsState({ query, island, onClear, suggestions, tab, highlightModality }: NoResultsStateProps) {
   const displayQuery = query.trim();
   return (
     <div className="py-8">
@@ -350,8 +351,8 @@ function NoResultsState({ query, island, onClear, suggestions, tab }: NoResultsS
           <div className="space-y-3">
             {suggestions.map(s =>
               tab === 'practitioners'
-                ? <ProviderCard key={s.id} provider={resultToProvider(s as any)} highlightModality={effectiveQuery} />
-                : <CenterCard key={s.id} center={resultToCenter(s as any)} highlightModality={effectiveQuery} />
+                ? <ProviderCard key={s.id} provider={resultToProvider(s as any)} highlightModality={highlightModality} />
+                : <CenterCard key={s.id} center={resultToCenter(s as any)} highlightModality={highlightModality} />
             )}
           </div>
         </div>
@@ -729,6 +730,7 @@ const Directory = () => {
               onClear={handleClearFilters}
               suggestions={fallbackSuggestions}
               tab={tab}
+              highlightModality={effectiveQuery}
             />
           ) : (
             <div className="space-y-3">
