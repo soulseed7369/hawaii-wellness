@@ -158,6 +158,7 @@ const AdminPanel = () => {
   const [sort, setSort] = useState<AdminQueryParams['sort']>('updated_desc');
   const [island, setIsland] = useState('all');
   const [statusFilter, setStatusFilter] = useState<AdminQueryParams['status']>('all');
+  const [tierFilter, setTierFilter] = useState('all');
   const [modalityFilter, setModalityFilter] = useState('all');
   // ── Centers-only filters ──────────────────────────────────────────────────
   const [centerTypeFilter, setCenterTypeFilter] = useState('all');
@@ -327,6 +328,7 @@ const AdminPanel = () => {
     sort,
     island,
     status: statusFilter,
+    tier: tierFilter,
     modality: modalityFilter,
     page: practitionerPage,
     pageSize: PAGE_SIZE,
@@ -336,6 +338,7 @@ const AdminPanel = () => {
     sort,
     island,
     status: statusFilter,
+    tier: tierFilter,
     modality: modalityFilter,
     centerType: centerTypeFilter,
     missingData: missingDataFilter,
@@ -1120,6 +1123,17 @@ const AdminPanel = () => {
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="published">Published</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={tierFilter} onValueChange={v => { setTierFilter(v); setPractitionerPage(0); setCenterPage(0); }}>
+          <SelectTrigger className="h-8 w-28 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Tiers</SelectItem>
+            <SelectItem value="free">Free</SelectItem>
+            <SelectItem value="premium">⭐ Premium</SelectItem>
+            <SelectItem value="featured">👑 Featured</SelectItem>
           </SelectContent>
         </Select>
         <Select value={modalityFilter} onValueChange={v => { setModalityFilter(v); setPractitionerPage(0); setCenterPage(0); }}>

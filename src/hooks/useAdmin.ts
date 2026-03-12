@@ -12,6 +12,7 @@ export interface AdminQueryParams {
   island?: string;
   status?: 'all' | 'published' | 'draft';
   modality?: string;
+  tier?: string;                 // 'all' | 'free' | 'premium' | 'featured'
   // Centers-only filters
   centerType?: string;           // 'all' | 'spa' | 'wellness_center' | 'clinic' | 'retreat_center' | 'yoga_studio'
   missingData?: string;          // 'all' | 'phone' | 'email' | 'phone_or_email' | 'description' | 'photo'
@@ -99,6 +100,7 @@ export const useAllPractitioners = (params: AdminQueryParams = {}) => {
     island = '',
     status = 'all',
     modality = '',
+    tier = 'all',
     page = 0,
     pageSize = 50,
   } = params;
@@ -126,6 +128,10 @@ export const useAllPractitioners = (params: AdminQueryParams = {}) => {
 
       if (modality && modality !== 'all') {
         query = query.contains('modalities', [modality]);
+      }
+
+      if (tier && tier !== 'all') {
+        query = query.eq('tier', tier);
       }
 
       switch (sort) {
@@ -244,6 +250,7 @@ export const useAllCenters = (params: AdminQueryParams = {}) => {
     island = '',
     status = 'all',
     modality = '',
+    tier = 'all',
     centerType = 'all',
     missingData = 'all',
     page = 0,
@@ -273,6 +280,10 @@ export const useAllCenters = (params: AdminQueryParams = {}) => {
 
       if (modality && modality !== 'all') {
         query = query.contains('modalities', [modality]);
+      }
+
+      if (tier && tier !== 'all') {
+        query = query.eq('tier', tier);
       }
 
       if (centerType && centerType !== 'all') {
