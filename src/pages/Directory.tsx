@@ -369,7 +369,8 @@ const Directory = () => {
   const urlModality = searchParams.get('modality') || '';
   const urlCity = searchParams.get('city') || '';
   const urlSessionType = searchParams.get('sessionType') || '';
-  const urlAcceptsClients = searchParams.get('acceptsClients') === '1';
+  // Default to true (show only accepting-clients listings) unless URL explicitly sets acceptsClients=0
+  const urlAcceptsClients = searchParams.get('acceptsClients') !== '0';
 
   // User location: prefer URL params (set by SearchBar "Near me"), fall back to localStorage
   // so location persists when navigating directly to /directory or using the inline search
