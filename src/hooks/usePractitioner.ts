@@ -63,7 +63,7 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     email: row.email,
     website: row.website_url,
     externalBookingUrl: row.external_booking_url,
-    bookingLabel: (row as any).booking_label ?? null,
+    bookingLabel: row.booking_label ?? null,
     lat: row.lat,
     lng: row.lng,
     about: row.bio,

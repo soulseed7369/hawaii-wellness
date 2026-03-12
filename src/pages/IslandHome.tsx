@@ -12,6 +12,18 @@ import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
 
 
+// Popular modalities shown as clickable chips for quick browse
+const BROWSE_MODALITIES = [
+  { label: 'Yoga',        emoji: '🧘' },
+  { label: 'Massage',     emoji: '💆' },
+  { label: 'Reiki',       emoji: '✨' },
+  { label: 'Acupuncture', emoji: '🪡' },
+  { label: 'Breathwork',  emoji: '🌬️' },
+  { label: 'Naturopathic',emoji: '🌿' },
+  { label: 'Life Coaching', emoji: '🌱' },
+  { label: 'Sound Healing', emoji: '🎵' },
+];
+
 const OTHER_ISLANDS = [
   { slug: "big-island", label: "Big Island",  description: "Kona, Hilo, Waimea & more",       comingSoon: false },
   { slug: "maui",       label: "Maui",        description: "Lahaina, Kihei, Makawao & more",   comingSoon: true  },
@@ -72,7 +84,8 @@ export function IslandHome({ config }: IslandHomeProps) {
   // Tier-grouped random order: featured first, then premium, then free (each group shuffled)
   const homePractitioners = shuffledTierSort(practitioners).slice(0, 4);
   const homeCenters = shuffledTierSort(centers).slice(0, 4);
-  const articleCardData = articles.slice(0, 3);
+  // Prefer an article with featured=true; fallback to the most recent article
+  const featuredArticle = articles.find(a => a.featured) ?? articles[0] ?? null;
 
   // ── ItemList schema for practitioner listings ────────────────────────────
   const itemListSchema = practitioners.length > 0
@@ -191,11 +204,11 @@ export function IslandHome({ config }: IslandHomeProps) {
         </div>
       </section>
 
-      {/* ── Latest Articles ──────────────────────────────────────────────── */}
+      {/* ── Featured Article ─────────────────────────────────────────────── */}
       <section className="container py-12">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-2xl font-bold md:text-3xl">
-            Latest Wellness Articles
+            From the Wellness Blog
           </h2>
           <Link to="/articles" className="text-sm text-primary hover:underline">
             View all →
@@ -203,20 +216,31 @@ export function IslandHome({ config }: IslandHomeProps) {
         </div>
 
         {loadingArticles ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-64 w-full rounded-xl" />
-            ))}
-          </div>
-        ) : articleCardData.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {articleCardData.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
+          <Skeleton className="h-64 w-full rounded-xl" />
+        ) : featuredArticle ? (
+          <ArticleCard article={featuredArticle} featured />
         ) : (
           <p className="py-8 text-sm text-muted-foreground">No articles yet.</p>
         )}
+      </section>
+
+      {/* ── Browse by Modality ───────────────────────────────────────────── */}
+      <section className="border-t border-border bg-secondary/20 py-10">
+        <div className="container">
+          <h2 className="mb-5 font-display text-xl font-bold md:text-2xl">Browse by Modality</h2>
+          <div className="flex flex-wrap gap-3">
+            {BROWSE_MODALITIES.map(({ label, emoji }) => (
+              <Link
+                key={label}
+                to={`/directory?q=${encodeURIComponent(label)}&island=${config.island}`}
+                className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+              >
+                <span>{emoji}</span>
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Areas Served ──────────────────────────────────────────────────── */}

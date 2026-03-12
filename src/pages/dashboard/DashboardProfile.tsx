@@ -48,7 +48,7 @@ const BOOKING_LABELS = [
   { value: 'Request a Consultation', label: 'Request a Consultation' },
 ];
 
-const emptyForm: PractitionerFormData & { booking_label: string } = {
+const emptyForm: PractitionerFormData = {
   name: '',
   island: 'big_island',
   modalities: [],
@@ -67,7 +67,7 @@ const emptyForm: PractitionerFormData & { booking_label: string } = {
 export default function DashboardProfile() {
   const { data: practitioner, isLoading } = useMyPractitioner();
   const saveMutation = useSavePractitioner();
-  const [form, setForm] = useState<PractitionerFormData & { booking_label: string }>(emptyForm);
+  const [form, setForm] = useState<PractitionerFormData>(emptyForm);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);

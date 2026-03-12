@@ -34,6 +34,7 @@ export type PractitionerFormData = {
   email: string;
   website_url: string;
   external_booking_url: string;
+  booking_label: string;
   accepts_new_clients: boolean;
 };
 
@@ -58,6 +59,7 @@ export function useSavePractitioner() {
         email: formData.email.trim() || null,
         website_url: formData.website_url.trim() || null,
         external_booking_url: formData.external_booking_url.trim() || null,
+        booking_label: formData.booking_label.trim() || null,
         accepts_new_clients: formData.accepts_new_clients,
         status: 'draft',
       };

@@ -34,6 +34,7 @@ export interface PractitionerRow {
   email: string | null;
   website_url: string | null;
   external_booking_url: string | null;
+  booking_label: string | null;
   accepts_new_clients: boolean;
   avatar_url: string | null;
   status: 'draft' | 'published' | 'archived';
