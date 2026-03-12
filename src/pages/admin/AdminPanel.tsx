@@ -215,6 +215,7 @@ const AdminPanel = () => {
     email: '',
     website_url: '',
     external_booking_url: '',
+    booking_label: '',
     accepts_new_clients: true,
     status: 'published' as 'published' | 'draft',
     avatar_url: null as string | null,
@@ -245,6 +246,7 @@ const AdminPanel = () => {
     email: '',
     website_url: '',
     external_booking_url: '',
+    booking_label: '',
     accepts_new_clients: true,
     status: 'published' as 'published' | 'draft',
     avatar_url: null as string | null,
@@ -535,6 +537,7 @@ const AdminPanel = () => {
       email: p.email || '',
       website_url: p.website_url || '',
       external_booking_url: p.external_booking_url || '',
+      booking_label: p.booking_label || '',
       accepts_new_clients: p.accepts_new_clients,
       status: p.status as 'published' | 'draft',
       avatar_url: p.avatar_url,
@@ -2296,11 +2299,51 @@ const AdminPanel = () => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="ep-booking">Booking URL</Label>
-                <Input id="ep-booking" placeholder="External booking link"
-                  value={editPractitionerForm.external_booking_url}
-                  onChange={e => handleEditPractitionerChange('external_booking_url', e.target.value)} />
+              {/* Booking Configuration */}
+              <div className="rounded-lg border border-border p-4 space-y-3">
+                <p className="text-sm font-semibold flex items-center gap-1.5">
+                  📅 Booking Configuration
+                </p>
+                <div>
+                  <Label htmlFor="ep-booking">Booking URL</Label>
+                  <Input id="ep-booking" placeholder="e.g. https://calendly.com/your-name"
+                    value={editPractitionerForm.external_booking_url}
+                    onChange={e => handleEditPractitionerChange('external_booking_url', e.target.value)} />
+                  <p className="text-xs text-muted-foreground mt-1">Supports Calendly and Acuity Scheduling</p>
+                </div>
+                <div>
+                  <Label htmlFor="ep-booking-label">Button Label</Label>
+                  <Select
+                    value={editPractitionerForm.booking_label || 'Book Appointment'}
+                    onValueChange={v => handleEditPractitionerChange('booking_label', v)}
+                  >
+                    <SelectTrigger id="ep-booking-label"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Book Appointment">Book Appointment</SelectItem>
+                      <SelectItem value="Schedule Discovery Call">Schedule Discovery Call</SelectItem>
+                      <SelectItem value="Book a Session">Book a Session</SelectItem>
+                      <SelectItem value="Request a Consultation">Request a Consultation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {editingPractitioner && (
+                  <div className="flex items-center gap-2 text-xs pt-1">
+                    {(() => {
+                      const tier = (editingPractitioner as any).tier ?? 'free';
+                      const hasUrl = !!editPractitionerForm.external_booking_url;
+                      const embedActive = (tier === 'premium' || tier === 'featured') && hasUrl;
+                      return embedActive ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-700 font-medium">
+                          ✓ Embed active on profile
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {!hasUrl ? 'Add a booking URL to enable embed' : 'Upgrade to Premium to enable calendar embed'}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between">

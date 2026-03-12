@@ -79,14 +79,17 @@ function CalendlyEmbed({ url }: { url: string }) {
       if (cancelled) return;
       const calendly = (window as unknown as { Calendly?: CalendlyAPI }).Calendly;
       if (calendly?.initInlineWidget && containerRef.current) {
-        containerRef.current.innerHTML = "";          // clear before reinit
         calendly.initInlineWidget({ url, parentElement: containerRef.current });
         setLoaded(true);
+      } else if (!cancelled) {
+        // Script tag exists but Calendly API not available — show error
+        setError(true);
       }
     };
 
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`);
-    if (existing) {
+    // Only reuse existing script if the Calendly API actually loaded successfully
+    if (existing && (window as unknown as { Calendly?: CalendlyAPI }).Calendly) {
       initWidget();
       return () => { cancelled = true; };
     }
@@ -132,12 +135,29 @@ function IframeEmbed({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  // Ref tracks actual loaded state so the timeout closure is never stale
+  const loadedRef = useRef(false);
 
-  // Fallback timeout: if iframe hasn't fired onLoad after 15 s, show error
+  // Reset state when URL changes (e.g. navigating between practitioners)
   useEffect(() => {
-    const id = setTimeout(() => { if (!loaded) setError(true); }, 15_000);
-    return () => clearTimeout(id);
+    setLoaded(false);
+    setError(false);
+    loadedRef.current = false;
+  }, [url]);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    loadedRef.current = loaded;
   }, [loaded]);
+
+  // Fallback timeout: fires once per mount/URL-change; uses ref to avoid stale closure
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (!loadedRef.current) setError(true);
+    }, 15_000);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]); // reset timer on URL change
 
   if (error) {
     return <EmbedError url={url} label="Open booking page" />;
@@ -148,12 +168,11 @@ function IframeEmbed({
       {!loaded && <Skeleton className="absolute inset-0" style={{ height: "700px" }} />}
       <iframe
         src={url}
-        title={`Book an appointment with ${practitionerName}`}
+        title={`Book an appointment with ${practitionerName || "this practitioner"}`}
         className="w-full"
         style={{ minHeight: "700px", display: "block" }}
         frameBorder="0"
         // allow-same-origin: needed so the booking service can access its own resources
-        // allow-pointer-lock: removed — not needed for booking flows
         sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
         loading="lazy"
         onLoad={() => setLoaded(true)}
@@ -174,6 +193,9 @@ export function BookingEmbed({
 
   // Reject invalid / non-http(s) URLs silently
   if (!isValidHttpUrl(bookingUrl)) return null;
+
+  // Guard against missing name
+  if (!practitionerName?.trim()) return null;
 
   const provider = detectProvider(bookingUrl);
 
