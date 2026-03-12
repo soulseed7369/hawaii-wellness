@@ -1,24 +1,18 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, LocateFixed, X, Loader2 } from "lucide-react";
+import { Search, LocateFixed, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-homepage.jpg";
 import { useAliasMap } from "@/hooks/useSearchListings";
 
-const ISLAND_OPTIONS = [
-  { value: 'all', label: 'All Islands' },
-  { value: 'big_island', label: 'Big Island' },
-  // Maui, Oahu, Kauai hidden until those directories are ready
+// Island tabs — Big Island live, others coming soon
+const ISLAND_TABS = [
+  { value: 'big_island', label: 'Big Island', comingSoon: false },
+  { value: 'maui',       label: 'Maui',       comingSoon: true  },
+  { value: 'oahu',       label: 'Oahu',       comingSoon: true  },
+  { value: 'kauai',      label: 'Kauai',      comingSoon: true  },
 ];
-
-const ISLAND_DISPLAY: Record<string, string> = {
-  big_island: 'Big Island',
-  maui: 'Maui',
-  oahu: 'Oahu',
-  kauai: 'Kauai',
-};
 
 /** Map lat/lng to a Hawaii island DB key, or null if outside all islands. */
 function detectIslandFromCoords(lat: number, lng: number): string | null {
@@ -85,7 +79,7 @@ export function SearchBar({
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locating, setLocating] = useState(false);
-  const [locationLabel, setLocationLabel] = useState<string | null>(null); // null = GPS, string = zip label
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   // Zip code UI state
   const [showZipInput, setShowZipInput] = useState(false);
@@ -125,7 +119,7 @@ export function SearchBar({
         const { latitude, longitude } = pos.coords;
         setUserLat(latitude);
         setUserLng(longitude);
-        setLocationLabel(null); // GPS, no label
+        setLocationLabel(null);
         localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({ lat: latitude, lng: longitude }));
         setLocating(false);
       },
@@ -139,7 +133,6 @@ export function SearchBar({
     setGeocoding(true);
     setZipError('');
     try {
-      // Append ", Hawaii" for town queries so "Hilo" doesn't resolve to another state
       const query = /^\d{5}$/.test(zipInput.trim()) ? zipInput.trim() : `${zipInput.trim()}, Hawaii`;
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=us&format=json&limit=1`,
@@ -151,11 +144,10 @@ export function SearchBar({
         const longitude = parseFloat(data[0].lon);
         setUserLat(latitude);
         setUserLng(longitude);
-        // Auto-set island dropdown when currently on "All Islands"
         const detected = detectIslandFromCoords(latitude, longitude);
         if (detected && island === 'all') setIsland(detected);
-        // Label: "Kona · Big Island" or just "96740"
-        const islandName = detected ? ISLAND_DISPLAY[detected] : null;
+        const islandNames: Record<string, string> = { big_island: 'Big Island', maui: 'Maui', oahu: 'Oahu', kauai: 'Kauai' };
+        const islandName = detected ? islandNames[detected] : null;
         const label = islandName ? `${zipInput.trim()} · ${islandName}` : zipInput.trim();
         setLocationLabel(label);
         localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({ lat: latitude, lng: longitude, label }));
@@ -165,13 +157,13 @@ export function SearchBar({
         setZipError('Location not found — try a different town or zip');
       }
     } catch {
-      setZipError('Could not look up zip code');
+      setZipError('Could not look up location');
     }
     setGeocoding(false);
   };
 
-  const handleClearLocation = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleClearLocation = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setUserLat(null);
     setUserLng(null);
     setLocationLabel(null);
@@ -270,7 +262,6 @@ export function SearchBar({
   const showDropdown = isOpen && suggestions.length > 0;
 
   return (
-    // overflow-x-hidden clips the hero image edges but does NOT clip the autocomplete dropdown vertically
     <section className="relative overflow-x-hidden py-20 md:py-28">
       <img
         src={bgImage}
@@ -286,24 +277,74 @@ export function SearchBar({
           {heroSubtitle}
         </p>
 
-        {/* ── Search card ─────────────────────────────────────── */}
         <div className="mx-auto max-w-2xl">
-          {/* Two-row search card */}
-          <div className="rounded-xl bg-background/80 shadow-xl backdrop-blur-md">
 
-            {/* Row 1: Search input + Search button */}
-            <div className="flex items-center gap-2 p-4 pb-3">
+          {/* ── Island tabs ──────────────────────────────────────── */}
+          <div className="mb-3 flex items-center justify-center gap-1.5">
+            {ISLAND_TABS.map(tab => {
+              const isActive = island === tab.value;
+              if (tab.comingSoon) {
+                return (
+                  <span
+                    key={tab.value}
+                    title="Coming soon"
+                    className="relative cursor-default select-none rounded-full px-4 py-1.5 text-sm font-medium text-primary-foreground/35"
+                  >
+                    {tab.label}
+                    <span className="ml-1 text-[10px] font-normal text-primary-foreground/30">soon</span>
+                  </span>
+                );
+              }
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setIsland(tab.value)}
+                  className={`rounded-full px-5 py-1.5 text-sm font-medium transition-all ${
+                    isActive
+                      ? 'bg-white text-primary shadow-sm'
+                      : 'text-primary-foreground/80 hover:bg-white/20 hover:text-primary-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Search card — single row ──────────────────────────── */}
+          <div className="rounded-xl bg-background/80 shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-2 p-3">
               <div className="relative flex-1" ref={wrapperRef}>
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Modality, concern, or name…"
-                  className="h-12 border-0 bg-transparent pl-10 text-base shadow-none focus-visible:ring-0"
+                  className="h-12 border-0 bg-transparent pl-10 pr-10 text-base shadow-none focus-visible:ring-0"
                   value={what}
                   onChange={e => { setWhat(e.target.value); setIsOpen(true); setHighlightIdx(-1); }}
                   onKeyDown={handleKeyDown}
                   onFocus={() => { if (suggestions.length > 0) setIsOpen(true); }}
                   autoComplete="off"
                 />
+
+                {/* Location pin — right of input */}
+                <button
+                  type="button"
+                  onClick={hasLocation ? () => handleClearLocation() : handleLocate}
+                  disabled={locating}
+                  title={hasLocation ? 'Clear location' : 'Use my location'}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors ${
+                    hasLocation
+                      ? 'text-green-500 hover:text-green-600'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {locating
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <LocateFixed className="h-4 w-4" />
+                  }
+                </button>
+
                 {/* Autocomplete dropdown */}
                 {showDropdown && (
                   <div className="absolute left-0 right-0 top-full z-[200] mt-1 max-h-64 overflow-y-auto rounded-lg border bg-background shadow-xl">
@@ -335,118 +376,72 @@ export function SearchBar({
                 Search
               </Button>
             </div>
-
-            {/* Divider */}
-            <div className="mx-4 h-px bg-border/40" />
-
-            {/* Row 2: Location + Island selector */}
-            <div className="flex items-center gap-3 px-4 py-3">
-
-              {/* ── Location section ─────────────────────────────── */}
-              {hasLocation ? (
-                // Active location — green indicator
-                <button
-                  type="button"
-                  onClick={handleClearLocation}
-                  title="Click to clear location"
-                  className="flex items-center gap-1.5 rounded-lg border border-green-500/40 bg-green-50 px-3 h-9 text-sm font-medium text-green-700 transition-colors hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400 dark:hover:bg-green-950/50 flex-shrink-0"
-                >
-                  <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-green-600" />
-                  <span className="whitespace-nowrap">
-                    {locationLabel ? `Near: ${locationLabel}` : 'Near me'} ✓
-                  </span>
-                  <span
-                    role="button"
-                    aria-label="Clear location"
-                    className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full hover:bg-green-200 dark:hover:bg-green-800"
-                    onClick={handleClearLocation}
-                  >
-                    <X className="h-3 w-3" />
-                  </span>
-                </button>
-              ) : showZipInput ? (
-                // Town / zip input mode
-                <div className="flex flex-1 items-center gap-2">
-                  <div className="relative">
-                    <Input
-                      ref={zipInputRef}
-                      type="text"
-                      placeholder="Town or zip code"
-                      value={zipInput}
-                      onChange={e => {
-                        setZipInput(e.target.value);
-                        setZipError('');
-                      }}
-                      onKeyDown={e => { if (e.key === 'Enter') handleZipSearch(); if (e.key === 'Escape') handleCancelZip(); }}
-                      className="h-9 w-40 text-sm"
-                    />
-                    {zipError && (
-                      <p className="absolute top-full mt-1 whitespace-nowrap text-xs text-destructive">{zipError}</p>
-                    )}
-                  </div>
-                  <Button
-                    size="sm"
-                    className="h-9"
-                    onClick={handleZipSearch}
-                    disabled={geocoding || zipInput.trim().length < 2}
-                  >
-                    {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Go'}
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={handleCancelZip}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                // Default: GPS + zip options
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={handleLocate}
-                    disabled={locating}
-                    className="flex items-center gap-1.5 rounded-lg border border-input bg-background/60 px-3 h-9 text-sm text-muted-foreground hover:bg-background hover:text-foreground transition-colors flex-shrink-0"
-                  >
-                    {locating ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <LocateFixed className="h-3.5 w-3.5 flex-shrink-0" />
-                    )}
-                    <span className="whitespace-nowrap">
-                      {locating ? 'Locating…' : 'Near me'}
-                    </span>
-                  </button>
-                  <span className="text-xs text-muted-foreground">or</span>
-                  <button
-                    type="button"
-                    onClick={() => setShowZipInput(true)}
-                    className="text-xs text-muted-foreground underline-offset-2 hover:underline hover:text-foreground transition-colors whitespace-nowrap"
-                  >
-                    enter town or zip
-                  </button>
-                </div>
-              )}
-
-              {/* Spacer */}
-              <div className="flex-1" />
-
-              {/* Island selector */}
-              <Select value={island} onValueChange={setIsland}>
-                <SelectTrigger className="h-9 w-32 border-input bg-background/60 text-sm flex-shrink-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ISLAND_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
-          {/* ── Popular search chips — hidden while autocomplete dropdown is open ── */}
+          {/* ── Location status / zip input — below card ─────────── */}
+          {hasLocation && (
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <span className="text-xs font-medium text-green-300">
+                ✓ {locationLabel ? `Near ${locationLabel}` : 'Using your location'}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleClearLocation()}
+                className="flex items-center gap-0.5 text-xs text-primary-foreground/50 transition-colors hover:text-primary-foreground/80"
+                aria-label="Clear location"
+              >
+                <X className="h-3 w-3" /> clear
+              </button>
+            </div>
+          )}
+
+          {!hasLocation && showZipInput && (
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <div className="relative">
+                <Input
+                  ref={zipInputRef}
+                  type="text"
+                  placeholder="Town or zip code"
+                  value={zipInput}
+                  onChange={e => { setZipInput(e.target.value); setZipError(''); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleZipSearch(); if (e.key === 'Escape') handleCancelZip(); }}
+                  className="h-9 w-44 border-white/30 bg-white/15 text-sm text-white placeholder:text-white/50 focus-visible:ring-white/30"
+                />
+                {zipError && (
+                  <p className="absolute top-full mt-1 whitespace-nowrap text-xs text-red-300">{zipError}</p>
+                )}
+              </div>
+              <Button
+                size="sm"
+                className="h-9"
+                onClick={handleZipSearch}
+                disabled={geocoding || zipInput.trim().length < 2}
+              >
+                {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Go'}
+              </Button>
+              <button
+                type="button"
+                onClick={handleCancelZip}
+                className="text-xs text-primary-foreground/50 transition-colors hover:text-primary-foreground/80"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {!hasLocation && !showZipInput && (
+            <div className="mt-2 text-center">
+              <button
+                type="button"
+                onClick={() => setShowZipInput(true)}
+                className="text-xs text-primary-foreground/45 underline-offset-2 transition-colors hover:text-primary-foreground/70 hover:underline"
+              >
+                enter town or zip for distance results
+              </button>
+            </div>
+          )}
+
+          {/* ── Modality chips ────────────────────────────────────── */}
           <div className={`mt-4 flex flex-wrap items-center justify-center gap-2 transition-opacity duration-150 ${showDropdown ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {POPULAR_SEARCHES.map((label) => (
               <button
@@ -459,6 +454,7 @@ export function SearchBar({
               </button>
             ))}
           </div>
+
         </div>
       </div>
     </section>
