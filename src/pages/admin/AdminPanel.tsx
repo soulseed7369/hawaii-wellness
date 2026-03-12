@@ -2097,6 +2097,19 @@ const AdminPanel = () => {
           {editingPractitioner && (
             <form onSubmit={handleEditPractitionerSubmit} className="space-y-4">
 
+              {/* Status — first for quick admin triage */}
+              <div>
+                <Label>Status</Label>
+                <Select value={editPractitionerForm.status}
+                  onValueChange={v => handleEditPractitionerChange('status', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Photo upload */}
               <div>
                 <Label>Profile Photo</Label>
@@ -2299,70 +2312,11 @@ const AdminPanel = () => {
                 </div>
               </div>
 
-              {/* Booking Configuration */}
-              <div className="rounded-lg border border-border p-4 space-y-3">
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  📅 Booking Configuration
-                </p>
-                <div>
-                  <Label htmlFor="ep-booking">Booking URL</Label>
-                  <Input id="ep-booking" placeholder="e.g. https://calendly.com/your-name"
-                    value={editPractitionerForm.external_booking_url}
-                    onChange={e => handleEditPractitionerChange('external_booking_url', e.target.value)} />
-                  <p className="text-xs text-muted-foreground mt-1">Supports Calendly and Acuity Scheduling</p>
-                </div>
-                <div>
-                  <Label htmlFor="ep-booking-label">Button Label</Label>
-                  <Select
-                    value={editPractitionerForm.booking_label || 'Book Appointment'}
-                    onValueChange={v => handleEditPractitionerChange('booking_label', v)}
-                  >
-                    <SelectTrigger id="ep-booking-label"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Book Appointment">Book Appointment</SelectItem>
-                      <SelectItem value="Schedule Discovery Call">Schedule Discovery Call</SelectItem>
-                      <SelectItem value="Book a Session">Book a Session</SelectItem>
-                      <SelectItem value="Request a Consultation">Request a Consultation</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {editingPractitioner && (
-                  <div className="flex items-center gap-2 text-xs pt-1">
-                    {(() => {
-                      const tier = (editingPractitioner as any).tier ?? 'free';
-                      const hasUrl = !!editPractitionerForm.external_booking_url;
-                      const embedActive = (tier === 'premium' || tier === 'featured') && hasUrl;
-                      return embedActive ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-700 font-medium">
-                          ✓ Embed active on profile
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          {!hasUrl ? 'Add a booking URL to enable embed' : 'Upgrade to Premium to enable calendar embed'}
-                        </span>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-
               <div className="flex items-center justify-between">
                 <Label htmlFor="ep-accepts">Accepts New Clients</Label>
                 <Switch id="ep-accepts"
                   checked={editPractitionerForm.accepts_new_clients}
                   onCheckedChange={v => handleEditPractitionerChange('accepts_new_clients', v)} />
-              </div>
-
-              <div>
-                <Label>Status</Label>
-                <Select value={editPractitionerForm.status}
-                  onValueChange={v => handleEditPractitionerChange('status', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               {/* Tier */}
@@ -2412,6 +2366,51 @@ const AdminPanel = () => {
                     checked={(editPractitionerForm as any).is_featured || false}
                     onCheckedChange={v => handleEditPractitionerChange('is_featured', v)}
                   />
+                </div>
+
+                {/* Booking Configuration */}
+                <div className="space-y-3 border-t border-amber-200 pt-3">
+                  <p className="text-sm font-medium text-amber-800">📅 Booking Configuration</p>
+                  <div>
+                    <Label htmlFor="ep-booking">Booking URL</Label>
+                    <Input id="ep-booking" placeholder="e.g. https://calendly.com/your-name"
+                      value={editPractitionerForm.external_booking_url}
+                      onChange={e => handleEditPractitionerChange('external_booking_url', e.target.value)} />
+                    <p className="text-xs text-muted-foreground mt-1">Supports Calendly and Acuity Scheduling</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="ep-booking-label">Button Label</Label>
+                    <Select
+                      value={editPractitionerForm.booking_label || 'Book Appointment'}
+                      onValueChange={v => handleEditPractitionerChange('booking_label', v)}
+                    >
+                      <SelectTrigger id="ep-booking-label"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Book Appointment">Book Appointment</SelectItem>
+                        <SelectItem value="Schedule Discovery Call">Schedule Discovery Call</SelectItem>
+                        <SelectItem value="Book a Session">Book a Session</SelectItem>
+                        <SelectItem value="Request a Consultation">Request a Consultation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {editingPractitioner && (
+                    <div className="flex items-center gap-2 text-xs">
+                      {(() => {
+                        const tier = (editingPractitioner as any).tier ?? 'free';
+                        const hasUrl = !!editPractitionerForm.external_booking_url;
+                        const embedActive = (tier === 'premium' || tier === 'featured') && hasUrl;
+                        return embedActive ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-700 font-medium">
+                            ✓ Embed active on profile
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {!hasUrl ? 'Add a booking URL to enable embed' : 'Upgrade to Premium to enable calendar embed'}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
 
                 {/* Social Links */}
