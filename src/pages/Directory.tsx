@@ -32,7 +32,7 @@ const FILTER_MODALITIES = [
   "Hypnotherapy", "IV Therapy", "Life Coaching", "Lomilomi / Hawaiian Healing", "Longevity",
   "Massage", "Meditation", "Nature Therapy", "Naturopathic", "Nutrition", "Physical Therapy",
   "Psychic", "Psychotherapy", "Reiki", "Ritualist", "Somatic Therapy", "Soul Guidance",
-  "Sound Healing", "TCM (Traditional Chinese Medicine)", "Trauma-Informed Care", "Yoga",
+  "Sound Healing", "TCM (Traditional Chinese Medicine)", "Trauma-Informed Care", "Women's Health", "Yoga",
 ];
 
 // ── Island / city lookup ─────────────────────────────────────────────────────

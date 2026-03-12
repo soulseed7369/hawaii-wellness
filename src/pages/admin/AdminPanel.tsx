@@ -72,7 +72,7 @@ const MODALITIES_LIST = [
   'Nutrition', 'Osteopathic', 'Physical Therapy',
   'Psychic', 'Psychotherapy', 'Reiki', 'Ritualist', 'Somatic Therapy', 'Soul Guidance',
   'Sound Healing', 'TCM (Traditional Chinese Medicine)',
-  'Trauma-Informed Care', 'Watsu / Water Therapy', 'Yoga',
+  'Trauma-Informed Care', 'Watsu / Water Therapy', "Women's Health", 'Yoga',
 ];
 
 const ISLANDS = [
