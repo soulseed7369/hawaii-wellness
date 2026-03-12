@@ -123,8 +123,10 @@ export function SearchBar({
     setGeocoding(true);
     setZipError('');
     try {
+      // Append ", Hawaii" for town queries so "Hilo" doesn't resolve to another state
+      const query = /^\d{5}$/.test(zipInput.trim()) ? zipInput.trim() : `${zipInput.trim()}, Hawaii`;
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(zipInput)}&countrycodes=us&format=json&limit=1`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=us&format=json&limit=1`,
         { headers: { 'Accept-Language': 'en', 'User-Agent': 'AlohaHealthHub/1.0' } }
       );
       const data = await res.json();
@@ -332,7 +334,7 @@ export function SearchBar({
                 >
                   <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-green-600" />
                   <span className="whitespace-nowrap">
-                    {locationLabel ? `Zip: ${locationLabel}` : 'Near me'} ✓
+                    {locationLabel ? `Near: ${locationLabel}` : 'Near me'} ✓
                   </span>
                   <span
                     role="button"
@@ -344,22 +346,20 @@ export function SearchBar({
                   </span>
                 </button>
               ) : showZipInput ? (
-                // Zip code input mode
+                // Town / zip input mode
                 <div className="flex flex-1 items-center gap-2">
                   <div className="relative">
                     <Input
                       ref={zipInputRef}
                       type="text"
-                      inputMode="numeric"
-                      maxLength={5}
-                      placeholder="Zip code"
+                      placeholder="Town or zip code"
                       value={zipInput}
                       onChange={e => {
-                        setZipInput(e.target.value.replace(/\D/g, ''));
+                        setZipInput(e.target.value);
                         setZipError('');
                       }}
                       onKeyDown={e => { if (e.key === 'Enter') handleZipSearch(); if (e.key === 'Escape') handleCancelZip(); }}
-                      className="h-9 w-28 text-sm"
+                      className="h-9 w-40 text-sm"
                     />
                     {zipError && (
                       <p className="absolute top-full mt-1 whitespace-nowrap text-xs text-destructive">{zipError}</p>
@@ -369,7 +369,7 @@ export function SearchBar({
                     size="sm"
                     className="h-9"
                     onClick={handleZipSearch}
-                    disabled={geocoding || zipInput.length !== 5}
+                    disabled={geocoding || zipInput.trim().length < 2}
                   >
                     {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Go'}
                   </Button>
@@ -405,7 +405,7 @@ export function SearchBar({
                     onClick={() => setShowZipInput(true)}
                     className="text-xs text-muted-foreground underline-offset-2 hover:underline hover:text-foreground transition-colors whitespace-nowrap"
                   >
-                    enter zip code
+                    enter town or zip
                   </button>
                 </div>
               )}
