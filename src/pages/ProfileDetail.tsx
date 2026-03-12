@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { RequestInfoModal } from "@/components/RequestInfoModal";
+import { BookingEmbed } from "@/components/BookingEmbed";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
@@ -372,6 +373,15 @@ const ProfileDetail = () => {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Booking calendar embed — premium/featured only */}
+          {p.externalBookingUrl && (p.tier === 'premium' || p.tier === 'featured') && (
+            <BookingEmbed
+              bookingUrl={p.externalBookingUrl}
+              practitionerName={p.name}
+              tier={p.tier}
+            />
           )}
         </div>
 

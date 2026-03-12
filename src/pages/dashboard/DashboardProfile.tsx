@@ -398,6 +398,9 @@ export default function DashboardProfile() {
                   value={form.external_booking_url}
                   onChange={e => setForm(p => ({ ...p, external_booking_url: e.target.value }))}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Supports Calendly and Acuity Scheduling. Your booking calendar will be embedded directly on your public profile.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label>Button label</Label>
