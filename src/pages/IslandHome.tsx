@@ -4,7 +4,6 @@ import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { usePractitioners } from "@/hooks/usePractitioners";
 import { useCenters } from "@/hooks/useCenters";
 import { useArticles } from "@/hooks/useArticles";
@@ -34,6 +33,25 @@ interface IslandHomeProps {
   config: IslandConfig;
 }
 
+// ── Card skeleton that matches the new fixed-height card ─────────────────────
+function CardSkeleton() {
+  return (
+    <div className="flex h-80 flex-col overflow-hidden rounded-xl border border-border bg-card p-4">
+      <div className="flex justify-center pt-1 pb-3">
+        <Skeleton className="h-20 w-20 rounded-full" />
+      </div>
+      <Skeleton className="mx-auto mb-1.5 h-4 w-32 rounded" />
+      <Skeleton className="mx-auto mb-1.5 h-3 w-24 rounded" />
+      <Skeleton className="mx-auto mb-3 h-3 w-20 rounded" />
+      <Skeleton className="mx-auto mb-2 h-3 w-full rounded" />
+      <Skeleton className="mx-auto mb-4 h-3 w-5/6 rounded" />
+      <div className="mt-auto">
+        <Skeleton className="h-7 w-full rounded-md" />
+      </div>
+    </div>
+  );
+}
+
 export function IslandHome({ config }: IslandHomeProps) {
   usePageMeta(config.pageTitle, config.pageDescription);
 
@@ -41,6 +59,9 @@ export function IslandHome({ config }: IslandHomeProps) {
   const { data: centers = [], isLoading: loadingCenters } = useCenters(config.island);
   const { data: articles = [], isLoading: loadingArticles } = useArticles();
 
+  // Show 4 on homepage; featured/premium already sort first via hooks
+  const homePractitioners = practitioners.slice(0, 4);
+  const homeCenters = centers.slice(0, 4);
   const articleCardData = articles.slice(0, 3);
 
   // ── ItemList schema for practitioner listings ────────────────────────────
@@ -71,79 +92,71 @@ export function IslandHome({ config }: IslandHomeProps) {
       {itemListSchema && <JsonLd id={`itemlist-${config.island}`} data={itemListSchema} />}
       <SearchBar island={config.island} heroImageUrl={config.heroImageUrl} heroTitle={config.heroTitle} heroSubtitle={config.heroSubtitle} />
 
-      {/* Practitioners */}
+      {/* ── Practitioners ────────────────────────────────────────────────── */}
       <section className="container py-12">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-2xl font-bold md:text-3xl">
             {config.displayName} Practitioners
           </h2>
-          <Link to={`/directory?island=${config.island}`} className="text-sm text-primary hover:underline">
-            View all →
+          <Link
+            to={`/directory?island=${config.island}`}
+            className="text-sm text-primary hover:underline"
+          >
+            View all {practitioners.length > 0 ? `${practitioners.length} ` : ""}→
           </Link>
         </div>
-        <div className="px-10 sm:px-12">
-          {loadingPractitioners ? (
-            <div className="flex gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-28 w-56 flex-shrink-0 rounded-xl" />
-              ))}
-            </div>
-          ) : practitioners.length > 0 ? (
-            <Carousel opts={{ align: "start", loop: true }}>
-              <CarouselContent>
-                {practitioners.map((practitioner) => (
-                  <CarouselItem key={practitioner.id} className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                    <ProviderCard provider={practitioner} />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="h-10 w-10" />
-              <CarouselNext className="h-10 w-10" />
-            </Carousel>
-          ) : (
-            <p className="text-muted-foreground text-sm py-8">No practitioners listed yet for {config.displayName}.</p>
-          )}
-        </div>
+
+        {loadingPractitioners ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+          </div>
+        ) : homePractitioners.length > 0 ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {homePractitioners.map((practitioner) => (
+              <ProviderCard key={practitioner.id} provider={practitioner} />
+            ))}
+          </div>
+        ) : (
+          <p className="py-8 text-sm text-muted-foreground">
+            No practitioners listed yet for {config.displayName}.
+          </p>
+        )}
       </section>
 
-      {/* Centers */}
+      {/* ── Wellness Centers ─────────────────────────────────────────────── */}
       <section className="bg-secondary/30 py-12">
         <div className="container">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="font-display text-2xl font-bold md:text-3xl">
               {config.displayName} Wellness Centers
             </h2>
-            <Link to={`/directory?island=${config.island}`} className="text-sm text-primary hover:underline">
-              View all →
+            <Link
+              to={`/directory?island=${config.island}`}
+              className="text-sm text-primary hover:underline"
+            >
+              View all {centers.length > 0 ? `${centers.length} ` : ""}→
             </Link>
           </div>
-          <div className="px-10 sm:px-12">
-            {loadingCenters ? (
-              <div className="flex gap-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-28 w-64 flex-shrink-0 rounded-xl" />
-                ))}
-              </div>
-            ) : centers.length > 0 ? (
-              <Carousel opts={{ align: "start", loop: true }}>
-                <CarouselContent>
-                  {centers.map((center) => (
-                    <CarouselItem key={center.id} className="basis-full sm:basis-1/2 lg:basis-1/3">
-                      <CenterCard center={center} />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="h-10 w-10" />
-                <CarouselNext className="h-10 w-10" />
-              </Carousel>
-            ) : (
-              <p className="text-muted-foreground text-sm py-8">No wellness centers listed yet for {config.displayName}.</p>
-            )}
-          </div>
+
+          {loadingCenters ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
+          ) : homeCenters.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {homeCenters.map((center) => (
+                <CenterCard key={center.id} center={center} />
+              ))}
+            </div>
+          ) : (
+            <p className="py-8 text-sm text-muted-foreground">
+              No wellness centers listed yet for {config.displayName}.
+            </p>
+          )}
         </div>
       </section>
 
-      {/* Articles */}
+      {/* ── Latest Articles ──────────────────────────────────────────────── */}
       <section className="container py-12">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-display text-2xl font-bold md:text-3xl">
@@ -153,29 +166,22 @@ export function IslandHome({ config }: IslandHomeProps) {
             View all →
           </Link>
         </div>
-        <div className="px-10 sm:px-12">
-          {loadingArticles ? (
-            <div className="flex gap-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-64 w-64 flex-shrink-0 rounded-xl" />
-              ))}
-            </div>
-          ) : articleCardData.length > 0 ? (
-            <Carousel opts={{ align: "start" }}>
-              <CarouselContent>
-                {articleCardData.map((article) => (
-                  <CarouselItem key={article.id} className="basis-full sm:basis-1/2 lg:basis-1/3">
-                    <ArticleCard article={article} />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="h-10 w-10" />
-              <CarouselNext className="h-10 w-10" />
-            </Carousel>
-          ) : (
-            <p className="text-muted-foreground text-sm py-8">No articles yet.</p>
-          )}
-        </div>
+
+        {loadingArticles ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-64 w-full rounded-xl" />
+            ))}
+          </div>
+        ) : articleCardData.length > 0 ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {articleCardData.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        ) : (
+          <p className="py-8 text-sm text-muted-foreground">No articles yet.</p>
+        )}
       </section>
 
       {/* ── Areas Served ──────────────────────────────────────────────────── */}
