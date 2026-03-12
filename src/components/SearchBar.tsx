@@ -29,16 +29,18 @@ function detectIslandFromCoords(lat: number, lng: number): string | null {
   return null;
 }
 
-// Popular searches — shown as quick-tap chips below the search box
-const POPULAR_SEARCHES: { label: string; emoji: string }[] = [
-  { label: 'Yoga', emoji: '🧘' },
-  { label: 'Massage', emoji: '💆' },
-  { label: 'Reiki', emoji: '✨' },
-  { label: 'Breathwork', emoji: '🌬️' },
-  { label: 'Sound Healing', emoji: '🎵' },
-  { label: 'Acupuncture', emoji: '🪡' },
-  { label: 'Life Coaching', emoji: '🌱' },
-  { label: 'Naturopathic', emoji: '🌿' },
+// Top 10 modalities — shown as quick-tap chips below the hero search box
+const POPULAR_SEARCHES = [
+  'Yoga',
+  'Massage',
+  'Reiki',
+  'Acupuncture',
+  'Breathwork',
+  'Meditation',
+  'Sound Healing',
+  'Life Coaching',
+  'Naturopathic',
+  'Energy Healing',
 ];
 
 const AXIS_LABELS: Record<string, string> = {
@@ -246,10 +248,7 @@ export function SearchBar({
     navigate(`/directory?${params.toString()}`);
   };
 
-  const handleChipClick = (label: string) => {
-    setWhat(label);
-    handleSearch(label);
-  };
+  const handleChipClick = (label: string) => handleSearch(label);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') { setIsOpen(false); return; }
@@ -449,16 +448,14 @@ export function SearchBar({
 
           {/* ── Popular search chips — hidden while autocomplete dropdown is open ── */}
           <div className={`mt-4 flex flex-wrap items-center justify-center gap-2 transition-opacity duration-150 ${showDropdown ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <span className="text-xs text-primary-foreground/60 font-medium">Try:</span>
-            {POPULAR_SEARCHES.map(({ label, emoji }) => (
+            {POPULAR_SEARCHES.map((label) => (
               <button
                 key={label}
                 type="button"
                 onClick={() => handleChipClick(label)}
-                className="flex items-center gap-1 rounded-full bg-background/20 px-3 py-1 text-xs font-medium text-primary-foreground backdrop-blur-sm transition-colors hover:bg-background/35 border border-primary-foreground/20"
+                className="rounded-full border border-primary-foreground/25 bg-white/10 px-3 py-1 text-xs font-medium text-primary-foreground backdrop-blur-sm transition-colors hover:bg-white/20 hover:border-primary-foreground/50"
               >
-                <span>{emoji}</span>
-                <span>{label}</span>
+                {label}
               </button>
             ))}
           </div>

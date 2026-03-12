@@ -16,16 +16,28 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
 
-// Popular modalities shown as clickable chips for quick browse
+// Top 20 modalities — shown as browse chips below the featured article
 const BROWSE_MODALITIES = [
-  { label: 'Yoga',        emoji: '🧘' },
-  { label: 'Massage',     emoji: '💆' },
-  { label: 'Reiki',       emoji: '✨' },
-  { label: 'Acupuncture', emoji: '🪡' },
-  { label: 'Breathwork',  emoji: '🌬️' },
-  { label: 'Naturopathic',emoji: '🌿' },
-  { label: 'Life Coaching', emoji: '🌱' },
-  { label: 'Sound Healing', emoji: '🎵' },
+  'Yoga',
+  'Massage',
+  'Reiki',
+  'Acupuncture',
+  'Breathwork',
+  'Meditation',
+  'Sound Healing',
+  'Life Coaching',
+  'Naturopathic',
+  'Energy Healing',
+  'Somatic Therapy',
+  'Nutrition',
+  'Functional Medicine',
+  'Lomilomi / Hawaiian Healing',
+  'Counseling',
+  'Ayurveda',
+  'Chiropractic',
+  'Hypnotherapy',
+  'Psychotherapy',
+  'Physical Therapy',
 ];
 
 const OTHER_ISLANDS = [
@@ -248,15 +260,14 @@ export function IslandHome({ config }: IslandHomeProps) {
       <section className="border-t border-border bg-secondary/20 py-10">
         <div className="container">
           <h2 className="mb-5 font-display text-xl font-bold md:text-2xl">Browse by Modality</h2>
-          <div className="flex flex-wrap gap-3">
-            {BROWSE_MODALITIES.map(({ label, emoji }) => (
+          <div className="flex flex-wrap gap-2">
+            {BROWSE_MODALITIES.map((label) => (
               <Link
                 key={label}
                 to={`/directory?q=${encodeURIComponent(label)}&island=${config.island}`}
-                className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
               >
-                <span>{emoji}</span>
-                <span>{label}</span>
+                {label}
               </Link>
             ))}
           </div>
