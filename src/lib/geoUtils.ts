@@ -1,6 +1,9 @@
 /**
- * Haversine distance between two lat/lng points.
- * Returns distance in miles.
+ * Geo utility helpers for distance calculations.
+ */
+
+/**
+ * Haversine formula — returns distance in miles between two lat/lng points.
  */
 export function haversineDistance(
   lat1: number,
@@ -20,8 +23,7 @@ export function haversineDistance(
 }
 
 /**
- * Human-readable distance string.
- * e.g. "0.8 mi", "3.2 mi", "14 mi"
+ * Format a distance in miles to a human-readable string.
  */
 export function formatDistance(miles: number): string {
   if (miles < 0.5) return 'Less than ½ mi';
