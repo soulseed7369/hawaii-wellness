@@ -1,8 +1,21 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Link } from "react-router-dom";
 import type { Provider } from "@/data/mockData";
+
+/** Forces Leaflet to recalculate tile layout when the map container becomes visible. */
+function MapResizer({ visible }: { visible: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    if (visible) {
+      const t = setTimeout(() => map.invalidateSize(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [map, visible]);
+  return null;
+}
 
 // Custom marker icon
 const createCustomIcon = (name: string) => {
@@ -23,9 +36,10 @@ const createCustomIcon = (name: string) => {
 
 interface DirectoryMapProps {
   locations: Provider[];
+  visible?: boolean;
 }
 
-export function DirectoryMap({ locations }: DirectoryMapProps) {
+export function DirectoryMap({ locations, visible = true }: DirectoryMapProps) {
   if (locations.length === 0) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center bg-muted/30 text-center p-8">
@@ -46,6 +60,7 @@ export function DirectoryMap({ locations }: DirectoryMapProps) {
       style={{ minHeight: "400px" }}
       aria-label="Interactive map of wellness providers"
     >
+      <MapResizer visible={visible} />
       <TileLayer
         attribution='&copy; <a href="https://carto.com/" target="_blank" rel="noopener noreferrer">CARTO</a>'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"

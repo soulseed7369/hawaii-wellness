@@ -771,9 +771,9 @@ const Directory = () => {
         </div>
 
         {/* Map */}
-        <div className={`flex-1 lg:block ${showMap ? "block" : "hidden"}`} style={{ minHeight: showMap ? "calc(100vh-8rem)" : undefined }}>
+        <div className={`flex-1 lg:block ${showMap ? "block" : "hidden"}`} style={{ minHeight: showMap ? "calc(100vh - 8rem)" : undefined }}>
           <div className="sticky top-0 h-[calc(100vh-8rem)]">
-            <DirectoryMap locations={mapLocations} />
+            <DirectoryMap locations={mapLocations} visible={showMap} />
           </div>
         </div>
       </div>

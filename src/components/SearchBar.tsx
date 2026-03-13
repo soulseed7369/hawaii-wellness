@@ -112,7 +112,10 @@ export function SearchBar({
   }, [showZipInput]);
 
   const handleLocate = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setShowZipInput(true);
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -123,8 +126,11 @@ export function SearchBar({
         localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({ lat: latitude, lng: longitude }));
         setLocating(false);
       },
-      () => setLocating(false),
-      { timeout: 8000 }
+      () => {
+        setLocating(false);
+        setShowZipInput(true);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   };
 
