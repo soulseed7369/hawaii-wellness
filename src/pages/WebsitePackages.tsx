@@ -138,6 +138,138 @@ export default function WebsitePackages() {
         </div>
       </section>
 
+      {/* ── Website Examples ─────────────────────────────────────────────────── */}
+      <section className="bg-background py-16 border-b border-border">
+        <div className="container max-w-5xl">
+          <div className="text-center mb-10">
+            <Badge className="mb-4 bg-sage/10 text-sage-dark border-sage/20 text-xs tracking-wide uppercase px-3 py-1">
+              Real examples
+            </Badge>
+            <h2 className="mb-3 font-display text-2xl font-bold md:text-3xl">
+              See what we build
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Every site is custom-designed for your practice. Here are three examples across
+              different modalities — each with a distinct look, feel, and structure.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {/* Massage */}
+            <div className="rounded-xl overflow-hidden border border-border group hover:shadow-md transition-shadow">
+              <div
+                className="h-36 flex items-end p-4 relative"
+                style={{ background: "linear-gradient(135deg, #1C3028 0%, #4A7B8C 100%)" }}
+              >
+                <div className="absolute inset-0 opacity-20"
+                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=600&q=60')", backgroundSize: "cover", backgroundPosition: "center" }}
+                />
+                <div className="relative">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] text-white/60 uppercase mb-0.5">Massage Therapist</p>
+                  <p className="text-white font-semibold text-lg leading-tight" style={{ fontFamily: "Georgia, serif" }}>Leilani Kahale</p>
+                  <p className="text-white/60 text-xs">Lahaina, Maui</p>
+                </div>
+              </div>
+              <div className="p-4 bg-white">
+                <div className="flex gap-1.5 mb-3">
+                  {["#FAF7F2", "#1C3028", "#B5624A", "#E8DFC8"].map(c => (
+                    <div key={c} className="h-4 w-4 rounded-full border border-black/10 flex-shrink-0" style={{ backgroundColor: c }} />
+                  ))}
+                  <span className="text-xs text-muted-foreground ml-1">Warm earthy palette</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                  Split-layout hero, Lomilomi service cards on a dark background, handcrafted testimonials section.
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {["Booking CTA", "Services", "Testimonials", "About"].map(tag => (
+                    <span key={tag} className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Acupuncture */}
+            <div className="rounded-xl overflow-hidden border border-border group hover:shadow-md transition-shadow">
+              <div
+                className="h-36 flex items-end p-4 relative"
+                style={{ background: "linear-gradient(135deg, #141C14 0%, #5C7A5C 100%)" }}
+              >
+                <div className="absolute inset-0 opacity-20"
+                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=600&q=60')", backgroundSize: "cover", backgroundPosition: "center" }}
+                />
+                <div className="relative">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] text-white/60 uppercase mb-0.5">Acupuncturist · TCM</p>
+                  <p className="text-white font-semibold text-lg leading-tight" style={{ fontFamily: "Georgia, serif" }}>Dr. Mei Chen, LAc</p>
+                  <p className="text-white/60 text-xs">Honolulu, Oahu</p>
+                </div>
+              </div>
+              <div className="p-4 bg-white">
+                <div className="flex gap-1.5 mb-3">
+                  {["#FAFAF7", "#1C1C1C", "#5C7A5C", "#8B7020"].map(c => (
+                    <div key={c} className="h-4 w-4 rounded-full border border-black/10 flex-shrink-0" style={{ backgroundColor: c }} />
+                  ))}
+                  <span className="text-xs text-muted-foreground ml-1">Sage &amp; gold palette</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                  Full-bleed hero with credentials bar, FAQ accordion, service grid with pricing.
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {["Credentials", "FAQ", "4 Services", "Insurance Info"].map(tag => (
+                    <span key={tag} className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Yoga */}
+            <div className="rounded-xl overflow-hidden border border-border group hover:shadow-md transition-shadow">
+              <div
+                className="h-36 flex items-end p-4 relative"
+                style={{ background: "linear-gradient(135deg, #1E2A1A 0%, #C95C2E 100%)" }}
+              >
+                <div className="absolute inset-0 opacity-20"
+                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=600&q=60')", backgroundSize: "cover", backgroundPosition: "center" }}
+                />
+                <div className="relative">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] text-white/60 uppercase mb-0.5">Yoga &amp; Breathwork</p>
+                  <p className="text-white font-semibold text-lg leading-tight" style={{ fontFamily: "Georgia, serif" }}>Kai Nalani</p>
+                  <p className="text-white/60 text-xs">Kapaa, Kauai</p>
+                </div>
+              </div>
+              <div className="p-4 bg-white">
+                <div className="flex gap-1.5 mb-3">
+                  {["#FFFDF5", "#1E2A1A", "#C95C2E", "#C4963A"].map(c => (
+                    <div key={c} className="h-4 w-4 rounded-full border border-black/10 flex-shrink-0" style={{ backgroundColor: c }} />
+                  ))}
+                  <span className="text-xs text-muted-foreground ml-1">Sunset forest palette</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                  Full-height hero photo, class offerings grid, dark testimonials section with nature background.
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {["Classes", "Private Sessions", "Retreats", "Testimonials"].map(tag => (
+                    <span key={tag} className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <a
+              href="/website-examples-demo.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="lg" className="gap-2">
+                <Globe className="h-4 w-4" /> View all 3 live demos <ArrowRight className="h-4 w-4" />
+              </Button>
+            </a>
+            <p className="mt-3 text-xs text-muted-foreground">Opens in a new tab · Click between templates at the top</p>
+          </div>
+        </div>
+      </section>
+
       {/* ── How it works ─────────────────────────────────────────────────────── */}
       <section className="border-b border-border bg-background py-16">
         <div className="container max-w-5xl">
