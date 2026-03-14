@@ -131,7 +131,8 @@ def insert_new(records: list[dict], dry_run: bool) -> tuple[int, int]:
 
 def apply_enrichments(enrichments: list[dict], dry_run: bool) -> int:
     updated = 0
-    ENRICH_FIELDS = {"phone", "website_url", "address", "city", "lat", "lng"}
+    # email included — it's the most valuable field for direct marketing
+    ENRICH_FIELDS = {"phone", "email", "website_url", "address", "city", "lat", "lng"}
 
     for enrich in enrichments:
         table  = enrich.get("_db_table")
