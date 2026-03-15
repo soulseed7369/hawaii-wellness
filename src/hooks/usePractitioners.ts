@@ -62,7 +62,8 @@ export function useSimilarPractitioners(
       const all = (data ?? []).map(practitionerRowToProvider);
       const modalitySet = new Set(modalities);
 
-      // Sort by overlap count descending, break ties by tier (featured > premium > free)
+      // Only include practitioners with at least 1 shared modality.
+      // Sort by overlap count descending, break ties by tier (featured > premium > free).
       const TIER_RANK: Record<string, number> = { featured: 3, premium: 2, free: 1 };
       const scored = all
         .map(p => ({
@@ -70,6 +71,7 @@ export function useSimilarPractitioners(
           overlap: (p.modalities ?? []).filter(m => modalitySet.has(m)).length,
           tierRank: TIER_RANK[p.tier ?? 'free'] ?? 1,
         }))
+        .filter(s => s.overlap > 0)
         .sort((a, b) => b.overlap - a.overlap || b.tierRank - a.tierRank);
 
       return scored.slice(0, 3).map(s => s.provider);
