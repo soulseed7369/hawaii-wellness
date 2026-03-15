@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website Examples — Hawaii Wellness Directory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=Nunito:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,700;0,800;1,300&display=swap');
+
+/* ===== OUTER SHELL ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #F7F7F5;
+  color: #1C1C1C;
+}
+
+.shell-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E5E3;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 16px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.shell-tab {
+  padding: 12px 28px 10px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8A8A88;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  text-align: center;
+  line-height: 1.3;
+  border-radius: 8px 8px 0 0;
+}
+
+.shell-tab:hover {
+  color: #1C1C1C;
+  background: #F7F7F5;
+}
+
+.shell-tab.active {
+  color: #1C1C1C;
+  border-bottom-color: #C4714A;
+  font-weight: 600;
+}
+
+.shell-tab .tab-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #AAA;
+  margin-top: 2px;
+}
+
+.shell-tab.active .tab-sub {
+  color: #888;
+}
+
+.site-panel { display: none; }
+.site-panel.active { display: block; }
+
+
+/* ===================================================================
+   SITE 1: LEILANI KAHALE — "SACRED WARMTH"
+   =================================================================== */
+.site-leilani {
+  --cream: #F5ECD7;
+  --terracotta: #C4714A;
+  --tide: #1A3D3A;
+  --sand: #E8D5B5;
+  --bark: #3D2B1F;
+  --mist: #F9F4EC;
+  font-family: 'Nunito', sans-serif;
+  color: var(--bark);
+  background: var(--cream);
+}
+
+.site-leilani .s-nav {
+  position: sticky;
+  top: 48px;
+  z-index: 100;
+  background: var(--cream);
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(196,113,74,0.12);
+}
+
+.site-leilani .s-nav-logo {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--bark);
+}
+
+.site-leilani .s-nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.site-leilani .s-nav-links a {
+  text-decoration: none;
+  color: var(--bark);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+
+.site-leilani .s-nav-links a:hover { color: var(--terracotta); }
+
+.site-leilani .btn-pill {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 100px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.site-leilani .btn-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.site-leilani .btn-primary { background: var(--terracotta); color: #fff; }
+.site-leilani .btn-outline { background: transparent; border-color: var(--bark); color: var(--bark); }
+
+/* Hero */
+.site-leilani .hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+.site-leilani .hero-blob {
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50% 40% 60% 45% / 55% 45% 50% 45%;
+  background: radial-gradient(ellipse at 40% 40%, var(--sand) 0%, rgba(196,113,74,0.2) 50%, transparent 80%);
+  filter: blur(40px);
+  animation: leilani-pulse 8s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes leilani-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+.site-leilani .hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  padding: 48px 24px;
+}
+
+.site-leilani .hero-overline {
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.site-leilani .hero h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: clamp(42px, 6vw, 68px);
+  line-height: 1.1;
+  color: var(--bark);
+  margin-bottom: 24px;
+}
+
+.site-leilani .hero p {
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(61,43,31,0.7);
+  max-width: 480px;
+  margin: 0 auto 36px;
+}
+
+.site-leilani .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+.site-leilani .wave-divider { display: block; width: 100%; line-height: 0; margin-top: -1px; }
+.site-leilani .wave-divider svg { width: 100%; height: auto; display: block; }
+
+/* Offerings */
+.site-leilani .offerings {
+  background: var(--tide);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-leilani .offerings .section-overline {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 16px;
+}
+
+.site-leilani .offerings h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: clamp(32px, 4vw, 48px);
+  color: #fff;
+  margin-bottom: 56px;
+}
+
+.site-leilani .offerings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.site-leilani .offering-card {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: left;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.site-leilani .offering-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+}
+
+.site-leilani .offering-card h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 22px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.site-leilani .offering-card .price {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--sand);
+  margin-bottom: 12px;
+}
+
+.site-leilani .offering-card .duration {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 16px;
+}
+
+.site-leilani .offering-card p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.7;
+}
+
+/* Philosophy */
+.site-leilani .philosophy {
+  background: var(--cream);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-leilani .philosophy h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: clamp(32px, 4vw, 44px);
+  color: var(--bark);
+  margin-bottom: 56px;
+}
+
+.site-leilani .pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.site-leilani .pillar-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--terracotta), var(--sand));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 32px;
+}
+
+.site-leilani .pillar h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--bark);
+  margin-bottom: 12px;
+}
+
+.site-leilani .pillar p {
+  font-size: 14px;
+  color: rgba(61,43,31,0.65);
+  line-height: 1.7;
+}
+
+/* About */
+.site-leilani .about {
+  background: var(--mist);
+  padding: 100px 48px;
+}
+
+.site-leilani .about-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  max-width: 960px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.site-leilani .portrait-circle {
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--terracotta), var(--sand), var(--cream));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.site-leilani .portrait-circle .initials {
+  font-family: 'Fraunces', serif;
+  font-size: 72px;
+  font-weight: 300;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.site-leilani .about-text h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: 36px;
+  color: var(--bark);
+  margin-bottom: 20px;
+}
+
+.site-leilani .about-text p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(61,43,31,0.7);
+  margin-bottom: 24px;
+}
+
+.site-leilani .cred-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.site-leilani .cred-pill {
+  padding: 6px 18px;
+  border: 1.5px solid var(--terracotta);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--terracotta);
+  letter-spacing: 0.02em;
+}
+
+/* Testimonials */
+.site-leilani .testimonials {
+  background: var(--sand);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-leilani .testimonials h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: 36px;
+  color: var(--bark);
+  margin-bottom: 56px;
+}
+
+.site-leilani .testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.site-leilani .testimonial-card {
+  background: var(--cream);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: left;
+}
+
+.site-leilani .testimonial-card .quote-mark {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 56px;
+  color: var(--terracotta);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.site-leilani .testimonial-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(61,43,31,0.75);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.site-leilani .testimonial-card .attribution {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--bark);
+  font-style: normal;
+}
+
+/* Booking CTA */
+.site-leilani .booking-cta {
+  background: var(--terracotta);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-leilani .booking-cta h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: clamp(36px, 4vw, 52px);
+  color: var(--cream);
+  margin-bottom: 16px;
+}
+
+.site-leilani .booking-cta p {
+  font-size: 16px;
+  color: rgba(245,236,215,0.75);
+  margin-bottom: 36px;
+}
+
+.site-leilani .booking-cta .btn-pill {
+  background: var(--cream);
+  color: var(--terracotta);
+  font-size: 16px;
+  padding: 16px 44px;
+}
+
+/* Footer */
+.site-leilani .s-footer {
+  background: #0F2520;
+  padding: 64px 48px 40px;
+  color: rgba(245,236,215,0.65);
+}
+
+.site-leilani .footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+}
+
+.site-leilani .footer-logo {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--cream);
+  margin-bottom: 12px;
+}
+
+.site-leilani .s-footer p { font-size: 13px; line-height: 1.7; }
+
+.site-leilani .footer-links h4 {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(245,236,215,0.4);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.site-leilani .footer-links a {
+  display: block;
+  text-decoration: none;
+  color: rgba(245,236,215,0.65);
+  font-size: 13px;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.site-leilani .footer-links a:hover { color: var(--cream); }
+
+.site-leilani .footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 8px 16px;
+  border: 1px solid rgba(245,236,215,0.15);
+  border-radius: 100px;
+  font-size: 11px;
+  color: rgba(245,236,215,0.5);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.site-leilani .footer-badge:hover { border-color: rgba(245,236,215,0.3); }
+
+.site-leilani .footer-bottom {
+  max-width: 960px;
+  margin: 40px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(245,236,215,0.1);
+  font-size: 12px;
+  color: rgba(245,236,215,0.35);
+  text-align: center;
+}
+
+
+/* ===================================================================
+   SITE 2: DR. MEI CHEN — "ANCIENT PRECISION"
+   =================================================================== */
+.site-mei {
+  --white: #FFFFFF;
+  --paper: #FAFAF8;
+  --sage: #6B7C5A;
+  --gold: #C4973A;
+  --charcoal: #1C1C1C;
+  --light-sage: #F0F4ED;
+  font-family: 'Outfit', sans-serif;
+  color: var(--charcoal);
+  background: var(--white);
+}
+
+.site-mei .s-nav {
+  position: sticky;
+  top: 48px;
+  z-index: 100;
+  background: var(--white);
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #E8EDE4;
+}
+
+.site-mei .s-nav-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: var(--charcoal);
+}
+
+.site-mei .s-nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.site-mei .s-nav-links a {
+  text-decoration: none;
+  color: var(--charcoal);
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+.site-mei .s-nav-links a:hover { color: var(--sage); }
+
+.site-mei .btn-pill {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.site-mei .btn-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.site-mei .btn-gold { background: var(--gold); color: #fff; }
+.site-mei .btn-outline-sage { background: transparent; border-color: var(--sage); color: var(--sage); }
+
+/* Hero */
+.site-mei .hero {
+  background: var(--paper);
+  padding: 80px 48px;
+  display: grid;
+  grid-template-columns: 55% 45%;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 80vh;
+  gap: 48px;
+}
+
+.site-mei .hero-overline {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.site-mei .hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  font-size: clamp(40px, 5vw, 60px);
+  line-height: 1.1;
+  color: var(--charcoal);
+  margin-bottom: 20px;
+}
+
+.site-mei .hero p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(28,28,28,0.6);
+  margin-bottom: 32px;
+  max-width: 440px;
+}
+
+.site-mei .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.site-mei .hero-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.site-mei .meridian-circle {
+  width: 360px;
+  height: 360px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-mei .meridian-outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid var(--sage);
+  animation: mei-rotate 30s linear infinite;
+}
+
+.site-mei .meridian-outer::before,
+.site-mei .meridian-outer::after {
+  content: '';
+  position: absolute;
+  background: var(--gold);
+}
+
+.site-mei .meridian-outer::before {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+}
+
+.site-mei .meridian-outer::after {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  left: 0;
+}
+
+.site-mei .meridian-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  animation: mei-rotate 30s linear infinite reverse;
+}
+
+.site-mei .meridian-lines::before,
+.site-mei .meridian-lines::after {
+  content: '';
+  position: absolute;
+  background: rgba(196,151,58,0.3);
+}
+
+.site-mei .meridian-lines::before {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
+.site-mei .meridian-lines::after {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+
+.site-mei .meridian-inner-ring {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 1px solid rgba(107,124,90,0.3);
+}
+
+.site-mei .meridian-bg {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--light-sage) 0%, rgba(107,124,90,0.1) 70%, transparent 100%);
+}
+
+.site-mei .meridian-gold-orb {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold), rgba(196,151,58,0.4));
+  box-shadow: 0 0 40px rgba(196,151,58,0.3);
+}
+
+@keyframes mei-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Specialties Strip */
+.site-mei .specialties-strip {
+  background: var(--white);
+  padding: 24px 48px;
+  border-bottom: 1px solid #E8EDE4;
+  overflow-x: auto;
+  white-space: nowrap;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.site-mei .spec-pill {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 100px;
+  background: var(--light-sage);
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Services */
+.site-mei .services {
+  background: var(--white);
+  padding: 100px 48px;
+}
+
+.site-mei .services-inner { max-width: 800px; margin: 0 auto; }
+
+.site-mei .services .section-overline {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.site-mei .services h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 3.5vw, 44px);
+  color: var(--charcoal);
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.site-mei .service-card {
+  border: 1px solid #E8EDE4;
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 32px 36px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.3s;
+}
+
+.site-mei .service-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+.site-mei .service-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.site-mei .service-card h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--charcoal);
+}
+
+.site-mei .service-card .price-dur {
+  font-size: 14px;
+  color: var(--sage);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.site-mei .service-card p {
+  font-size: 14px;
+  color: rgba(28,28,28,0.55);
+  line-height: 1.6;
+}
+
+/* How It Works */
+.site-mei .how-it-works {
+  background: var(--paper);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-mei .how-it-works h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--charcoal);
+  margin-bottom: 64px;
+}
+
+.site-mei .steps {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.site-mei .step {
+  flex: 1;
+  position: relative;
+  padding: 0 24px;
+}
+
+.site-mei .step-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--gold);
+  margin: 0 auto 20px;
+  background: var(--paper);
+  position: relative;
+  z-index: 1;
+}
+
+.site-mei .step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: calc(50% + 26px);
+  width: calc(100% - 52px);
+  height: 1px;
+  background: var(--gold);
+  z-index: 0;
+}
+
+.site-mei .step h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+}
+
+.site-mei .step p {
+  font-size: 13px;
+  color: rgba(28,28,28,0.55);
+  line-height: 1.6;
+}
+
+/* About */
+.site-mei .about {
+  background: var(--light-sage);
+  padding: 100px 48px;
+}
+
+.site-mei .about-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  max-width: 960px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.site-mei .portrait-circle {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage), #A4B88E, var(--light-sage));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.site-mei .portrait-circle .initials {
+  font-family: 'DM Serif Display', serif;
+  font-size: 68px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.site-mei .about-text h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--charcoal);
+  margin-bottom: 20px;
+}
+
+.site-mei .about-text p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(28,28,28,0.6);
+  margin-bottom: 24px;
+}
+
+.site-mei .cred-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.site-mei .cred-pill {
+  padding: 6px 18px;
+  border: 1.5px solid var(--gold);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+/* Testimonials */
+.site-mei .testimonials {
+  background: var(--white);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-mei .testimonials h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--charcoal);
+  margin-bottom: 56px;
+}
+
+.site-mei .testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.site-mei .testimonial-card {
+  border-top: 1px solid var(--gold);
+  padding: 32px;
+  text-align: left;
+}
+
+.site-mei .testimonial-card p {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(28,28,28,0.7);
+  margin-bottom: 20px;
+}
+
+.site-mei .testimonial-card .attribution {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sage);
+}
+
+/* Contact */
+.site-mei .contact {
+  background: var(--paper);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-mei .contact h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--charcoal);
+  margin-bottom: 12px;
+}
+
+.site-mei .contact > p {
+  font-size: 15px;
+  color: rgba(28,28,28,0.55);
+  margin-bottom: 48px;
+}
+
+.site-mei .contact-card {
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 24px;
+  padding: 48px 40px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+}
+
+.site-mei .contact-card .form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.site-mei .contact-card label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(28,28,28,0.5);
+  margin-bottom: 8px;
+}
+
+.site-mei .contact-card input,
+.site-mei .contact-card textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #E8EDE4;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: var(--charcoal);
+  background: var(--paper);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.site-mei .contact-card input:focus,
+.site-mei .contact-card textarea:focus { border-color: var(--sage); }
+
+.site-mei .contact-card textarea { height: 120px; resize: vertical; }
+
+.site-mei .contact-card .btn-pill { width: 100%; text-align: center; margin-top: 8px; }
+
+/* Footer */
+.site-mei .s-footer {
+  background: var(--charcoal);
+  padding: 64px 48px 40px;
+  color: rgba(255,255,255,0.55);
+}
+
+.site-mei .footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+}
+
+.site-mei .footer-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.site-mei .s-footer p { font-size: 13px; line-height: 1.7; }
+
+.site-mei .footer-links h4 {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.site-mei .footer-links a {
+  display: block;
+  text-decoration: none;
+  color: rgba(255,255,255,0.55);
+  font-size: 13px;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.site-mei .footer-links a:hover { color: #fff; }
+
+.site-mei .footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.site-mei .footer-badge:hover { border-color: rgba(255,255,255,0.3); }
+
+.site-mei .footer-bottom {
+  max-width: 960px;
+  margin: 40px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+}
+
+
+/* ===================================================================
+   SITE 3: KAIA PUA — "STRONG & GROUNDED"
+   =================================================================== */
+.site-kaia {
+  --black: #0F0E0D;
+  --charcoal: #1A1917;
+  --amber: #E8A857;
+  --warm-white: #F2EDE5;
+  --muted: #8A7F74;
+  --surface: #242220;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--warm-white);
+  background: var(--black);
+}
+
+.site-kaia .s-nav {
+  position: sticky;
+  top: 48px;
+  z-index: 100;
+  background: var(--charcoal);
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(242,237,229,0.06);
+}
+
+.site-kaia .s-nav-logo {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--warm-white);
+}
+
+.site-kaia .s-nav-links {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.site-kaia .s-nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.site-kaia .s-nav-links a:hover { color: var(--warm-white); }
+
+.site-kaia .btn-pill {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 100px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.site-kaia .btn-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(232,168,87,0.2);
+}
+
+.site-kaia .btn-amber { background: var(--amber); color: var(--black); }
+.site-kaia .btn-outline-amber { background: transparent; border-color: var(--amber); color: var(--amber); }
+
+/* Hero */
+.site-kaia .hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  background: var(--black);
+}
+
+.site-kaia .hero-bg-text {
+  position: absolute;
+  font-weight: 800;
+  font-size: 30vw;
+  color: rgba(255,255,255,0.03);
+  letter-spacing: -0.04em;
+  user-select: none;
+  pointer-events: none;
+  animation: kaia-drift 20s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes kaia-drift {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  33% { transform: translateX(12px) translateY(-8px); }
+  66% { transform: translateX(-8px) translateY(6px); }
+}
+
+.site-kaia .hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  padding: 48px 24px;
+}
+
+.site-kaia .hero-tag {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.site-kaia .hero h1 {
+  font-weight: 800;
+  font-size: clamp(48px, 7vw, 80px);
+  line-height: 1.0;
+  color: var(--warm-white);
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.site-kaia .hero p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 440px;
+  margin: 0 auto 36px;
+  font-weight: 300;
+}
+
+.site-kaia .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* Stats Bar */
+.site-kaia .stats-bar {
+  background: var(--surface);
+  padding: 40px 48px;
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+}
+
+.site-kaia .stat { text-align: center; }
+
+.site-kaia .stat-number {
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--amber);
+  letter-spacing: -0.02em;
+}
+
+.site-kaia .stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Schedule */
+.site-kaia .schedule {
+  background: var(--surface);
+  padding: 100px 48px;
+}
+
+.site-kaia .schedule-inner { max-width: 720px; margin: 0 auto; }
+
+.site-kaia .schedule .section-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.site-kaia .schedule h2 {
+  font-weight: 800;
+  font-size: clamp(32px, 4vw, 44px);
+  color: var(--warm-white);
+  margin-bottom: 48px;
+  letter-spacing: -0.02em;
+}
+
+.site-kaia .schedule-card {
+  background: var(--charcoal);
+  border-radius: 24px;
+  padding: 12px;
+  border: 1px solid rgba(242,237,229,0.06);
+}
+
+.site-kaia .schedule-row {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  border-radius: 16px;
+  transition: background 0.2s;
+}
+
+.site-kaia .schedule-row:hover { background: rgba(242,237,229,0.03); }
+
+.site-kaia .schedule-row .day-pill {
+  padding: 6px 14px;
+  border-radius: 100px;
+  background: rgba(232,168,87,0.12);
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  min-width: 120px;
+  text-align: center;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.site-kaia .schedule-row .class-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--warm-white);
+  flex: 1;
+}
+
+.site-kaia .schedule-row .class-time {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  min-width: 100px;
+}
+
+.site-kaia .schedule-row .class-price {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  min-width: 50px;
+  margin-left: 20px;
+}
+
+/* Offerings */
+.site-kaia .offerings {
+  background: var(--black);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-kaia .offerings .section-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.site-kaia .offerings h2 {
+  font-weight: 800;
+  font-size: clamp(32px, 4vw, 44px);
+  color: var(--warm-white);
+  margin-bottom: 56px;
+  letter-spacing: -0.02em;
+}
+
+.site-kaia .offerings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.site-kaia .offering-card {
+  background: var(--surface);
+  border-top: 2px solid var(--amber);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: left;
+  transition: transform 0.3s;
+}
+
+.site-kaia .offering-card:hover { transform: translateY(-4px); }
+
+.site-kaia .offering-card h3 {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--warm-white);
+  margin-bottom: 8px;
+}
+
+.site-kaia .offering-card .price {
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--amber);
+  margin-bottom: 16px;
+}
+
+.site-kaia .offering-card p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* About */
+.site-kaia .about {
+  background: var(--charcoal);
+  padding: 100px 48px;
+}
+
+.site-kaia .about-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.site-kaia .pull-quote {
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(28px, 3.5vw, 42px);
+  line-height: 1.3;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+
+.site-kaia .about-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.site-kaia .portrait-circle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--surface), rgba(232,168,87,0.2), var(--charcoal));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-kaia .portrait-circle .initials {
+  font-weight: 800;
+  font-size: 64px;
+  color: var(--amber);
+}
+
+.site-kaia .about-bio {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted);
+  font-weight: 300;
+  text-align: center;
+  max-width: 280px;
+}
+
+/* Testimonials */
+.site-kaia .testimonials {
+  background: var(--black);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-kaia .testimonials h2 {
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--warm-white);
+  margin-bottom: 56px;
+  letter-spacing: -0.02em;
+}
+
+.site-kaia .testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.site-kaia .testimonial-card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: left;
+}
+
+.site-kaia .testimonial-card .quote-mark {
+  font-weight: 800;
+  font-size: 48px;
+  color: var(--amber);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.site-kaia .testimonial-card p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(242,237,229,0.6);
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+.site-kaia .testimonial-card .attribution {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--amber);
+}
+
+/* CTA */
+.site-kaia .cta {
+  background: var(--amber);
+  padding: 100px 48px;
+  text-align: center;
+}
+
+.site-kaia .cta h2 {
+  font-weight: 800;
+  font-size: clamp(40px, 5vw, 56px);
+  color: var(--black);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.site-kaia .cta p {
+  font-size: 16px;
+  color: rgba(15,14,13,0.6);
+  margin-bottom: 36px;
+}
+
+.site-kaia .cta .btn-pill {
+  background: var(--black);
+  color: var(--warm-white);
+  font-size: 15px;
+  padding: 16px 44px;
+}
+
+/* Footer */
+.site-kaia .s-footer {
+  background: var(--black);
+  padding: 64px 48px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.site-kaia .footer-bg-text {
+  position: absolute;
+  font-weight: 800;
+  font-size: 14vw;
+  color: rgba(255,255,255,0.02);
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 0.1em;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.site-kaia .footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.site-kaia .footer-logo {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--warm-white);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.site-kaia .s-footer p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.site-kaia .footer-links h4 {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(242,237,229,0.3);
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.site-kaia .footer-links a {
+  display: block;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.site-kaia .footer-links a:hover { color: var(--warm-white); }
+
+.site-kaia .footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 8px 16px;
+  border: 1px solid rgba(242,237,229,0.1);
+  border-radius: 100px;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.site-kaia .footer-badge:hover { border-color: rgba(242,237,229,0.2); }
+
+.site-kaia .footer-bottom {
+  max-width: 960px;
+  margin: 40px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(242,237,229,0.06);
+  font-size: 12px;
+  color: rgba(242,237,229,0.25);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- TAB SWITCHER -->
+<nav class="shell-tabs">
+  <button class="shell-tab active" data-tab="leilani">
+    Leilani Kahale
+    <span class="tab-sub">Lomilomi</span>
+  </button>
+  <button class="shell-tab" data-tab="mei">
+    Dr. Mei Chen
+    <span class="tab-sub">Acupuncture</span>
+  </button>
+  <button class="shell-tab" data-tab="kaia">
+    Kaia Pua
+    <span class="tab-sub">Yoga</span>
+  </button>
+</nav>
+
+
+<!-- ================================================================
+     SITE 1: LEILANI KAHALE
+     ================================================================ -->
+<div class="site-panel active" id="panel-leilani">
+<div class="site-leilani">
+
+  <nav class="s-nav">
+    <div class="s-nav-logo">Leilani Kahale</div>
+    <div class="s-nav-links">
+      <a href="#">Offerings</a>
+      <a href="#">Philosophy</a>
+      <a href="#">About</a>
+      <a href="#">Testimonials</a>
+      <a href="#" class="btn-pill btn-primary">Book Now</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-blob"></div>
+    <div class="hero-content">
+      <div class="hero-overline">Lahaina, Maui &middot; Lomilomi</div>
+      <h1>Healing Rooted<br>in the Land</h1>
+      <p>Third-generation practitioner bringing the ancient art of Lomilomi to a private studio steps from the sea. Traditional Hawaiian healing for your body, mind, and spirit.</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn-pill btn-primary">Book a Session</a>
+        <a href="#" class="btn-pill btn-outline">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wave-divider">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,40 C240,100 480,0 720,50 C960,100 1200,10 1440,60 L1440,100 L0,100 Z" fill="#1A3D3A"/>
+    </svg>
+  </div>
+
+  <section class="offerings">
+    <div class="section-overline">Offerings</div>
+    <h2>Healing Sessions</h2>
+    <div class="offerings-grid">
+      <div class="offering-card">
+        <h3>Traditional Lomilomi</h3>
+        <div class="price">$175</div>
+        <div class="duration">90 minutes</div>
+        <p>A flowing, rhythmic massage rooted in ancient Hawaiian practice. Restores balance to body and spirit through long, continuous strokes.</p>
+      </div>
+      <div class="offering-card">
+        <h3>Deep Tissue</h3>
+        <div class="price">$130</div>
+        <div class="duration">60 minutes</div>
+        <p>Targeted work on chronic tension and muscle adhesions. Firm pressure combined with Hawaiian bodywork techniques for lasting relief.</p>
+      </div>
+      <div class="offering-card">
+        <h3>Prenatal Massage</h3>
+        <div class="price">$145</div>
+        <div class="duration">75 minutes</div>
+        <p>Gentle, nurturing bodywork designed for expectant mothers. Eases discomfort, reduces swelling, and creates a peaceful space for both mother and child.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wave-divider">
+    <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,30 C360,90 720,0 1080,60 C1260,80 1380,30 1440,50 L1440,100 L0,100 Z" fill="#F5ECD7"/>
+    </svg>
+  </div>
+
+  <section class="philosophy">
+    <h2>The Heart of the Practice</h2>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-icon">&#x1F331;</div>
+        <h3>Native Tradition</h3>
+        <p>Every session draws from generations of Hawaiian healing wisdom, passed down through my family on the shores of Maui.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">&#x1F91E;</div>
+        <h3>Full Presence</h3>
+        <p>Healing happens when the practitioner is fully present. I bring my whole attention to each session, holding space for your journey.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">&#x1F30A;</div>
+        <h3>Island Setting</h3>
+        <p>My private studio sits steps from the ocean. The sound of waves, the salt air, and the warmth of the land are part of every healing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="about-inner">
+      <div class="portrait-circle">
+        <div class="initials">LK</div>
+      </div>
+      <div class="about-text">
+        <h2>About Leilani</h2>
+        <p>I grew up watching my grandmother practice Lomilomi on the shores of Maui, learning the rhythms and prayers that have been part of our family for three generations. My practice is rooted in Hawaiian healing arts, blending traditional Lomilomi with deep tissue techniques refined over years of study.</p>
+        <p>Today I work from a private studio in Lahaina, where the ocean is always near and the aloha spirit guides every session.</p>
+        <div class="cred-pills">
+          <span class="cred-pill">Licensed Massage Therapist</span>
+          <span class="cred-pill">Lomilomi Certified</span>
+          <span class="cred-pill">Prenatal Specialist</span>
+          <span class="cred-pill">Reiki Level II</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <h2>Words from Clients</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p>The most healing bodywork I have ever experienced. Leilani has a gift that goes far beyond technique. I left feeling like a completely different person.</p>
+        <div class="attribution">Sarah M. &mdash; Visiting from Portland</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p>I have been seeing Leilani monthly for two years. Her prenatal work during my pregnancy was extraordinary. She truly understands the body at a deep level.</p>
+        <div class="attribution">Malia K. &mdash; Lahaina Resident</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="booking-cta">
+    <h2>Ready to Begin<br>Your Healing?</h2>
+    <p>Book a session and experience the ancient art of Lomilomi.</p>
+    <a href="#" class="btn-pill">Book a Session</a>
+  </section>
+
+  <footer class="s-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">Leilani Kahale</div>
+        <p>Licensed Massage Therapist &amp; Lomilomi Practitioner<br>Lahaina, Maui</p>
+        <p style="margin-top:8px">(808) 555-0192 &middot; leilani@hawaiiwellness.net</p>
+        <a href="https://hawaiiwellness.net" class="footer-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2C6.5 7 6.5 17 12 22M12 2c5.5 5 5.5 15 0 20M2 12h20"/></svg>
+          Powered by Hawaii Wellness
+        </a>
+      </div>
+      <div class="footer-links">
+        <h4>Navigate</h4>
+        <a href="#">Offerings</a>
+        <a href="#">Philosophy</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-links">
+        <h4>Connect</h4>
+        <a href="#">Instagram</a>
+        <a href="#">Facebook</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Leilani Kahale. All rights reserved.</div>
+  </footer>
+
+</div>
+</div>
+
+
+<!-- ================================================================
+     SITE 2: DR. MEI CHEN
+     ================================================================ -->
+<div class="site-panel" id="panel-mei">
+<div class="site-mei">
+
+  <nav class="s-nav">
+    <div class="s-nav-logo">Dr. Mei Chen</div>
+    <div class="s-nav-links">
+      <a href="#">Services</a>
+      <a href="#">Process</a>
+      <a href="#">About</a>
+      <a href="#">Testimonials</a>
+      <a href="#" class="btn-pill btn-gold">Book Consultation</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-overline">Acupuncture &amp; Traditional Chinese Medicine</div>
+      <h1>Restore Balance.<br>Renew Vitality.</h1>
+      <p>Fourteen years of clinical experience integrating classical TCM with contemporary functional medicine. Doctor of Acupuncture &amp; Oriental Medicine, serving Honolulu from a serene practice in the heart of the city.</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn-pill btn-gold">Book Consultation</a>
+        <a href="#" class="btn-pill btn-outline-sage">View Services</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="meridian-circle">
+        <div class="meridian-outer">
+          <div class="meridian-lines"></div>
+        </div>
+        <div class="meridian-inner-ring"></div>
+        <div class="meridian-bg"></div>
+        <div class="meridian-gold-orb"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="specialties-strip">
+    <span class="spec-pill">Chronic Pain</span>
+    <span class="spec-pill">Stress &amp; Anxiety</span>
+    <span class="spec-pill">Fertility Support</span>
+    <span class="spec-pill">Digestive Health</span>
+    <span class="spec-pill">Sports Recovery</span>
+  </div>
+
+  <section class="services">
+    <div class="services-inner">
+      <div class="section-overline">Services</div>
+      <h2>Treatments &amp; Consultations</h2>
+      <div class="service-card">
+        <div class="service-card-top">
+          <h3>Initial Consultation + Treatment</h3>
+          <span class="price-dur">$185 &middot; 90 min</span>
+        </div>
+        <p>Comprehensive health intake, tongue and pulse diagnosis, and your first acupuncture treatment. Includes a personalized care plan.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-card-top">
+          <h3>Follow-Up Acupuncture</h3>
+          <span class="price-dur">$115 &middot; 60 min</span>
+        </div>
+        <p>Ongoing acupuncture session with progress review. Treatment adapts to your evolving needs each visit.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-card-top">
+          <h3>Cupping &amp; Gua Sha</h3>
+          <span class="price-dur">$95 &middot; 45 min</span>
+        </div>
+        <p>Traditional bodywork techniques to release tension, improve circulation, and promote healing. Often combined with acupuncture.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-card-top">
+          <h3>Herbal Consultation</h3>
+          <span class="price-dur">$75 &middot; 30 min</span>
+        </div>
+        <p>Custom herbal formula tailored to your constitution and condition. Includes follow-up adjustments as needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-badge">1</div>
+        <h3>Consultation</h3>
+        <p>We begin with a thorough intake, assessing your health history, current concerns, and wellness goals.</p>
+      </div>
+      <div class="step">
+        <div class="step-badge">2</div>
+        <h3>Treatment Plan</h3>
+        <p>Based on TCM diagnosis, I design a personalized protocol combining acupuncture, herbs, and lifestyle guidance.</p>
+      </div>
+      <div class="step">
+        <div class="step-badge">3</div>
+        <h3>Ongoing Care</h3>
+        <p>Regular sessions build momentum. We adjust your plan as your body responds and your health evolves.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="about-inner">
+      <div class="portrait-circle">
+        <div class="initials">MC</div>
+      </div>
+      <div class="about-text">
+        <h2>About Dr. Chen</h2>
+        <p>I earned my Doctor of Acupuncture &amp; Oriental Medicine from Pacific College of Health and Science (PCOM) and have been in clinical practice for fourteen years. My approach integrates classical TCM diagnostic methods with contemporary functional medicine perspectives.</p>
+        <p>I believe that true healing requires understanding the whole person. Every treatment is tailored, every herbal formula customized, because no two patients are alike.</p>
+        <div class="cred-pills">
+          <span class="cred-pill">LAc &mdash; Licensed Acupuncturist</span>
+          <span class="cred-pill">DAOM &mdash; Doctor of Acupuncture</span>
+          <span class="cred-pill">NCCAOM Board Certified</span>
+          <span class="cred-pill">Herbal Medicine Specialist</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <h2>Patient Experiences</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p>After years of chronic migraines, Dr. Chen is the first practitioner who truly understood the root cause. Three months of treatment and I am a new person.</p>
+        <div class="attribution">James T. &mdash; Honolulu</div>
+      </div>
+      <div class="testimonial-card">
+        <p>Dr. Chen's approach to fertility support was gentle, thorough, and incredibly effective. She combines ancient wisdom with real medical knowledge.</p>
+        <div class="attribution">Priya N. &mdash; Kailua, Oahu</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact">
+    <h2>Get in Touch</h2>
+    <p>Schedule your initial consultation or ask any questions about treatment.</p>
+    <div class="contact-card">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea placeholder="Tell me about your health goals or questions..."></textarea>
+      </div>
+      <a href="#" class="btn-pill btn-gold" style="display:block;text-align:center">Send Message</a>
+    </div>
+  </section>
+
+  <footer class="s-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">Dr. Mei Chen</div>
+        <p>Acupuncture &amp; Traditional Chinese Medicine<br>Honolulu, Oahu</p>
+        <p style="margin-top:8px">(808) 555-0247 &middot; dr.chen@hawaiiwellness.net</p>
+        <a href="https://hawaiiwellness.net" class="footer-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2C6.5 7 6.5 17 12 22M12 2c5.5 5 5.5 15 0 20M2 12h20"/></svg>
+          Powered by Hawaii Wellness
+        </a>
+      </div>
+      <div class="footer-links">
+        <h4>Navigate</h4>
+        <a href="#">Services</a>
+        <a href="#">Process</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-links">
+        <h4>Contact</h4>
+        <a href="#">(808) 555-0247</a>
+        <a href="#">dr.chen@hawaiiwellness.net</a>
+        <a href="#">Honolulu, HI</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Dr. Mei Chen, LAc, DAOM. All rights reserved.</div>
+  </footer>
+
+</div>
+</div>
+
+
+<!-- ================================================================
+     SITE 3: KAIA PUA
+     ================================================================ -->
+<div class="site-panel" id="panel-kaia">
+<div class="site-kaia">
+
+  <nav class="s-nav">
+    <div class="s-nav-logo">KAIA PUA</div>
+    <div class="s-nav-links">
+      <a href="#">Schedule</a>
+      <a href="#">Offerings</a>
+      <a href="#">About</a>
+      <a href="#">Testimonials</a>
+      <a href="#" class="btn-pill btn-amber">Book Class</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg-text">YOGA</div>
+    <div class="hero-content">
+      <div class="hero-tag">E-RYT 500 &middot; Big Island, Hawai&#x2BB;i</div>
+      <h1>Movement<br>as Medicine</h1>
+      <p>Helping others navigate transformation through movement, breath, and somatic practice. Teaching in the shadow of Mauna Kea.</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn-pill btn-amber">View Schedule</a>
+        <a href="#" class="btn-pill btn-outline-amber">Private Sessions</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-number">500+</div>
+      <div class="stat-label">Hours Trained</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">8</div>
+      <div class="stat-label">Years Teaching</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Weekly Classes</div>
+    </div>
+  </div>
+
+  <section class="schedule">
+    <div class="schedule-inner">
+      <div class="section-label">Schedule</div>
+      <h2>This Week</h2>
+      <div class="schedule-card">
+        <div class="schedule-row">
+          <span class="day-pill">Mon / Wed / Fri</span>
+          <span class="class-name">Morning Flow</span>
+          <span class="class-time">7:00 AM</span>
+          <span class="class-price">$25</span>
+        </div>
+        <div class="schedule-row">
+          <span class="day-pill">Tue / Thu</span>
+          <span class="class-name">Deep Stretch</span>
+          <span class="class-time">6:00 PM</span>
+          <span class="class-price">$25</span>
+        </div>
+        <div class="schedule-row">
+          <span class="day-pill">Sunday</span>
+          <span class="class-name">Breathwork Circle</span>
+          <span class="class-time">9:00 AM</span>
+          <span class="class-price">$35</span>
+        </div>
+        <div class="schedule-row">
+          <span class="day-pill">By Appointment</span>
+          <span class="class-name">Private Session</span>
+          <span class="class-time">Flexible</span>
+          <span class="class-price">$120</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="offerings">
+    <div class="section-label">Offerings</div>
+    <h2>Ways to Practice</h2>
+    <div class="offerings-grid">
+      <div class="offering-card">
+        <h3>Private Session</h3>
+        <div class="price">$120/hr</div>
+        <p>One-on-one guidance tailored to your body, goals, and experience level. Yoga, breathwork, or somatic exploration.</p>
+      </div>
+      <div class="offering-card">
+        <h3>Group Class Pass</h3>
+        <div class="price">$100/5 classes</div>
+        <p>Drop into any weekly class. Five-class pass valid for two months. No expiration pressure.</p>
+      </div>
+      <div class="offering-card">
+        <h3>Breathwork Circle</h3>
+        <div class="price">$35/session</div>
+        <p>Sunday morning somatic breathwork in community. Two hours of guided practice, integration, and sharing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="about-inner">
+      <div class="pull-quote">&ldquo;I found yoga at 22 during a period of grief. It didn't fix anything. It taught me to be with everything.&rdquo;</div>
+      <div class="about-portrait">
+        <div class="portrait-circle">
+          <div class="initials">KP</div>
+        </div>
+        <p class="about-bio">E-RYT 500 and Somatic Breathwork Certified. Eight years of teaching in Waimea, on the slopes of Mauna Kea. Kaia helps others navigate transformation through honest, grounded practice.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <h2>Student Voices</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p>Kaia's morning flow changed my relationship with my body. She teaches with such care and precision. Every class feels like it was designed just for you.</p>
+        <div class="attribution">Jordan L. &mdash; Waimea</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p>The breathwork circle was one of the most powerful experiences of my life. Kaia creates a space where you can truly let go and feel safe doing it.</p>
+        <div class="attribution">Noe R. &mdash; Hilo</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Ready to Begin?</h2>
+    <p>Your practice starts with a single breath.</p>
+    <a href="#" class="btn-pill">View Full Schedule</a>
+  </section>
+
+  <footer class="s-footer">
+    <div class="footer-bg-text">KAIA PUA</div>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">KAIA PUA</div>
+        <p>Yoga &amp; Somatic Breathwork<br>Waimea/Kamuela, Big Island</p>
+        <p style="margin-top:8px">(808) 555-0318 &middot; kaia@hawaiiwellness.net</p>
+        <a href="https://hawaiiwellness.net" class="footer-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2C6.5 7 6.5 17 12 22M12 2c5.5 5 5.5 15 0 20M2 12h20"/></svg>
+          Powered by Hawaii Wellness
+        </a>
+      </div>
+      <div class="footer-links">
+        <h4>Navigate</h4>
+        <a href="#">Schedule</a>
+        <a href="#">Offerings</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-links">
+        <h4>Connect</h4>
+        <a href="#">Instagram</a>
+        <a href="#">YouTube</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Kaia Pua. All rights reserved.</div>
+  </footer>
+
+</div>
+</div>
+
+
+<!-- TAB SWITCHING JS -->
+<script>
+(function() {
+  var tabs = document.querySelectorAll('.shell-tab');
+  var panels = document.querySelectorAll('.site-panel');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var target = this.getAttribute('data-tab');
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      panels.forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      document.getElementById('panel-' + target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
