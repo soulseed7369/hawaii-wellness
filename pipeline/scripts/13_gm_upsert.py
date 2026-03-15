@@ -23,6 +23,31 @@ from src.supabase_client import client
 
 BATCH_SIZE = 50
 
+
+def _column_exists(table: str, column: str) -> bool:
+    """Check whether a column exists in the DB, gracefully handling pre-migration state."""
+    try:
+        # A SELECT of a non-existent column raises a PostgREST error (400)
+        resp = client.table(table).select(column).limit(1).execute()
+        return True
+    except Exception:
+        return False
+
+
+# Probe once at import time — both tables share the same migration, so checking
+# one is sufficient.  Falls back to False if DB is unreachable.
+try:
+    HAS_GOOGLE_PLACE_ID: bool = _column_exists("practitioners", "google_place_id")
+except Exception:
+    HAS_GOOGLE_PLACE_ID = False
+
+if not HAS_GOOGLE_PLACE_ID:
+    print(
+        "Warning: google_place_id column not found in DB. "
+        "Run migration 20260314000004_google_place_id.sql first to enable Place ID tracking. "
+        "Proceeding without it."
+    )
+
 # Fields excluded from the DB insert (internal dedup/classification fields)
 INTERNAL_FIELDS = {
     "_listing_type", "_place_id", "_google_types",
@@ -32,7 +57,7 @@ INTERNAL_FIELDS = {
 
 
 def to_practitioner(rec: dict) -> dict:
-    return {
+    row = {
         "name":                 rec.get("name"),
         "phone":                rec.get("phone"),
         "email":                rec.get("email"),
@@ -51,10 +76,13 @@ def to_practitioner(rec: dict) -> dict:
         "lng":                  rec.get("lng"),
         "avatar_url":           None,
     }
+    if HAS_GOOGLE_PLACE_ID:
+        row["google_place_id"] = rec.get("_place_id")
+    return row
 
 
 def to_center(rec: dict) -> dict:
-    return {
+    row = {
         "name":                 rec.get("name"),
         "phone":                rec.get("phone"),
         "email":                rec.get("email"),
@@ -72,6 +100,9 @@ def to_center(rec: dict) -> dict:
         "lng":                  rec.get("lng"),
         "avatar_url":           None,
     }
+    if HAS_GOOGLE_PLACE_ID:
+        row["google_place_id"] = rec.get("_place_id")
+    return row
 
 
 def insert_new(records: list[dict], dry_run: bool) -> tuple[int, int]:

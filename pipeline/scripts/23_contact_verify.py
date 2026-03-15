@@ -1,7 +1,7 @@
 """
 23_contact_verify.py
 ────────────────────
-Audit and clean contact info (phone + email) for all published listings.
+Audit and clean contact info (phone + email) for listings.
 
 Three passes per record:
   1. FORMAT  — normalise phone to (808) 555-1234 display format;
@@ -18,14 +18,20 @@ Outputs:
 Usage:
     cd pipeline
 
-    # Audit only — no DB writes
+    # Audit only — no DB writes (published listings)
     python scripts/23_contact_verify.py --island big_island
+
+    # Audit draft listings
+    python scripts/23_contact_verify.py --island big_island --status draft
+
+    # Audit both published and draft
+    python scripts/23_contact_verify.py --island big_island --status all
 
     # Audit + apply clean fixes to DB
     python scripts/23_contact_verify.py --island big_island --apply
 
-    # All islands
-    python scripts/23_contact_verify.py --island all --apply
+    # All islands, drafts only
+    python scripts/23_contact_verify.py --island all --status draft --apply
 
     # Limit re-crawl to N listings (useful for testing)
     python scripts/23_contact_verify.py --island big_island --crawl-limit 50
@@ -62,7 +68,8 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml",
 }
 
-EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
+# \b at end prevents TLD runaway (e.g. '.comsendthank' from concatenated DOM text)
+EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,10}\b")
 PHONE_RE = re.compile(
     r"(?:\+?1[\s.\-]?)?"
     r"(?:\(?\d{3}\)?[\s.\-]?)"
@@ -73,14 +80,23 @@ CONTACT_PAGES = ["/contact", "/contact-us", "/about", "/about-us",
                  "/reach-us", "/connect", "/work-with-me"]
 
 JUNK_EMAIL_DOMAINS = {
-    "example.com", "test.com", "sentry.io", "wix.com",
-    "squarespace.com", "godaddy.com", "wordpress.com",
+    "example.com", "test.com", "sentry.io", "wix.com", "squarespace.com",
+    "godaddy.com", "wordpress.com", "weebly.com", "strikingly.com",
+    "mailinator.com", "trashmail.com",
 }
+
+# Matches placeholder/system local-parts AND generic shared-inbox addresses
 JUNK_EMAIL_PATTERNS = re.compile(
-    r"(noreply|no-reply|donotreply|do-not-reply|support@wix|"
-    r"privacy@|legal@|dmca@|abuse@|webmaster@|postmaster@)",
+    r"(^filler$|noreply|no-reply|donotreply|do-not-reply|support@wix|"
+    r"privacy@|legal@|dmca@|abuse@|webmaster@|postmaster@|^placeholder$|^dummy$)",
     re.IGNORECASE
 )
+
+def _domain_is_junk(domain: str) -> bool:
+    """Exact OR domain-root match — catches 'godaddy.commy', 'godaddy.comsend' etc."""
+    if domain in JUNK_EMAIL_DOMAINS:
+        return True
+    return any(domain.startswith(junk) for junk in JUNK_EMAIL_DOMAINS)
 
 # ── Phone helpers ─────────────────────────────────────────────────────────────
 
@@ -120,7 +136,11 @@ def format_phone(raw: str | None) -> tuple[str, list[str]]:
 # ── Email helpers ─────────────────────────────────────────────────────────────
 
 def clean_email(raw: str | None) -> tuple[str, list[str]]:
-    """Return (cleaned_email, flags)."""
+    """Return (cleaned_email, flags).
+
+    If the raw value is a messy concatenation (e.g. '808-365-6818liz@domain.com sendthank'),
+    we try to rescue the valid email portion rather than rejecting the whole string.
+    """
     if not raw:
         return "", ["missing_email"]
 
@@ -128,12 +148,21 @@ def clean_email(raw: str | None) -> tuple[str, list[str]]:
     flags = []
 
     if not EMAIL_RE.fullmatch(email):
-        return "", ["invalid_email_format"]
+        # Try to rescue: search for a valid email embedded in the messy string
+        match = EMAIL_RE.search(email)
+        if match:
+            email = match.group(0)
+            flags.append("rescued_from_concatenation")
+        else:
+            return "", ["invalid_email_format"]
 
-    domain = email.split("@")[1]
+    local, domain = email.split("@", 1)
 
-    if domain in JUNK_EMAIL_DOMAINS:
+    if _domain_is_junk(domain):
         return "", [f"junk_email_domain({domain})"]
+
+    if JUNK_EMAIL_PATTERNS.search(local):
+        return "", ["junk_email_local_part"]
 
     if JUNK_EMAIL_PATTERNS.search(email):
         flags.append("generic_email_address")
@@ -199,13 +228,14 @@ def extract_emails_from_soup(soup: BeautifulSoup) -> list[str]:
             addr = a["href"][7:].split("?")[0].strip().lower()
             if addr:
                 emails.add(addr)
-    for addr in EMAIL_RE.findall(soup.get_text()):
+    for addr in EMAIL_RE.findall(soup.get_text(separator=" ")):
         emails.add(addr.lower())
     return [e for e in emails
-            if not e.endswith((".png", ".jpg", ".gif", ".svg"))
-            and "sentry" not in e and "@2x" not in e
-            and e.split("@")[1] not in JUNK_EMAIL_DOMAINS
-            and not JUNK_EMAIL_PATTERNS.search(e)]
+            if "@" in e
+            and not e.endswith((".png", ".jpg", ".gif", ".svg"))
+            and "@2x" not in e
+            and not _domain_is_junk(e.split("@")[1])
+            and not JUNK_EMAIL_PATTERNS.search(e.split("@")[0])]
 
 
 def extract_phone_from_soup(soup: BeautifulSoup) -> str:
@@ -268,15 +298,20 @@ def recrawl_for_contact(website_url: str) -> dict:
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 
-def fetch_listings(island: str) -> list[dict]:
+def fetch_listings(island: str, status_filter: str = "published") -> list[dict]:
+    """
+    status_filter: 'published' | 'draft' | 'all'
+    """
     records = []
     for table in ("practitioners", "centers"):
         page_size, offset = 1000, 0
         while True:
-            resp = client.table(table).select(
+            q = client.table(table).select(
                 "id, name, phone, email, website_url, island, status"
-            ).eq("island", island).eq("status", "published"
-            ).range(offset, offset + page_size - 1).execute()
+            ).eq("island", island)
+            if status_filter != "all":
+                q = q.eq("status", status_filter)
+            resp = q.range(offset, offset + page_size - 1).execute()
             batch = resp.data or []
             for r in batch:
                 r["_table"] = table
@@ -383,6 +418,9 @@ if __name__ == "__main__":
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--island",      default="big_island",
                         choices=ALL_ISLANDS + ["all"])
+    parser.add_argument("--status",      default="published",
+                        choices=["published", "draft", "all"],
+                        help="Which listings to audit (default: published)")
     parser.add_argument("--apply",       action="store_true",
                         help="Write clean fixes to DB")
     parser.add_argument("--crawl-limit", type=int, default=0,
@@ -395,8 +433,8 @@ if __name__ == "__main__":
     total_crawled = 0
 
     for island in islands:
-        print(f"\n[23] Fetching published listings for {island}…")
-        listings = fetch_listings(island)
+        print(f"\n[23] Fetching {args.status} listings for {island}…")
+        listings = fetch_listings(island, args.status)
         print(f"[23] {len(listings)} listings\n")
 
         for i, rec in enumerate(listings, 1):

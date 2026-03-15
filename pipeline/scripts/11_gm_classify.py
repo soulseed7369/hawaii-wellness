@@ -38,26 +38,26 @@ def detect_island(city: str, fallback: str) -> str:
     return _CITY_TO_ISLAND.get(city.lower().strip(), fallback)
 
 
-# ── Canonical modalities ──────────────────────────────────────────────────────
+# ── Canonical modalities (keep in sync with DashboardProfile.tsx / AdminPanel.tsx) ──
 MODALITIES = [
-    'Acupuncture', 'Alternative Therapy', 'Astrology', 'Ayurveda',
-    'Bioenergetics', 'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
-    'Craniosacral', 'Dentistry', 'Energy Healing', 'Functional Medicine',
-    'Gestalt Therapy', 'Herbalism', 'Hypnotherapy', 'Life Coaching',
-    'Lomilomi / Hawaiian Healing', 'Luminous Practitioner', 'Massage',
-    'Meditation', 'Midwife', 'Nature Therapy', 'Naturopathic',
+    'Acupuncture', 'Alternative Therapy', 'Art Therapy', 'Astrology', 'Ayurveda',
+    'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
+    'Craniosacral', 'Dentistry', 'Energy Healing', 'Family Constellation',
+    'Fitness', 'Functional Medicine', 'Hawaiian Healing', 'Herbalism', 'Hypnotherapy',
+    'IV Therapy', 'Life Coaching', 'Lomilomi / Hawaiian Healing', 'Longevity',
+    'Massage', 'Meditation', 'Midwife', 'Nature Therapy', 'Naturopathic',
     'Nervous System Regulation', 'Network Chiropractic', 'Nutrition',
-    'Osteopathic', 'Physical Therapy', 'Psychotherapy', 'Reiki',
-    'Somatic Therapy', 'Soul Guidance', 'Sound Healing',
+    'Osteopathic', 'Physical Therapy', 'Psychic', 'Psychotherapy', 'Reiki',
+    'Ritualist', 'Somatic Therapy', 'Soul Guidance', 'Sound Healing',
     'TCM (Traditional Chinese Medicine)', 'Trauma-Informed Care',
-    'Watsu / Water Therapy', 'Yoga',
+    'Watsu / Water Therapy', "Women's Health", 'Yoga',
 ]
 
 TYPE_TO_MODALITIES: dict[str, list[str]] = {
     "spa":            ["Massage"],
     "beauty_salon":   ["Massage"],
     "physiotherapist":["Physical Therapy"],
-    "gym":            ["Yoga"],
+    "gym":            ["Fitness"],
     "yoga_studio":    ["Yoga"],
     "chiropractor":   ["Chiropractic"],
     "dentist":        ["Dentistry"],
@@ -68,76 +68,252 @@ TYPE_TO_MODALITIES: dict[str, list[str]] = {
 }
 
 NAME_KEYWORDS: list[tuple[str, str]] = [
+    # Acupuncture & TCM
     ("acupunct",         "Acupuncture"),
     ("acupressure",      "Acupuncture"),
     ("tcm",              "TCM (Traditional Chinese Medicine)"),
     ("chinese medicine", "TCM (Traditional Chinese Medicine)"),
+    ("traditional chinese", "TCM (Traditional Chinese Medicine)"),
+
+    # Ayurveda
     ("ayurved",          "Ayurveda"),
+    ("vaidya",           "Ayurveda"),
+
+    # Massage (including variants & specialized)
     ("massage",          "Massage"),
     ("lomi",             "Massage"),
+    ("rolfing",          "Massage"),
+    ("structural integration", "Massage"),
+    ("myofascial",       "Massage"),
+    ("trigger point",    "Massage"),
+    ("thai massage",     "Massage"),
+    ("swedish massage",  "Massage"),
+    ("deep tissue",      "Massage"),
+    ("sports massage",   "Massage"),
+    ("prenatal massage", "Massage"),
+    ("postnatal massage", "Massage"),
+    ("spa",              "Massage"),
+
+    # Lomilomi / Hawaiian Healing (distinct from regular massage)
     ("lomilomi",         "Lomilomi / Hawaiian Healing"),
     ("kahuna",           "Lomilomi / Hawaiian Healing"),
-    ("rolfing",          "Somatic Therapy"),
+    ("la'au lapa'au",    "Hawaiian Healing"),
+    ("ho'oponopono",     "Hawaiian Healing"),
+    ("traditional hawaiian", "Hawaiian Healing"),
+
+    # Reiki
     ("reiki",            "Reiki"),
+
+    # Sound Healing
     ("sound heal",       "Sound Healing"),
     ("sound bath",       "Sound Healing"),
     ("singing bowl",     "Sound Healing"),
+
+    # Breathwork
     ("breathwork",       "Breathwork"),
     ("breath work",      "Breathwork"),
+    ("pranayama",        "Breathwork"),
+
+    # Yoga
     ("yoga",             "Yoga"),
     ("pilates",          "Yoga"),
+
+    # Fitness
+    ("fitness",          "Fitness"),
+    ("personal train",   "Fitness"),
+    ("personal trainer", "Fitness"),
+    ("crossfit",         "Fitness"),
+    ("bootcamp",         "Fitness"),
+    ("boot camp",        "Fitness"),
+    ("strength coach",   "Fitness"),
+    ("strength train",   "Fitness"),
+    ("hiit",             "Fitness"),
+    ("functional fitness", "Fitness"),
+    ("athletic training", "Fitness"),
+    ("gym",              "Fitness"),
+
+    # Meditation
     ("meditation",       "Meditation"),
     ("mindfulness",      "Meditation"),
+
+    # Chiropractic & Network Chiropractic
     ("chiropractic",     "Chiropractic"),
     ("chiropract",       "Chiropractic"),
     ("network chiro",    "Network Chiropractic"),
     ("network spinal",   "Network Chiropractic"),
+    ("nse",              "Network Chiropractic"),
+
+    # Naturopathic & Functional Medicine
     ("naturopath",       "Naturopathic"),
     ("functional med",   "Functional Medicine"),
     ("integrative med",  "Functional Medicine"),
+    ("integrative medicine", "Functional Medicine"),
+
+    # Nutrition
     ("nutrition",        "Nutrition"),
     ("nutritionist",     "Nutrition"),
     ("dietitian",        "Nutrition"),
+    ("nutritional",      "Nutrition"),
+
+    # Osteopathic
     ("osteopath",        "Osteopathic"),
+    ("osteopathic",      "Osteopathic"),
+
+    # Physical Therapy
     ("physical therapy", "Physical Therapy"),
     ("physiotherap",     "Physical Therapy"),
+    ("pt clinic",        "Physical Therapy"),
+
+    # Craniosacral
     ("craniosacral",     "Craniosacral"),
     ("cranial sacral",   "Craniosacral"),
+    ("craniosacralpractitioner", "Craniosacral"),
+
+    # Somatic Therapy
     ("somatic",          "Somatic Therapy"),
+    ("somatic therapy",  "Somatic Therapy"),
+    ("somatic experiencing", "Somatic Therapy"),
+
+    # Trauma-Informed Care
     ("trauma",           "Trauma-Informed Care"),
     ("emdr",             "Trauma-Informed Care"),
+    ("trauma-informed",  "Trauma-Informed Care"),
+    ("se practitioner",  "Trauma-Informed Care"),
+    ("trauma recovery",  "Trauma-Informed Care"),
+
+    # Psychotherapy & Counseling
     ("psychotherap",     "Psychotherapy"),
     ("counseling",       "Counseling"),
     ("counsellor",       "Counseling"),
     ("therapist",        "Counseling"),
+
+    # Life Coaching
     ("life coach",       "Life Coaching"),
     ("wellness coach",   "Life Coaching"),
     ("health coach",     "Life Coaching"),
+
+    # Hypnotherapy
     ("hypno",            "Hypnotherapy"),
+    ("hypnotherap",      "Hypnotherapy"),
+
+    # Energy Healing
     ("energy heal",      "Energy Healing"),
     ("energy work",      "Energy Healing"),
     ("biofield",         "Energy Healing"),
+
+    # Herbalism
     ("herbali",          "Herbalism"),
     ("herbal ",          "Herbalism"),
+    ("botanical",        "Herbalism"),
+
+    # Birth Doula & Midwife
     ("doula",            "Birth Doula"),
+    ("birth doula",      "Birth Doula"),
     ("midwife",          "Midwife"),
     ("midwifer",         "Midwife"),
+    ("cnm",              "Midwife"),
+    ("midwifery",        "Midwife"),
+
+    # Watsu / Water Therapy
     ("watsu",            "Watsu / Water Therapy"),
+    ("water therapy",    "Watsu / Water Therapy"),
     ("aquatic therapy",  "Watsu / Water Therapy"),
+    ("hydrotherapy",     "Watsu / Water Therapy"),
+
+    # Astrology
     ("astrology",        "Astrology"),
     ("astrologer",       "Astrology"),
-    ("bioenergetic",     "Bioenergetics"),
+    ("birth chart",      "Astrology"),
+    ("natal chart",      "Astrology"),
+
+    # Nervous System Regulation
     ("nervous system",   "Nervous System Regulation"),
     ("polyvagal",        "Nervous System Regulation"),
-    ("gestalt",          "Gestalt Therapy"),
+    ("polyvagal theory", "Nervous System Regulation"),
+
+    # Psychic & Intuitive
+    ("psychic",          "Psychic"),
+    ("medium",           "Psychic"),
+    ("clairvoyant",      "Psychic"),
+    ("intuitive healer", "Psychic"),
+    ("tarot",            "Psychic"),
+
+    # Soul Guidance
     ("soul guid",        "Soul Guidance"),
     ("akashic",          "Soul Guidance"),
-    ("dental",           "Dentistry"),
-    ("dentist",          "Dentistry"),
+    ("past life",        "Soul Guidance"),
+    ("soul coach",       "Soul Guidance"),
+    ("soul reading",     "Soul Guidance"),
+    ("spiritual guidance", "Soul Guidance"),
+
+    # Ritualist & Ceremony
+    ("ritualist",        "Ritualist"),
+    ("ceremony",         "Ritualist"),
+    ("ceremonial",       "Ritualist"),
+    ("plant medicine",   "Ritualist"),
+    ("cacao ceremony",   "Ritualist"),
+    ("sacred ceremony",  "Ritualist"),
+    ("shaman",           "Ritualist"),
+    ("shamanic",         "Ritualist"),
+
+    # Family Constellation
+    ("family constellation", "Family Constellation"),
+    ("constellation work", "Family Constellation"),
+    ("systemic constellation", "Family Constellation"),
+    ("constellation therapy", "Family Constellation"),
+
+    # Nature Therapy
     ("nature therapy",   "Nature Therapy"),
     ("ecotherapy",       "Nature Therapy"),
     ("forest bath",      "Nature Therapy"),
-    ("spa",              "Massage"),
+    ("wilderness therapy", "Nature Therapy"),
+    ("equine therapy",   "Nature Therapy"),
+    ("equine",           "Nature Therapy"),
+
+    # Art Therapy
+    ("art therapy",      "Art Therapy"),
+    ("art therapist",    "Art Therapy"),
+    ("expressive art",   "Art Therapy"),
+    ("creative therapy", "Art Therapy"),
+    ("dance therapy",    "Art Therapy"),
+    ("movement therapy", "Art Therapy"),
+
+    # Longevity & Anti-Aging
+    ("longevity",        "Longevity"),
+    ("anti-aging",       "Longevity"),
+    ("anti aging",       "Longevity"),
+    ("biohacking",       "Longevity"),
+    ("longevity medicine", "Longevity"),
+    ("longevity coach",  "Longevity"),
+
+    # IV Therapy & Infusions
+    ("iv therapy",       "IV Therapy"),
+    ("iv drip",          "IV Therapy"),
+    ("vitamin drip",     "IV Therapy"),
+    ("infusion therapy", "IV Therapy"),
+    ("nad therapy",      "IV Therapy"),
+    ("nad+",             "IV Therapy"),
+    ("peptide therapy",  "IV Therapy"),
+    ("ozone therapy",    "IV Therapy"),
+    ("hyperbaric",       "IV Therapy"),
+
+    # Women's Health
+    ("women's health",   "Women's Health"),
+    ("womens health",    "Women's Health"),
+    ("pelvic floor",     "Women's Health"),
+    ("pelvic health",    "Women's Health"),
+    ("prenatal",         "Women's Health"),
+    ("postpartum",       "Women's Health"),
+    ("postnatal",        "Women's Health"),
+    ("fertility",        "Women's Health"),
+    ("menopause",        "Women's Health"),
+
+    # Dentistry
+    ("dental",           "Dentistry"),
+    ("dentist",          "Dentistry"),
+    ("holistic dentist", "Dentistry"),
+    ("biological dentist", "Dentistry"),
+    ("integrative dentist", "Dentistry"),
 ]
 
 CENTER_TYPES = {"spa", "gym", "yoga_studio", "health", "wellness_center"}
@@ -146,10 +322,80 @@ CENTER_NAME_KEYWORDS = [
     "center", "centre", "studio", "clinic", "spa", "wellness",
     "institute", "school", "collective", "sanctuary", "retreat",
     "holistic", "integrative", "associates", "group", "practice",
+    "gym", "fitness", "crossfit",
 ]
+
+# Credential suffixes that indicate an individual practitioner
+CREDENTIAL_SUFFIXES = {
+    "LAc", "LMT", "ND", "DC", "PhD", "MD", "RN", "MSW", "LCSW", "LPC",
+    "LPCC", "RPT", "LMFT", "PA", "CNM", "CPM", "DPT", "PT", "OTR",
+    "DSOM", "DOM", "L.Ac", "C.Ht", "HHP", "INHC", "CHC", "CHN", "MA",
+}
+
+# Title prefixes that indicate personal names
+TITLE_PREFIXES = {
+    "Dr.", "Mr.", "Ms.", "Mrs.", "Miss", "Prof.", "Rev.", "Sr.", "Jr.",
+}
 
 
 # ── Inference ─────────────────────────────────────────────────────────────────
+
+def looks_like_personal_name(name: str) -> bool:
+    """
+    Return True if name looks like an individual practitioner's personal name.
+
+    Signals:
+    - Contains a title prefix (Dr., Ms., etc.)
+    - Contains credential suffixes (LAc, ND, MD, etc.)
+    - Contains " By " (e.g., "Acupuncture By Sarah West")
+    - Contains " | " with name-like parts (e.g., "Ruthie Moss | Acupuncture")
+    - Matches pattern: 1–3 capitalized words, no business keywords
+
+    Exclude:
+    - Any name containing CENTER_NAME_KEYWORDS
+    """
+    name_lower = name.lower()
+
+    # Exclude names with business keywords
+    if any(kw in name_lower for kw in CENTER_NAME_KEYWORDS):
+        return False
+
+    # Check for title prefixes
+    for prefix in TITLE_PREFIXES:
+        if name.startswith(prefix):
+            return True
+
+    # Check for credential suffixes
+    for cred in CREDENTIAL_SUFFIXES:
+        # Match " LAc", ", ND", etc. at word boundaries
+        if re.search(rf'\b{re.escape(cred)}\b', name):
+            return True
+
+    # Check for " By " pattern (e.g., "Acupuncture By Sarah West")
+    if " by " in name_lower:
+        return True
+
+    # Check for " | " pattern (e.g., "Ruthie Moss | Acupuncture in Hilo")
+    if " | " in name:
+        parts = name.split(" | ")
+        # If first part looks like a name (1-3 words, mostly letters), it's personal
+        first_part = parts[0].strip()
+        words = first_part.split()
+        if 1 <= len(words) <= 3 and all(re.match(r"^[A-Za-z\-']+$", w) for w in words):
+            return True
+
+    # Simple heuristic: 1-3 capitalized words, no numbers, no business keywords
+    words = name.split()
+    if 1 <= len(words) <= 3:
+        # Check if all words start with capital letter and contain mostly letters
+        all_capitalized = all(
+            w[0].isupper() and re.match(r"^[A-Za-z\-'.]+$", w) for w in words if w
+        )
+        if all_capitalized:
+            return True
+
+    return False
+
 
 def infer_modalities(name: str, types: list[str]) -> tuple[list[str], float]:
     """Return (modalities, confidence 0–1)."""
@@ -183,7 +429,17 @@ def infer_modalities(name: str, types: list[str]) -> tuple[list[str], float]:
 
 
 def classify_type(name: str, types: list[str]) -> tuple[str, float]:
-    """Return (type, confidence 0–1)."""
+    """Return (type, confidence 0–1).
+
+    Priority:
+    1. Personal name → ALWAYS practitioner (highest confidence)
+    2. Google types + name keywords
+    3. Default to practitioner with low confidence
+    """
+    # ▲ HIGHEST PRIORITY: Personal name detection overrides everything
+    if looks_like_personal_name(name):
+        return "practitioner", 0.88
+
     name_lower = name.lower()
     type_match = any(t in CENTER_TYPES for t in types)
     prac_match  = any(t in PRACTITIONER_TYPES for t in types)
@@ -208,16 +464,8 @@ def extract_bio(raw: dict, name: str, listing_type: str,
     if editorial and len(editorial) > 20:
         return editorial, "google_editorial", 0.90
 
-    # Fallback: generate a minimal stub from classification so bio is never null
-    if modalities and modalities != ["Alternative Therapy"]:
-        mod_str = " and ".join(modalities[:2])
-        if listing_type == "center":
-            stub = (f"{name} is a wellness center in Hawaii offering "
-                    f"{mod_str} services.")
-        else:
-            stub = (f"{name} is a {mod_str} practitioner based in Hawaii.")
-        return stub, "generated_stub", 0.30
-
+    # No editorial summary — return null so script 22 (website enrichment) can
+    # populate bio from the listing's own website instead of a generated stub.
     return None, "none", 0.0
 
 

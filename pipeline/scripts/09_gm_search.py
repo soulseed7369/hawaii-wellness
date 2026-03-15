@@ -62,6 +62,55 @@ MODALITY_QUERIES = [
     "alternative medicine", "health coach",
     "day spa", "retreat center wellness",
     "healing arts hawaii", "energy medicine",
+    # Fitness & personal training specifics
+    "personal trainer", "personal training", "crossfit", "crossfit gym",
+    "strength training coach", "strength coach", "boot camp fitness",
+    "bootcamp fitness", "HIIT trainer", "high intensity training",
+    "functional fitness trainer", "functional fitness coach",
+    # Spiritual healing & ceremonies
+    "shaman", "shamanic healer", "medium psychic", "tarot reader",
+    "astrologer hawaii", "spiritual healer", "soul guide",
+    "ceremonialist", "plant medicine", "plant medicine guide",
+    "cacao ceremony", "sacred ceremony", "ceremonial guide",
+    "psychic reader", "intuitive healer", "clairvoyant",
+    "spiritual counselor hawaii", "spirit guide",
+    # Body modalities & specialized massage
+    "rolfing", "structural integration", "myofascial release",
+    "trigger point therapy", "thai massage", "thai bodywork",
+    "swedish massage", "deep tissue massage", "deep tissue therapy",
+    "sports massage", "sports massage therapist", "prenatal massage",
+    "postnatal massage", "pregnancy massage", "massage for athletes",
+    # Mental health & nervous system
+    "EMDR therapist", "somatic therapist", "trauma therapist",
+    "somatic experiencing practitioner", "IFS therapist",
+    "internal family systems", "polyvagal therapy",
+    "nervous system regulation practitioner",
+    # Hawaiian traditions & culture
+    "lomilomi", "la'au lapa'au", "ho'oponopono practitioner",
+    "kahuna healer", "traditional hawaiian healing",
+    "hawaiian cultural healer", "lomi lomi massage",
+    # Longevity, biohacking & advanced therapies
+    "functional medicine doctor", "integrative medicine doctor",
+    "longevity clinic", "longevity medicine", "anti-aging medicine",
+    "NAD therapy", "NAD+ therapy", "peptide therapy",
+    "ozone therapy", "hyperbaric oxygen therapy", "hyperbaric chamber",
+    "biohacking coach", "longevity coach", "anti-aging coach",
+    "IV therapy clinic", "IV drip therapy", "vitamin infusion",
+    # Art & creative therapies
+    "art therapy", "art therapist", "expressive art therapy",
+    "creative therapy", "dance therapy", "movement therapy",
+    # Additional modality coverage
+    "family constellation therapist", "constellation work",
+    "systemic constellation", "nature-based therapy",
+    "forest bathing guide", "wilderness therapy",
+    "equine therapy", "equine therapist", "horse therapy",
+    # Women's health specialties
+    "womens health practitioner", "women's health doctor",
+    "pelvic floor therapist", "pelvic health", "fertility specialist",
+    "menopause specialist", "postpartum support", "postpartum doula",
+    # Dentistry & oral health
+    "holistic dentist", "biological dentist", "integrative dentist",
+    "dentist hawaii", "cosmetic dentist",
 ]
 
 # Nearby-search place types — broad net from seed points
@@ -82,16 +131,26 @@ ISLAND_CITIES = {
         "Kahului Maui Hawaii", "Kihei Maui Hawaii", "Lahaina Maui Hawaii",
         "Paia Maui Hawaii", "Makawao Maui Hawaii", "Wailuku Maui Hawaii",
         "Haiku Maui Hawaii", "Kula Maui Hawaii", "Hana Maui Hawaii",
-        "Napili Maui Hawaii", "Wailea Maui Hawaii",
+        "Napili Maui Hawaii", "Wailea Maui Hawaii", "Pukalani Maui Hawaii",
+        "Waikapu Maui Hawaii", "Spreckelsville Maui Hawaii",
     ],
     "oahu": [
-        "Honolulu Hawaii", "Kailua Oahu Hawaii", "Haleiwa Hawaii",
+        "Honolulu Hawaii", "Waikiki Hawaii", "Kailua Oahu Hawaii",
+        "Kaneohe Hawaii", "Pearl City Hawaii", "Kapolei Hawaii",
+        "Haleiwa Hawaii", "Mililani Hawaii", "Hawaii Kai Hawaii",
         "Manoa Honolulu Hawaii", "Kaimuki Honolulu Hawaii",
-        "Hawaii Kai Honolulu Hawaii", "Kaneohe Hawaii", "Pearl City Hawaii",
+        "Moiliili Honolulu Hawaii", "Kakaako Honolulu Hawaii",
+        "Nuuanu Honolulu Hawaii", "Salt Lake Honolulu Hawaii",
+        "Aiea Hawaii", "Kalihi Honolulu Hawaii", "Waimanalo Hawaii",
+        "Makiki Honolulu Hawaii", "Kapahulu Honolulu Hawaii",
+        "Palolo Honolulu Hawaii", "Punchbowl Honolulu Hawaii",
+        "Ewa Beach Hawaii", "Downtown Honolulu Hawaii",
     ],
     "kauai": [
         "Lihue Kauai Hawaii", "Kapaa Kauai Hawaii", "Hanalei Kauai Hawaii",
-        "Poipu Kauai Hawaii", "Kilauea Kauai Hawaii", "Kalaheo Kauai Hawaii",
+        "Princeville Kauai Hawaii", "Poipu Kauai Hawaii", "Koloa Kauai Hawaii",
+        "Hanapepe Kauai Hawaii", "Waimea Kauai Hawaii", "Kilauea Kauai Hawaii",
+        "Kalaheo Kauai Hawaii", "Anahola Kauai Hawaii",
     ],
 }
 
@@ -104,17 +163,40 @@ ISLAND_WIDE_QUERIES = {
         "yoga teacher Big Island Hawaii",
         "energy healing Big Island Hawaii",
         "acupuncture Big Island Hawaii",
+        "shaman Big Island Hawaii",
+        "spiritual healer Big Island Hawaii",
+        "trauma therapist Big Island Hawaii",
+        "personal trainer Big Island Hawaii",
+        "psychic medium Big Island Hawaii",
+        "lomilomi Big Island Hawaii",
     ],
     "maui": [
         "holistic practitioner Maui Hawaii",
         "wellness healer Maui Hawaii",
         "acupuncture Maui Hawaii",
         "yoga teacher Maui Hawaii",
+        "massage therapist Maui Hawaii",
+        "energy healing Maui Hawaii",
+        "breathwork Maui Hawaii",
+        "plant medicine guide Maui",
+        "spiritual counselor Maui Hawaii",
+        "nervous system regulation Maui",
+        "longevity medicine Maui Hawaii",
+        "functional medicine Maui Hawaii",
     ],
     "oahu": [
         "holistic practitioner Oahu Hawaii",
         "wellness healer Oahu Hawaii",
         "acupuncture Oahu Hawaii",
+        "massage therapist Oahu Hawaii",
+        "yoga teacher Honolulu Hawaii",
+        "naturopath Honolulu Hawaii",
+        "energy healing Oahu Hawaii",
+        "breathwork Honolulu Hawaii",
+        "somatic therapist Oahu Hawaii",
+        "family constellation Honolulu",
+        "IV therapy clinic Oahu Hawaii",
+        "integrative medicine Honolulu Hawaii",
     ],
     "kauai": [
         "holistic practitioner Kauai Hawaii",
@@ -122,7 +204,25 @@ ISLAND_WIDE_QUERIES = {
         "massage therapist Kauai Hawaii",
         "acupuncture Kauai Hawaii",
         "yoga teacher Kauai Hawaii",
+        "energy healing Kauai Hawaii",
+        "shamanic healer Kauai",
+        "nature therapy Kauai Hawaii",
+        "sound healing Kauai Hawaii",
+        "birth doula Kauai Hawaii",
+        "midwife Kauai Hawaii",
+        "hawaiian healing Kauai",
     ],
+}
+
+# Cities where denser practitioner populations warrant deeper pagination (3 pages instead of 2)
+DENSITY_BOOST_CITIES = {
+    "Honolulu Hawaii",
+    "Waikiki Hawaii",
+    "Kailua-Kona Hawaii",
+    "Hilo Hawaii",
+    "Lahaina Maui Hawaii",
+    "Kihei Maui Hawaii",
+    "Kapaa Kauai Hawaii",
 }
 
 
@@ -201,7 +301,9 @@ def collect_place_ids(island: str, dry_run: bool, skip_nearby: bool) -> list[dic
         try:
             page_token = None
             pages = 0
-            while pages < 2:
+            # Determine max pages: 3 for density-boost cities, 2 otherwise
+            max_pages = 3 if city in DENSITY_BOOST_CITIES else 2
+            while pages < max_pages:
                 data = text_search(query, page_token)
                 for p in parse_places(data, island, query):
                     if p["place_id"] not in seen_ids:

@@ -2,13 +2,17 @@
 14_claude_classify.py
 ─────────────────────
 Re-classifies low-confidence records from gm_classified.jsonl using Claude
-Haiku. Only processes records where _confidence.overall < CONFIDENCE_THRESHOLD
-to keep costs minimal — high-confidence records are passed through untouched.
+Haiku. Processes records where EITHER:
+  - _confidence.overall < CONFIDENCE_THRESHOLD (low confidence), OR
+  - modalities == ["Alternative Therapy"] (catch-all bucket, always reviewed)
+
+to keep costs minimal while ensuring low-confidence and unclassified records get AI review.
+High-confidence classified records are passed through untouched.
 
 What Claude improves:
   - Modality detection (from name, types, any editorial bio)
   - Practitioner vs center classification (with reasoning)
-  - Bio suggestion when missing or generated_stub
+  - Bio suggestion when missing or empty
 
 Model: claude-haiku-4-5-20251001 (fast, cheap, sufficient for structured tasks)
 Cost:  ~$0.001–0.003 per record (input + output tokens)
@@ -21,10 +25,11 @@ Usage:
     python scripts/14_claude_classify.py --threshold 0.75   # wider net
     python scripts/14_claude_classify.py --dry-run          # print without writing
     python scripts/14_claude_classify.py --all              # process every record
+    python scripts/14_claude_classify.py --skip-alt-therapy-check  # disable catch-all bucket rule
 """
 
 from __future__ import annotations
-import sys, json, os, time, argparse
+import sys, json, os, re, time, argparse
 from pathlib import Path
 
 import anthropic
@@ -35,18 +40,19 @@ from src.config import OUTPUT_DIR
 # Records below this overall confidence score get sent to Claude
 CONFIDENCE_THRESHOLD = 0.60
 
+# Canonical modalities (keep in sync with script 11 and DashboardProfile.tsx / AdminPanel.tsx)
 CANONICAL_MODALITIES = [
-    "Acupuncture", "Alternative Therapy", "Astrology", "Ayurveda",
-    "Bioenergetics", "Birth Doula", "Breathwork", "Chiropractic", "Counseling",
-    "Craniosacral", "Dentistry", "Energy Healing", "Functional Medicine",
-    "Gestalt Therapy", "Herbalism", "Hypnotherapy", "Life Coaching",
-    "Lomilomi / Hawaiian Healing", "Luminous Practitioner", "Massage",
-    "Meditation", "Midwife", "Nature Therapy", "Naturopathic",
-    "Nervous System Regulation", "Network Chiropractic", "Nutrition",
-    "Osteopathic", "Physical Therapy", "Psychotherapy", "Reiki",
-    "Somatic Therapy", "Soul Guidance", "Sound Healing",
-    "TCM (Traditional Chinese Medicine)", "Trauma-Informed Care",
-    "Watsu / Water Therapy", "Yoga",
+    'Acupuncture', 'Alternative Therapy', 'Art Therapy', 'Astrology', 'Ayurveda',
+    'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
+    'Craniosacral', 'Dentistry', 'Energy Healing', 'Family Constellation',
+    'Fitness', 'Functional Medicine', 'Hawaiian Healing', 'Herbalism', 'Hypnotherapy',
+    'IV Therapy', 'Life Coaching', 'Lomilomi / Hawaiian Healing', 'Longevity',
+    'Massage', 'Meditation', 'Midwife', 'Nature Therapy', 'Naturopathic',
+    'Nervous System Regulation', 'Network Chiropractic', 'Nutrition',
+    'Osteopathic', 'Physical Therapy', 'Psychic', 'Psychotherapy', 'Reiki',
+    'Ritualist', 'Somatic Therapy', 'Soul Guidance', 'Sound Healing',
+    'TCM (Traditional Chinese Medicine)', 'Trauma-Informed Care',
+    'Watsu / Water Therapy', "Women's Health", 'Yoga',
 ]
 
 MODALITIES_STR = "\n".join(f"  - {m}" for m in CANONICAL_MODALITIES)
@@ -109,13 +115,14 @@ def apply_claude_result(rec: dict, result: dict) -> dict:
 
     # Only update modalities if Claude is more confident
     existing_mod_conf = rec.get("_confidence", {}).get("modality", 0)
-    if result.get("confidence", 0) > existing_mod_conf + 0.1:
+    if result.get("confidence", 0) >= existing_mod_conf:
         updated["modalities"] = result.get("modalities", rec["modalities"])
         updated["_listing_type"] = result.get("listing_type", rec["_listing_type"])
 
-    # Update bio if missing or stub
+    # Update bio if missing, empty, or stub
     bio_source = rec.get("_bio_source", "none")
-    if bio_source in ("none", "generated_stub") and result.get("bio"):
+    existing_bio = rec.get("bio", "")
+    if (not existing_bio or bio_source in ("none", "generated_stub")) and result.get("bio"):
         updated["bio"] = result["bio"]
         updated["_bio_source"] = "claude_haiku"
 
@@ -140,6 +147,8 @@ if __name__ == "__main__":
                         help="Print what would change, don't write files")
     parser.add_argument("--all",      action="store_true",
                         help="Process every record regardless of confidence")
+    parser.add_argument("--skip-alt-therapy-check", action="store_true",
+                        help="Disable the catch-all bucket rule (don't auto-review Alternative Therapy-only records)")
     args = parser.parse_args()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -168,13 +177,29 @@ if __name__ == "__main__":
         for line in f:
             records.append(json.loads(line))
 
-    to_classify = [
-        r for r in records
-        if args.all or r.get("_confidence", {}).get("overall", 1.0) < args.threshold
-    ]
+    # Selection criteria: include record if ANY of these is true:
+    # 1. --all flag is set (process everything)
+    # 2. confidence.overall < threshold (low confidence)
+    # 3. modalities == ["Alternative Therapy"] AND --skip-alt-therapy-check is NOT set (catch-all bucket)
+    to_classify = []
+    for r in records:
+        if args.all:
+            to_classify.append(r)
+        else:
+            # Default confidence to 0.0 (treat missing as low confidence)
+            overall_conf = r.get("_confidence", {}).get("overall", 0.0)
+            is_low_conf = overall_conf < args.threshold
+
+            is_alt_therapy_only = (
+                r.get("modalities") == ["Alternative Therapy"]
+                and not args.skip_alt_therapy_check
+            )
+
+            if is_low_conf or is_alt_therapy_only:
+                to_classify.append(r)
 
     print(f"\n[14] {len(records)} total records")
-    print(f"[14] {len(to_classify)} below confidence threshold {args.threshold} → sending to Claude Haiku")
+    print(f"[14] {len(to_classify)} to classify (low confidence + catch-all) → sending to Claude Haiku")
     print(f"[14] {len(records) - len(to_classify)} passed through unchanged\n")
 
     updated_map: dict[str, dict] = {}  # place_id → updated record
@@ -207,7 +232,7 @@ if __name__ == "__main__":
     print(f"\n── Summary ────────────────────────────────────────────")
     print(f"  {classified:>4}  classified by Claude Haiku")
     print(f"  {errors:>4}  errors")
-    print(f"  {len(records) - len(to_classify):>4}  passed through (high confidence)")
+    print(f"  {len(records) - len(to_classify):>4}  passed through (high confidence, not catch-all)")
 
     if not args.dry_run:
         with open(in_path, "w") as f:
