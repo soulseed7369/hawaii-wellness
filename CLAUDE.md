@@ -116,15 +116,20 @@ kauai:      Lihue, Kapaa, Hanalei, Princeville, Poipu, Koloa,
             Hanapepe, Waimea, Kilauea, Kalaheo
 ```
 
-### Canonical modalities list (34 total — used in checkboxes and pipeline)
-Acupuncture, Alternative Therapy, Astrology, Ayurveda, Birth Doula, Breathwork,
-Chiropractic, Counseling, Craniosacral, Dentistry, Energy Healing,
-Functional Medicine, Herbalism, Hypnotherapy, Life Coaching,
-Lomilomi / Hawaiian Healing, Luminous Practitioner, Massage, Meditation, Midwife,
-Nature Therapy, Naturopathic, Nervous System Regulation, Network Chiropractic, Nutrition,
-Osteopathic, Physical Therapy, Psychotherapy, Reiki, Somatic Therapy,
-Soul Guidance, Sound Healing, TCM (Traditional Chinese Medicine),
-Trauma-Informed Care, Watsu / Water Therapy, Yoga
+### Canonical modalities list (43 total — used in checkboxes and pipeline)
+Source of truth: `DashboardProfile.tsx` and `AdminPanel.tsx` (MODALITIES / MODALITIES_LIST arrays).
+Pipeline script `11_gm_classify.py` must stay in sync with this list.
+
+Acupuncture, Alternative Therapy, Art Therapy, Astrology, Ayurveda,
+Birth Doula, Breathwork, Chiropractic, Counseling, Craniosacral,
+Dentistry, Energy Healing, Family Constellation, Functional Medicine,
+Hawaiian Healing, Herbalism, Hypnotherapy, IV Therapy, Life Coaching,
+Lomilomi / Hawaiian Healing, Longevity, Massage, Meditation, Midwife,
+Nature Therapy, Naturopathic, Nervous System Regulation, Network Chiropractic,
+Nutrition, Osteopathic, Physical Therapy, Psychic, Psychotherapy, Reiki,
+Ritualist, Somatic Therapy, Soul Guidance, Sound Healing,
+TCM (Traditional Chinese Medicine), Trauma-Informed Care,
+Watsu / Water Therapy, Women's Health, Yoga
 
 ---
 
@@ -412,6 +417,11 @@ Client-side query parser: tokenize → geography detection → stop word removal
 - **Hero images for Maui/Oahu/Kauai** are local public assets with spaces in filenames — use URL-encoded paths (`/maui%20hero.jpg` etc.) in `heroImageUrl` config.
 - **AdminPanel.tsx is ~2800+ lines** — always use offset/limit when reading it, or grep for specific sections.
 - **Supabase client import path is `@/lib/supabase`** — NOT `@/integrations/supabase/client`. The latter doesn't exist and will cause build failures.
+- **Stripe price IDs are wrong** — `src/lib/stripe.ts` uses `prod_xxx` (product IDs) not `price_xxx`. Checkout is broken until owner replaces them with real `price_xxx` IDs from Stripe Dashboard. Also update `PRICE_TIER_MAP` in `stripe-webhook/index.ts` and `validPlans` whitelists in `Auth.tsx`, `DashboardHome.tsx`, `AuthCallback.tsx`.
+- **`useAccounts.ts` admin functions are stubbed** — `useAdminAccounts`, `useSetAccountTier`, `useAdminFeaturedSlots`, `useRemoveFeaturedSlot` all require a service-role client. They bail out early with no-ops. Need an Edge Function to implement properly.
+- **`website-examples-demo.html` is committed** — keep it tracked in git. If ever overwritten, recover with: `curl https://www.hawaiiwellness.net/website-examples-demo.html -o website-examples-demo.html`
+- **DOMPurify is installed** — used in `ArticleDetail.tsx` to sanitize article body HTML before render. Required for XSS protection.
+- **`avatar_url` is in `PractitionerFormData`** — added in security audit. `useSavePractitioner` now persists it to DB. Always pass `{ ...form, avatar_url }` to `saveMutation.mutateAsync()`.
 - **LM Studio host for qwen** is `LM_HOST=192.168.68.65` (user's current network). Always pass this env var when calling `lm_code.py`.
 - **Qwen limitations**: Works well for focused, spec-driven tasks (new hooks, type additions). Fails badly on "preserve existing code and modify" tasks (rewrites UI from scratch instead of patching). For complex refactors, write directly.
 
