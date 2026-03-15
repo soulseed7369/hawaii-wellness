@@ -75,7 +75,7 @@ export function RequestInfoModal({
           className={`gap-2${fullWidth ? " w-full" : ""}`}
         >
           <MessageCircle className="h-4 w-4" />
-          Request Info
+          Send a Message
         </Button>
       </DialogTrigger>
 
