@@ -58,6 +58,8 @@ interface SearchBarProps {
   heroImageUrl?: string;
   heroTitle?: string;
   heroSubtitle?: string;
+  /** Short trust/count badge rendered inside the hero above the search card, e.g. "120+ practitioners · Free to browse" */
+  trustBadge?: string;
 }
 
 export function SearchBar({
@@ -65,6 +67,7 @@ export function SearchBar({
   heroImageUrl,
   heroTitle = "Find Your Path to Wellness",
   heroSubtitle = "Discover holistic practitioners, retreats & wellness centers across Hawai'i",
+  trustBadge,
 }: SearchBarProps = {}) {
   const navigate = useNavigate();
   const [what, setWhat] = useState('');
@@ -285,6 +288,16 @@ export function SearchBar({
 
         <div className="mx-auto max-w-2xl">
 
+          {/* ── Trust badge ──────────────────────────────────────── */}
+          {trustBadge && (
+            <div className="mb-5 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
+                <span className="text-emerald-300">✦</span>
+                {trustBadge}
+              </span>
+            </div>
+          )}
+
           {/* ── Island tabs ──────────────────────────────────────── */}
           <div className="mb-3 flex items-center justify-center gap-1.5">
             {ISLAND_TABS.map(tab => {
@@ -460,6 +473,11 @@ export function SearchBar({
               </button>
             ))}
           </div>
+
+          {/* ── Free-to-browse trust line ─────────────────────────── */}
+          <p className="mt-3 text-center text-xs text-primary-foreground/45">
+            Free to browse · No account needed
+          </p>
 
         </div>
       </div>

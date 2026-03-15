@@ -145,7 +145,17 @@ export function IslandHome({ config }: IslandHomeProps) {
   return (
     <main>
       {itemListSchema && <JsonLd id={`itemlist-${config.island}`} data={itemListSchema} />}
-      <SearchBar island={config.island} heroImageUrl={config.heroImageUrl} heroTitle={config.heroTitle} heroSubtitle={config.heroSubtitle} />
+      <SearchBar
+        island={config.island}
+        heroImageUrl={config.heroImageUrl}
+        heroTitle={config.heroTitle}
+        heroSubtitle={config.heroSubtitle}
+        trustBadge={
+          !loadingPractitioners && practitioners.length > 0
+            ? `${practitioners.length}+ practitioners · Free to browse`
+            : undefined
+        }
+      />
 
       {/* ── Trust / Stats bar ────────────────────────────────────────────── */}
       {(practitioners.length > 0 || centers.length > 0) && (
@@ -174,13 +184,18 @@ export function IslandHome({ config }: IslandHomeProps) {
 
       {/* ── Practitioners ────────────────────────────────────────────────── */}
       <section className="container py-12">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-display text-2xl font-bold md:text-3xl">
-            {config.displayName} Practitioners
-          </h2>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl font-bold md:text-3xl">
+              {config.displayName} Practitioners
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Hand-verified wellness professionals
+            </p>
+          </div>
           <Link
             to={`/directory?island=${config.island}`}
-            className="text-sm text-primary hover:underline"
+            className="flex-shrink-0 text-sm text-primary hover:underline"
           >
             View all {practitioners.length > 0 ? `${practitioners.length} ` : ""}→
           </Link>
@@ -233,6 +248,45 @@ export function IslandHome({ config }: IslandHomeProps) {
               No wellness centers listed yet for {config.displayName}.
             </p>
           )}
+        </div>
+      </section>
+
+      {/* ── Mid-page provider pitch ──────────────────────────────────────── */}
+      <section className="border-y border-border bg-primary/5 py-10">
+        <div className="container">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-lg">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                Are you a practitioner?
+              </p>
+              <h2 className="mb-3 font-display text-xl font-bold md:text-2xl">
+                Reach {config.displayName} wellness seekers
+              </h2>
+              <ul className="space-y-1.5 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="text-primary font-semibold">✓</span>
+                  Free listing — up and running in minutes
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary font-semibold">✓</span>
+                  Premium plans from $39/mo for priority visibility
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary font-semibold">✓</span>
+                  Direct contact — no commission or booking fees
+                </li>
+              </ul>
+            </div>
+            <div className="flex flex-shrink-0 flex-col items-start gap-2 md:items-end">
+              <Link
+                to="/list-your-practice"
+                className="inline-block rounded-lg bg-primary px-7 py-3 font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
+              >
+                List Your Practice — Free
+              </Link>
+              <p className="text-xs text-muted-foreground">No credit card required</p>
+            </div>
+          </div>
         </div>
       </section>
 

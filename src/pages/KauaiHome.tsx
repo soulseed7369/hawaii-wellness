@@ -4,8 +4,8 @@ const config = {
   island: 'kauai',
   displayName: "Kauai",
   heroImageUrl: "/kauai%20hero.jpg",
-  heroTitle: "Kauai Wellness Directory",
-  heroSubtitle: "Discover holistic practitioners, healing centers & retreats on the Garden Isle",
+  heroTitle: "Find a Wellness Practitioner on Kauai",
+  heroSubtitle: "Browse holistic health providers in Hanalei, Kapaa, Poipu & across the Garden Isle",
   pageTitle: "Kauai Wellness Directory – Garden Isle Holistic Health",
   pageDescription: "Find yoga, massage, energy healing & holistic practitioners in Hanalei, Kapaa & Poipu. Kauai's Garden Isle wellness directory.",
 };
