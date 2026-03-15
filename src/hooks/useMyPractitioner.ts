@@ -37,6 +37,7 @@ export type PractitionerFormData = {
   booking_label: string;
   accepts_new_clients: boolean;
   avatar_url?: string | null;
+  response_time: string;  // '' | 'within_hours' | 'within_day' | 'within_2_3_days' | 'within_week'
 };
 
 export function useSavePractitioner() {
@@ -62,6 +63,7 @@ export function useSavePractitioner() {
         external_booking_url: formData.external_booking_url.trim() || null,
         booking_label: formData.booking_label.trim() || null,
         accepts_new_clients: formData.accepts_new_clients,
+        response_time: formData.response_time.trim() || null,
         ...(formData.avatar_url !== undefined && { avatar_url: formData.avatar_url }),
         status: 'draft',
       };

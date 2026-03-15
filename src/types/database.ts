@@ -66,6 +66,7 @@ export interface PractitionerRow {
     sun?: { open: string; close: string } | null;
   };
   retreat_links: string[];
+  response_time: string | null;  // e.g. 'within_hours' | 'within_day' | 'within_2_3_days' | 'within_week'
 }
 
 export interface CenterRow {

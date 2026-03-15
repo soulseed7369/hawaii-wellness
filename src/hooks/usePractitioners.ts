@@ -30,3 +30,50 @@ export function usePractitioners(island = 'big_island') {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
+
+/**
+ * Returns up to 3 practitioners on the same island with overlapping modalities,
+ * excluding the current profile. Sorted by modality overlap count (most similar first),
+ * then by tier.
+ */
+export function useSimilarPractitioners(
+  island: string | null | undefined,
+  modalities: string[],
+  excludeId: string | undefined
+) {
+  return useQuery<Provider[]>({
+    queryKey: ['similar-practitioners', island, excludeId],
+    enabled: !!island && !!excludeId,
+    queryFn: async () => {
+      if (!supabase || !island || !excludeId) {
+        return mockPractitioners.filter(p => p.id !== excludeId).slice(0, 3);
+      }
+
+      const { data, error } = await supabase
+        .from('practitioners')
+        .select('*, business:centers!practitioners_business_id_fkey(id,name)')
+        .eq('island', island)
+        .eq('status', 'published')
+        .neq('id', excludeId)
+        .limit(20);
+
+      if (error) throw error;
+
+      const all = (data ?? []).map(practitionerRowToProvider);
+      const modalitySet = new Set(modalities);
+
+      // Sort by overlap count descending, break ties by tier (featured > premium > free)
+      const TIER_RANK: Record<string, number> = { featured: 3, premium: 2, free: 1 };
+      const scored = all
+        .map(p => ({
+          provider: p,
+          overlap: (p.modalities ?? []).filter(m => modalitySet.has(m)).length,
+          tierRank: TIER_RANK[p.tier ?? 'free'] ?? 1,
+        }))
+        .sort((a, b) => b.overlap - a.overlap || b.tierRank - a.tierRank);
+
+      return scored.slice(0, 3).map(s => s.provider);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}

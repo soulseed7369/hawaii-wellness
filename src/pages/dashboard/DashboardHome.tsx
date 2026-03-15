@@ -35,6 +35,22 @@ export default function DashboardHome() {
   const hasPaidPlan = billing?.tier === 'premium' || billing?.tier === 'featured';
   const earlyBird = getEarlyBirdStatus(practitioner?.created_at ?? null);
 
+  // ── Profile completeness ──────────────────────────────────────────────────
+  const completenessFields = [
+    { label: 'Name',       done: !!practitioner?.name?.trim() },
+    { label: 'Bio',        done: !!practitioner?.bio?.trim() },
+    { label: 'Modalities', done: (practitioner?.modalities?.length ?? 0) > 0 },
+    { label: 'Photo',      done: !!practitioner?.avatar_url },
+    { label: 'City',       done: !!practitioner?.city?.trim() },
+    { label: 'Phone',      done: !!practitioner?.phone?.trim() },
+    { label: 'Email',      done: !!practitioner?.email?.trim() },
+    { label: 'Website',    done: !!practitioner?.website_url?.trim() },
+  ];
+  const completenessScore = hasProfile
+    ? Math.round(completenessFields.filter(f => f.done).length / completenessFields.length * 100)
+    : 0;
+  const missingFields = completenessFields.filter(f => !f.done);
+
   const steps = [
     {
       id: 'profile',
@@ -128,6 +144,41 @@ export default function DashboardHome() {
                   {!step.done && <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />}
                 </Link>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Profile completeness — shown only when profile exists but incomplete */}
+      {hasProfile && completenessScore < 100 && (
+        <Card className="border-sage/30 bg-sage/5">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  Profile completeness
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                    completenessScore >= 75 ? 'bg-sage/20 text-sage' :
+                    completenessScore >= 50 ? 'bg-amber-100 text-amber-700' :
+                    'bg-terracotta-light text-terracotta'
+                  }`}>{completenessScore}%</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {missingFields.length === 0
+                    ? 'Your profile is complete!'
+                    : `Add ${missingFields.map(f => f.label.toLowerCase()).join(', ')} to improve visibility.`}
+                </p>
+              </div>
+              <Button asChild size="sm" variant="outline" className="flex-shrink-0 border-sage/40 text-sage hover:bg-sage/10">
+                <Link to="/dashboard/profile">Edit Profile</Link>
+              </Button>
+            </div>
+            {/* Progress bar */}
+            <div className="h-2 w-full rounded-full bg-sage/20 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-sage transition-all duration-500"
+                style={{ width: `${completenessScore}%` }}
+              />
             </div>
           </CardContent>
         </Card>

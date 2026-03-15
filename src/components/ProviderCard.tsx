@@ -76,6 +76,14 @@ function modalityBadgeClass(m: string): string {
   return "bg-secondary text-secondary-foreground";
 }
 
+// ── Freshness: profile updated within 30 days ────────────────────────────────
+function isRecentlyUpdated(updatedAt?: string): boolean {
+  if (!updatedAt) return false;
+  try {
+    return (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24) <= 30;
+  } catch { return false; }
+}
+
 // ── Tier → border / shadow classes ───────────────────────────────────────────
 function tierCardClasses(tier?: string) {
   if (tier === "featured") return "border-2 border-amber-300 shadow-lg bg-amber-50/30";
@@ -144,9 +152,16 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                     <p className="truncate text-xs text-muted-foreground">{provider.businessName}</p>
                   )}
                 </div>
-                {provider.tier && provider.tier !== "free" && (
-                  <TierBadge tier={provider.tier} className="flex-shrink-0" />
-                )}
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  {isRecentlyUpdated(provider.updatedAt) && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
+                      ✦ Updated
+                    </span>
+                  )}
+                  {provider.tier && provider.tier !== "free" && (
+                    <TierBadge tier={provider.tier} />
+                  )}
+                </div>
               </div>
               {/* Bio snippet — 1 line teaser */}
               {provider.bio && (
@@ -300,7 +315,12 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
               </span>
             )}
           </div>
-          <div className="mt-3 w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity group-hover:opacity-90">
+          {isRecentlyUpdated(provider.updatedAt) && (
+            <span className="mt-1.5 inline-flex items-center self-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
+              ✦ Updated
+            </span>
+          )}
+          <div className="mt-2 w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity group-hover:opacity-90">
             View Profile →
           </div>
         </div>

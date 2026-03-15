@@ -48,6 +48,14 @@ const BOOKING_LABELS = [
   { value: 'Request a Consultation', label: 'Request a Consultation' },
 ];
 
+const RESPONSE_TIME_OPTIONS = [
+  { value: '',                label: 'Not set'              },
+  { value: 'within_hours',    label: 'Within a few hours'   },
+  { value: 'within_day',      label: 'Within 24 hours'      },
+  { value: 'within_2_3_days', label: 'Within 2–3 days'      },
+  { value: 'within_week',     label: 'Within a week'        },
+];
+
 const emptyForm: PractitionerFormData = {
   name: '',
   island: 'big_island',
@@ -62,6 +70,7 @@ const emptyForm: PractitionerFormData = {
   external_booking_url: '',
   booking_label: '',
   accepts_new_clients: true,
+  response_time: '',
 };
 
 export default function DashboardProfile() {
@@ -93,6 +102,7 @@ export default function DashboardProfile() {
         external_booking_url: practitioner.external_booking_url ?? '',
         booking_label: (practitioner as any).booking_label ?? '',
         accepts_new_clients: practitioner.accepts_new_clients ?? true,
+        response_time: (practitioner as any).response_time ?? '',
       });
       setAvatarUrl(practitioner.avatar_url ?? null);
     }
@@ -438,6 +448,37 @@ export default function DashboardProfile() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Response time */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Response Time</CardTitle>
+          <CardDescription>
+            Let visitors know how quickly you typically respond to enquiries. Shown as a badge on your public profile.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1.5">
+            <Label>Typical response time</Label>
+            <Select
+              value={form.response_time}
+              onValueChange={v => setForm(p => ({ ...p, response_time: v }))}
+            >
+              <SelectTrigger className="w-full sm:w-64">
+                <SelectValue placeholder="Not set" />
+              </SelectTrigger>
+              <SelectContent>
+                {RESPONSE_TIME_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              This is shown to visitors on your profile to help set expectations.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

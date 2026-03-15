@@ -63,6 +63,8 @@ export interface Provider {
   externalBookingUrl?: string | null;
   /** Island key: 'big_island' | 'maui' | 'oahu' | 'kauai' */
   island?: string;
+  /** ISO timestamp of last profile update — used for freshness badge */
+  updatedAt?: string;
 }
 
 export interface Center {

@@ -1,6 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { usePractitioner } from "@/hooks/usePractitioner";
+import { useSimilarPractitioners } from "@/hooks/usePractitioners";
+import { ProviderCard } from "@/components/ProviderCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -141,6 +143,7 @@ function WorkingHours({ hours }: { hours: Record<string, { open: string; close: 
 const ProfileDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: p, isLoading } = usePractitioner(id);
+  const { data: similarProviders } = useSimilarPractitioners(p?.island, p?.modalities ?? [], p?.id);
 
   const metaDesc = p
     ? p.about
@@ -520,6 +523,23 @@ const ProfileDetail = () => {
                   )}
                 </div>
 
+                {/* Response time badge */}
+                {p.responseTime && (() => {
+                  const RT_LABELS: Record<string, string> = {
+                    within_hours:    'Responds within a few hours',
+                    within_day:      'Responds within 24 hours',
+                    within_2_3_days: 'Responds within 2–3 days',
+                    within_week:     'Responds within a week',
+                  };
+                  const label = RT_LABELS[p.responseTime];
+                  return label ? (
+                    <div className="flex items-center gap-2 rounded-lg bg-sky-50 border border-sky-100 px-3 py-2">
+                      <Clock className="h-4 w-4 flex-shrink-0 text-sky-600" />
+                      <span className="text-sm font-medium text-sky-700">{label}</span>
+                    </div>
+                  ) : null;
+                })()}
+
                 {/* Social links */}
                 {p.socialLinks && Object.values(p.socialLinks).some(Boolean) && (
                   <div className="flex flex-wrap gap-3 pt-1 border-t border-border/50">
@@ -593,6 +613,20 @@ const ProfileDetail = () => {
           </div>
         </div>
       </section>
+
+      {/* Similar practitioners */}
+      {similarProviders && similarProviders.length > 0 && (
+        <section className="container pb-4 pt-6">
+          <h2 className="mb-3 font-display text-lg font-semibold text-foreground">
+            Similar practitioners on {ISLAND_CONFIG[p.island ?? '']?.label ?? 'Hawaiʻi'}
+          </h2>
+          <div className="space-y-2">
+            {similarProviders.map(sp => (
+              <ProviderCard key={sp.id} provider={sp} compact />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Bottom nav */}
       <div className="container pb-8">
