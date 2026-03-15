@@ -474,11 +474,6 @@ export function SearchBar({
             ))}
           </div>
 
-          {/* ── Free-to-browse trust line ─────────────────────────── */}
-          <p className="mt-3 text-center text-xs text-primary-foreground/45">
-            Free to browse · No account needed
-          </p>
-
         </div>
       </div>
     </section>

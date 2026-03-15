@@ -6,7 +6,7 @@ const config = {
   displayName: "Big Island",
   heroImageUrl: heroImage,
   heroTitle: "Find a Wellness Practitioner on the Big Island",
-  heroSubtitle: "Browse 500+ holistic health providers in Kona, Hilo, Waimea & across Hawaiʻi Island",
+  heroSubtitle: "Holistic practitioners, wellness centers & retreats across Hawaiʻi Island",
   pageTitle: "Big Island Wellness Directory – Hawaiʻi Island",
   pageDescription: "Find acupuncture, massage, yoga, reiki & naturopathic practitioners in Kona, Hilo & Waimea. Hawaiʻi Island's largest holistic wellness directory — 500+ practitioners, 34 specialties.",
 };
