@@ -212,18 +212,20 @@ def parse_personal_name(raw_name: str) -> tuple[str, str, float] | None:
 ALL_ISLANDS = ["big_island", "maui", "oahu", "kauai"]
 
 
-def fetch_practitioners_needing_names(island: str) -> list[dict]:
-    """Return practitioners where first_name IS NULL."""
+def fetch_practitioners_needing_names(island: str, status: str | None = None) -> list[dict]:
+    """Return practitioners where first_name IS NULL, optionally filtered by status."""
     records = []
     page_size, offset = 1000, 0
     while True:
         q = (
             client.table("practitioners")
-            .select("id, name, first_name, last_name, website_url, island")
+            .select("id, name, first_name, last_name, website_url, island, status")
             .is_("first_name", "null")
         )
         if island != "all":
             q = q.eq("island", island)
+        if status and status != "all":
+            q = q.eq("status", status)
         resp = q.range(offset, offset + page_size - 1).execute()
         batch = resp.data or []
         records.extend(batch)
@@ -240,6 +242,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--island", default="big_island",
                         choices=ALL_ISLANDS + ["all"])
+    parser.add_argument("--status", default="all",
+                        choices=["published", "draft", "all"],
+                        help="Filter by status: published, draft, or all (default: all)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print results but don't write anything")
     parser.add_argument("--apply", action="store_true",
@@ -250,8 +255,8 @@ if __name__ == "__main__":
 
     out_path = OUTPUT_DIR / "name_extractions.jsonl"
 
-    print(f"\n[26] Fetching practitioners with null first_name (island={args.island})…")
-    records = fetch_practitioners_needing_names(args.island)
+    print(f"\n[26] Fetching practitioners with null first_name (island={args.island}, status={args.status})…")
+    records = fetch_practitioners_needing_names(args.island, status=args.status)
     print(f"[26] {len(records)} practitioners to process\n")
 
     results: list[dict] = []
