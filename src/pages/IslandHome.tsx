@@ -16,6 +16,18 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
 
+// 8 high-value concern chips — for visitors who know the outcome, not the modality
+const BROWSE_CONCERNS: { label: string; emoji: string }[] = [
+  { label: 'Anxiety',            emoji: '🌬️' },
+  { label: 'Burnout',            emoji: '🔥' },
+  { label: 'Chronic Pain',       emoji: '💙' },
+  { label: 'Grief',              emoji: '🌿' },
+  { label: 'Insomnia & Sleep',   emoji: '🌙' },
+  { label: 'Overwhelm & Stress', emoji: '🌊' },
+  { label: 'Trauma & PTSD',      emoji: '🕊️' },
+  { label: 'Life Transitions',   emoji: '🌅' },
+];
+
 // Top 20 modalities — shown as browse chips below the featured article
 const BROWSE_MODALITIES = [
   'Yoga',
@@ -308,6 +320,32 @@ export function IslandHome({ config }: IslandHomeProps) {
         ) : (
           <p className="py-8 text-sm text-muted-foreground">No articles yet.</p>
         )}
+      </section>
+
+      {/* ── Browse by Concern ────────────────────────────────────────────── */}
+      <section className="border-t border-border bg-background py-10">
+        <div className="container">
+          <div className="mb-5">
+            <h2 className="font-display text-xl font-bold md:text-2xl">
+              Browse by what you&apos;re looking for
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Not sure which modality you need? Start with your goal.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {BROWSE_CONCERNS.map(({ label, emoji }) => (
+              <Link
+                key={label}
+                to={`/directory?q=${encodeURIComponent(label)}&island=${config.island}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
+              >
+                <span aria-hidden="true">{emoji}</span>
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Browse by Modality ───────────────────────────────────────────── */}

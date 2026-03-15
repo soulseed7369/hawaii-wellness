@@ -35,8 +35,17 @@ export function Footer() {
           <div className="space-y-3">
             <span className="font-display text-lg font-bold">Hawaiʻi Wellness</span>
             <p className="text-sm opacity-80">
-              Connecting you with Hawaiʻi's finest holistic practitioners, retreats, and wellness centers.
+              Connecting Hawaiʻi with holistic wellness since 2024.
             </p>
+            <p className="text-xs opacity-50">
+              Hawaii Wellness LLC · Kailua-Kona, HI
+            </p>
+            <a
+              href="mailto:aloha@hawaiiwellness.net"
+              className="block text-xs opacity-60 hover:opacity-90 transition-opacity"
+            >
+              aloha@hawaiiwellness.net
+            </a>
           </div>
 
           {/* Quick Links */}
@@ -90,7 +99,7 @@ export function Footer() {
         </div>
 
         <div className="mt-10 border-t border-accent-foreground/10 pt-6 text-center text-xs opacity-60">
-          © {new Date().getFullYear()} Hawaiʻi Wellness. All rights reserved.
+          © {new Date().getFullYear()} Hawaii Wellness LLC · hawaiiwellness.net · All rights reserved.
         </div>
       </div>
     </footer>
