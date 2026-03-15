@@ -264,13 +264,13 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
 
         {/* Info */}
         <div className="flex flex-1 flex-col px-4 pt-3 pb-4 text-center">
+          {/* Personal name always primary */}
           <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors leading-snug">
             {provider.name}
           </h3>
-          {(visibleModalities[0] || provider.businessName) && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {visibleModalities[0] ?? provider.businessName}
-            </p>
+          {/* Business name always a separate muted subtitle — never replaces personal name */}
+          {provider.businessName && (
+            <p className="truncate text-xs text-muted-foreground">{provider.businessName}</p>
           )}
           <div className="mt-1.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 flex-shrink-0" aria-hidden="true" />

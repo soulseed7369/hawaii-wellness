@@ -41,16 +41,20 @@ type PractitionerRowWithBusiness = PractitionerRow & {
 };
 
 export function practitionerRowToProvider(row: PractitionerRowWithBusiness): Provider {
-  // Prefer display_name, then first + last, then legacy name
+  // business_name = free text; business.name = joined from business_id FK
+  const businessName = row.business_name || row.business?.name || undefined;
+
+  // Prefer display_name — but skip it if it equals the business name (pipeline or admin
+  // sometimes stores the business name in display_name by mistake).
+  // Fall back: first + last name, then the legacy name field.
+  const sanitisedDisplayName =
+    row.display_name && row.display_name !== businessName ? row.display_name : null;
   const displayName =
-    row.display_name ||
+    sanitisedDisplayName ||
     (row.first_name
       ? [row.first_name, row.last_name].filter(Boolean).join(' ')
       : null) ||
     row.name;
-
-  // business_name = free text; business.name = joined from business_id FK
-  const businessName = row.business_name || row.business?.name || undefined;
 
   const modalitiesArr = [...new Set(row.modalities ?? [])].filter(Boolean);
   return {
