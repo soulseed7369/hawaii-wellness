@@ -1,0 +1,23 @@
+{
+  "skill_name": "listing-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run a data quality audit on our Big Island draft listings. I want to know what's blocking us from publishing them — missing fields, bad modalities, duplicates, whatever. Give me the worst problems first with SQL to fix them.",
+      "expected_output": "A structured audit report with critical/warning/info issues, specific record IDs, field completeness percentages, and runnable SQL fix statements. Should catch: non-canonical modalities, missing bios, missing photos, duplicate phone/website entries, name field quality issues.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "We just added a new modality called 'Sound Bath' and a new center type 'coworking_space'. Can you verify everything is in sync across the codebase — the DB constraints, TypeScript types, UI lists, taxonomy, pipeline scripts? Don't fix anything, just tell me everywhere that needs updating.",
+      "expected_output": "A cross-reference sync report listing every file and location where modalities and center_types are defined, noting which ones are missing the new entries. Should identify: MODALITIES_LIST, MODALITIES, FILTER_MODALITIES, BROWSE_MODALITIES, CANONICAL, taxonomy_terms, center_type CHECK constraint, CenterRow type union, CENTER_TYPE_LABELS, centerTypeLabels, AdminPanel SelectItems.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I'm about to do a marketing push for Maui practitioners. How many are published vs draft? Are the published ones good enough quality to send traffic to — do they have photos, bios, working contact info? Which ones look broken or embarrassing?",
+      "expected_output": "A production readiness assessment for Maui: count of published vs draft, field completeness breakdown for published listings, specific listings that would look bad (missing photo, no bio, garbage name), and recommendations for which drafts are closest to publishable.",
+      "files": []
+    }
+  ]
+}
