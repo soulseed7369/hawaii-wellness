@@ -89,11 +89,12 @@ export default function WebsitePackages() {
             Built for Hawaiʻi Wellness Providers
           </Badge>
           <h1 className="mb-5 font-display text-4xl font-bold tracking-tight md:text-5xl">
-            A website that works as hard as you do
+            A website that helps the right clients choose you
           </h1>
           <p className="text-lg text-muted-foreground md:text-xl leading-relaxed">
-            Your directory listing helps people discover you. Your website helps them{" "}
-            <em>choose</em> you. We build both — designed specifically for Hawaiʻi wellness providers.
+            Your listing opens the door. Your website creates the connection.
+            We design websites for Hawaiʻi wellness practitioners that build trust,
+            reflect your unique gifts, and help more ideal clients reach out.
           </p>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button size="lg" className="gap-2 text-base px-8" asChild>
