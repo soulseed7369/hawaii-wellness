@@ -267,37 +267,72 @@ export function IslandHome({ config }: IslandHomeProps) {
       {/* ── Mid-page provider pitch ──────────────────────────────────────── */}
       <section className="border-y border-border bg-primary/5 py-10">
         <div className="container">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="max-w-lg">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">
-                Are you a practitioner?
-              </p>
-              <h2 className="mb-3 font-display text-xl font-bold md:text-2xl">
-                Reach {config.displayName} wellness seekers
-              </h2>
-              <ul className="space-y-1.5 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <span className="text-primary font-semibold">✓</span>
-                  Free listing — up and running in minutes
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary font-semibold">✓</span>
-                  Premium plans from $39/mo for priority visibility
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary font-semibold">✓</span>
-                  Direct contact — no commission or booking fees
-                </li>
-              </ul>
+          <p className="mb-6 text-xs font-semibold uppercase tracking-wider text-primary">
+            List your business
+          </p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Practitioners card */}
+            <div className="flex flex-col justify-between gap-5 rounded-xl border border-border bg-background p-6">
+              <div>
+                <h2 className="mb-3 font-display text-xl font-bold">
+                  Are you a practitioner?
+                </h2>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary font-semibold">✓</span>
+                    Free listing — up and running in minutes
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary font-semibold">✓</span>
+                    Premium from $39/mo · Featured from $129/mo
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary font-semibold">✓</span>
+                    Direct contact — no commission or booking fees
+                  </li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Link
+                  to="/list-your-practice"
+                  className="inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
+                >
+                  List Your Practice — Free
+                </Link>
+                <p className="text-xs text-muted-foreground">No credit card required</p>
+              </div>
             </div>
-            <div className="flex flex-shrink-0 flex-col items-start gap-2 md:items-end">
-              <Link
-                to="/list-your-practice"
-                className="inline-block rounded-lg bg-primary px-7 py-3 font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
-              >
-                List Your Practice — Free
-              </Link>
-              <p className="text-xs text-muted-foreground">No credit card required</p>
+
+            {/* Centers card */}
+            <div className="flex flex-col justify-between gap-5 rounded-xl border border-border bg-background p-6">
+              <div>
+                <h2 className="mb-3 font-display text-xl font-bold">
+                  Do you run a wellness center?
+                </h2>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary font-semibold">✓</span>
+                    Free listing for spas, clinics &amp; retreat centers
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary font-semibold">✓</span>
+                    Premium from $39/mo · Featured from $129/mo
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary font-semibold">✓</span>
+                    Showcase your team, events &amp; working hours
+                  </li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Link
+                  to="/list-your-practice"
+                  className="inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow transition-opacity hover:opacity-90"
+                >
+                  List Your Center — Free
+                </Link>
+                <p className="text-xs text-muted-foreground">No credit card required</p>
+              </div>
             </div>
           </div>
         </div>
@@ -448,18 +483,17 @@ export function IslandHome({ config }: IslandHomeProps) {
             </div>
           )}
           <h2 className="mb-3 font-display text-2xl font-bold md:text-3xl">
-            Are you a {config.displayName} wellness practitioner?
+            Ready to reach {config.displayName} wellness seekers?
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-primary-foreground/80">
-            Join the growing community of holistic health providers on Hawaiʻi Wellness.
-            Free to list — upgrade anytime for premium visibility.
+            Whether you&apos;re an individual practitioner or run a wellness center — get listed free and connect directly with clients. No commission, no booking fees.
           </p>
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               to="/list-your-practice"
               className="rounded-lg bg-white px-8 py-3 font-semibold text-primary shadow transition-opacity hover:opacity-90"
             >
-              List Your Practice — Free
+              Get Listed — Free
             </Link>
             <Link
               to="/directory"

@@ -66,7 +66,7 @@ export function SearchBar({
   island: initialIsland = 'big_island',
   heroImageUrl,
   heroTitle = "Find Your Path to Wellness",
-  heroSubtitle = "Discover holistic practitioners, retreats & wellness centers across Hawai'i",
+  heroSubtitle = "Discover holistic practitioners & wellness centers across Hawai'i",
   trustBadge,
 }: SearchBarProps = {}) {
   const navigate = useNavigate();
@@ -279,7 +279,7 @@ export function SearchBar({
       />
       <div className="absolute inset-0 bg-foreground/45" />
       <div className="container relative z-10">
-        <h1 className="mb-2 text-center font-display text-3xl font-bold text-primary-foreground md:text-5xl">
+        <h1 className="mb-2 text-center font-display text-2xl font-bold text-primary-foreground md:text-4xl">
           {heroTitle}
         </h1>
         <p className="mb-6 text-center text-lg text-primary-foreground/85">
