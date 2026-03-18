@@ -32,6 +32,11 @@ export function useCreateCheckoutSession() {
             successUrl: successUrl ?? `${window.location.origin}/dashboard/billing?success=1`,
             cancelUrl:  cancelUrl  ?? `${window.location.origin}/dashboard/billing`,
           },
+          // Explicitly pass the session token we just fetched — don't rely on
+          // the functions client's internally-stored token which may be stale.
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         },
       );
 
