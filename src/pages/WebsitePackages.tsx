@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  CheckCircle, Mail, ArrowRight, Star, Globe, Palette, TrendingUp, Puzzle,
-  LifeBuoy, ChevronDown, ChevronUp, Sparkles, Layout, Smartphone, Pen,
+  CheckCircle, Mail, ArrowRight, Star, Globe,
+  ChevronDown, ChevronUp, Sparkles, Layout, Smartphone, Pen,
   Link2, Lock,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,17 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   PACKAGES,
-  ADD_ON_CATEGORIES,
   EVERY_WEBSITE_INCLUDES,
   KAMAAINA_WEBSITE_SPOTS,
 } from "@/lib/websitePackages";
-
-const ICON_MAP: Record<string, React.ElementType> = {
-  Paintbrush: Palette,
-  TrendingUp: TrendingUp,
-  Puzzle: Puzzle,
-  LifeBuoy: LifeBuoy,
-};
 
 const BASE_FEATURE_ICONS: React.ElementType[] = [
   Layout, Smartphone, Pen, Link2, Mail, Lock, Globe,
@@ -53,7 +45,7 @@ const HOW_IT_WORKS = [
 const FAQ = [
   {
     q: "How long does it take to build?",
-    a: "Essentials sites typically take 1\u20132 weeks. Standard takes 2\u20133 weeks. Pro takes 3\u20134 weeks. Timelines depend on how quickly you can provide content (photos, copy) and approve drafts.",
+    a: "Essentials sites typically take 1\u20132 weeks. Standard takes 2\u20133 weeks. Pro takes 3\u20134 weeks. Timelines depend on how quickly you provide content and approve drafts.",
   },
   {
     q: "Do I own the website?",
@@ -65,15 +57,23 @@ const FAQ = [
   },
   {
     q: "Who writes the content?",
-    a: "Copywriting is included in all packages \u2014 we\u2019ll write the copy for your site based on a short intake questionnaire about your practice, style, and offerings. You\u2019ll review and approve before anything goes live. We just ask that you provide your own photos; a professional headshot makes a significant difference.",
+    a: "Professional copywriting is included in every package. We\u2019ll write the copy based on a short intake questionnaire about your practice, style, and offerings. You review and approve before anything goes live. We just ask that you provide your own photos \u2014 a professional headshot makes a big difference.",
   },
   {
     q: "How many revisions are included?",
-    a: "Essentials includes 1 feedback round. Standard includes 1 feedback round + 1 post-delivery revision. Pro includes 1 feedback round + 2 post-delivery revisions. Additional major revisions are $149 each.",
+    a: "Essentials includes 1 feedback round during build. Standard includes 1 feedback round + 1 post-delivery revision. Pro includes 1 feedback round + 2 post-delivery revisions. Additional major revisions after that are $149 each.",
   },
   {
-    q: "What happens after the included hosting period?",
-    a: "Hosting is included at no extra cost as long as your Premium or Featured subscription is active. If you cancel your subscription, hosting continues at a standalone rate shown on each package.",
+    q: "What about hosting after the included period?",
+    a: "Hosting is included at no extra cost as long as your Premium or Featured directory subscription is active. If you cancel your subscription, hosting continues at a standalone rate (shown on each package card).",
+  },
+  {
+    q: "What does social media integration include?",
+    a: "On the Pro package, we connect your Instagram feed, Facebook page, Substack, and other social profiles directly into your website \u2014 so visitors can see your latest posts and follow you without leaving your site.",
+  },
+  {
+    q: "Can I upgrade my package later?",
+    a: "Absolutely. If you start with Essentials and want to add booking, SEO, or more pages later, we can upgrade your site. We\u2019ll credit what you\u2019ve already paid toward the higher package.",
   },
 ];
 
@@ -271,39 +271,6 @@ export default function WebsitePackages() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── Add-ons ────────────────────────────────────────────────────────── */}
-      <section className="container max-w-5xl py-16">
-        <div className="text-center mb-10">
-          <h2 className="font-display text-2xl font-bold md:text-3xl">Need more?</h2>
-          <p className="text-muted-foreground mt-2">Add these to any package &mdash; just let us know during your discovery call.</p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {ADD_ON_CATEGORIES.map((cat) => {
-            const Icon = ICON_MAP[cat.icon] ?? Globe;
-            return (
-              <Card key={cat.title}>
-                <CardContent className="p-5 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-lg bg-secondary p-2">
-                      <Icon className="h-4 w-4 text-foreground" />
-                    </div>
-                    <h3 className="font-semibold text-sm">{cat.title}</h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {cat.items.map((item) => (
-                      <li key={item.name} className="flex items-start justify-between gap-2 text-sm">
-                        <span className="text-muted-foreground">{item.name}</span>
-                        <span className="font-medium text-foreground whitespace-nowrap">{item.price}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            );
-          })}
         </div>
       </section>
 

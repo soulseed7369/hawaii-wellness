@@ -57,7 +57,7 @@ export const PACKAGES: Package[] = [
       'Up to 8 pages',
       'Booking integration',
       'Payment integration (accept payments directly on your site)',
-      'Google Business Profile setup and optimization',
+      'Social media integration (Instagram, Facebook, Substack, etc.)',
       'Advanced search engine optimization (keyword research, image optimization, sitemap, Google indexing)',
       'AI search optimization (structured for AI-powered search results)',
       '1 feedback round + 2 post-delivery revisions',
