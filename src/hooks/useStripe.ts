@@ -36,19 +36,27 @@ export function useCreateCheckoutSession() {
       );
 
       if (error) {
-        // FunctionsHttpError has a .context Response — extract the real message
+        // Read raw body text first (more reliable than .json() which fails on non-JSON)
+        // Then try to parse as JSON and pull out error/message field.
+        // Gateway errors use { code, message }; our function uses { error }.
         let message = error.message || 'Failed to create checkout session';
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const context = (error as any).context;
-          if (context && typeof context.json === 'function') {
-            const body = await context.json();
-            if (body?.error) {
-              message = body.error;
+          const context = (error as any).context as Response | undefined;
+          if (context) {
+            const text = await context.text();
+            console.error('[checkout] raw error response:', text);
+            if (text) {
+              try {
+                const body = JSON.parse(text);
+                message = body.error || body.message || text;
+              } catch {
+                message = text;
+              }
             }
           }
-        } catch (parseErr) {
-          console.warn('Failed to parse error body:', parseErr);
+        } catch (readErr) {
+          console.warn('[checkout] could not read error body:', readErr);
         }
         throw new Error(message);
       }
