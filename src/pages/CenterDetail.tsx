@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
-import { useCenter } from "@/hooks/useCenter";
+import { useCenter, usePublicCenterLocations } from "@/hooks/useCenter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,11 +16,21 @@ import {
 import {
   MapPin, Phone, Mail, Globe, ExternalLink,
   Quote, Flag, Instagram, Facebook, Linkedin, Link2, Check, Clock,
+  Star, Users,
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
+import type { CenterLocationRow } from "@/types/database";
+
+// ── Island labels ──────────────────────────────────────────────────────────────
+const ISLAND_LABELS: Record<string, string> = {
+  big_island: 'Big Island',
+  maui:       'Maui',
+  oahu:       'Oʻahu',
+  kauai:      'Kauaʻi',
+};
 
 // ── Share button ───────────────────────────────────────────────────────────────
 function ShareButton({ name }: { name: string }) {
@@ -34,7 +44,7 @@ function ShareButton({ name }: { name: string }) {
   };
 
   const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-  const xUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out ${name} on Hawaiʻi Wellness`)}`;
+  const xUrl  = `https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out ${name} on Hawaiʻi Wellness`)}`;
 
   return (
     <div className="flex items-center gap-2">
@@ -57,26 +67,114 @@ const DAY_LABELS: Record<string, string> = {
   fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
 };
 
-function WorkingHours({ hours }: { hours: Record<string, { open: string; close: string } | null | undefined> }) {
+function WorkingHoursTable({ hours }: { hours: Record<string, { open: string; close: string } | null | undefined> }) {
   const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   return (
+    <ul className="space-y-1.5 text-sm">
+      {days.map(d => {
+        const slot = hours[d];
+        return (
+          <li key={d} className="flex items-center justify-between">
+            <span className="w-28 text-muted-foreground">{DAY_LABELS[d]}</span>
+            <span className="font-medium">
+              {slot
+                ? `${slot.open} – ${slot.close}`
+                : <span className="text-muted-foreground">Closed</span>}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+// ── Locations section ──────────────────────────────────────────────────────────
+function LocationsSection({ locations }: { locations: CenterLocationRow[] }) {
+  if (locations.length === 0) return null;
+
+  // Single location — render inline, no section header needed
+  if (locations.length === 1) {
+    const loc = locations[0];
+    const hasHours = loc.working_hours && Object.values(loc.working_hours).some(Boolean);
+    return (
+      <>
+        {hasHours && (
+          <div>
+            <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-bold">
+              <Clock className="h-5 w-5 text-primary" /> Hours
+            </h2>
+            <WorkingHoursTable hours={loc.working_hours as Record<string, { open: string; close: string } | null>} />
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // Multiple locations
+  return (
     <div>
-      <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-bold">
-        <Clock className="h-5 w-5 text-primary" /> Hours
+      <h2 className="mb-4 flex items-center gap-2 font-display text-xl font-bold">
+        <MapPin className="h-5 w-5 text-primary" /> Locations
       </h2>
-      <ul className="space-y-1.5 text-sm">
-        {days.map(d => {
-          const slot = hours[d];
+      <div className="grid gap-4 sm:grid-cols-2">
+        {locations.map((loc) => {
+          const hasHours = loc.working_hours && Object.values(loc.working_hours).some(Boolean);
+          const label = loc.name
+            || [loc.city, ISLAND_LABELS[loc.island] ?? loc.island].filter(Boolean).join(', ');
           return (
-            <li key={d} className="flex items-center justify-between">
-              <span className="w-28 text-muted-foreground">{DAY_LABELS[d]}</span>
-              <span className="font-medium">
-                {slot ? `${slot.open} – ${slot.close}` : <span className="text-muted-foreground">Closed</span>}
-              </span>
-            </li>
+            <Card key={loc.id} className={loc.is_primary ? "ring-1 ring-primary/30" : ""}>
+              <CardContent className="p-4 space-y-3">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-sm">{label}</p>
+                    {loc.is_primary && (
+                      <Badge variant="secondary" className="text-xs gap-1">
+                        <Star className="h-3 w-3" /> Primary
+                      </Badge>
+                    )}
+                  </div>
+                  {loc.address && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{loc.address}</p>
+                  )}
+                </div>
+                <div className="space-y-1.5 text-sm text-muted-foreground">
+                  {loc.phone && (
+                    <a href={`tel:${loc.phone}`} className="flex items-center gap-2 hover:text-foreground">
+                      <Phone className="h-3.5 w-3.5" /> {loc.phone}
+                    </a>
+                  )}
+                  {loc.email && (
+                    <a href={`mailto:${loc.email}`} className="flex items-center gap-2 hover:text-foreground">
+                      <Mail className="h-3.5 w-3.5" /> {loc.email}
+                    </a>
+                  )}
+                  {loc.lat && loc.lng && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 hover:text-foreground"
+                    >
+                      <MapPin className="h-3.5 w-3.5" /> Get directions
+                    </a>
+                  )}
+                </div>
+                {hasHours && (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground flex items-center gap-1 list-none">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>View hours</span>
+                    </summary>
+                    <div className="mt-2">
+                      <WorkingHoursTable hours={loc.working_hours as Record<string, { open: string; close: string } | null>} />
+                    </div>
+                  </details>
+                )}
+              </CardContent>
+            </Card>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -87,7 +185,8 @@ const PLACEHOLDER_COVER =
 
 export default function CenterDetail() {
   const { id } = useParams<{ id: string }>();
-  const { data: c, isLoading } = useCenter(id);
+  const { data: c, isLoading }         = useCenter(id);
+  const { data: locations = [] }       = usePublicCenterLocations(id);
 
   const metaDesc = c
     ? `${c.name} — ${c.centerTypeLabel} in Hawaiʻi. View services, hours, and contact info.`
@@ -110,7 +209,9 @@ export default function CenterDetail() {
           : undefined,
         geo: c.lat && c.lng ? { '@type': 'GeoCoordinates', latitude: c.lat, longitude: c.lng } : undefined,
         image: c.profileImage,
-        hasMap: `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`,
+        hasMap: c.lat && c.lng
+          ? `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`
+          : undefined,
       }
     : null;
 
@@ -119,17 +220,24 @@ export default function CenterDetail() {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 1, name: 'Home',      item: `${SITE_URL}/` },
           { '@type': 'ListItem', position: 2, name: 'Directory', item: `${SITE_URL}/directory` },
-          { '@type': 'ListItem', position: 3, name: c.name, item: centerUrl },
+          { '@type': 'ListItem', position: 3, name: c.name,      item: centerUrl },
         ],
       }
     : null;
 
   const isClaimed = !!c?.ownerId;
-  const hasHours = c?.workingHours && Object.values(c.workingHours).some(Boolean);
 
-  // ── Loading state ──────────────────────────────────────────────────────────
+  // Primary location (for sidebar contact info override when multiple locations)
+  const primaryLocation = locations.find((l) => l.is_primary) ?? locations[0] ?? null;
+  const hasMultipleLocations = locations.length > 1;
+
+  // Hours: prefer primary location hours, fall back to center root working_hours
+  const hoursSource = primaryLocation?.working_hours ?? c?.workingHours;
+  const hasHours = hoursSource && Object.values(hoursSource).some(Boolean);
+
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="container py-10">
@@ -151,24 +259,37 @@ export default function CenterDetail() {
     return (
       <div className="container py-20 text-center">
         <h1 className="mb-4 font-display text-2xl font-bold">Center not found</h1>
-        <p className="mb-6 text-muted-foreground">This listing may have been removed or the link is incorrect.</p>
-        <Button asChild variant="outline"><Link to="/directory">← Back to Directory</Link></Button>
+        <p className="mb-6 text-muted-foreground">
+          This listing may have been removed or the link is incorrect.
+        </p>
+        <Button asChild variant="outline">
+          <Link to="/directory">← Back to Directory</Link>
+        </Button>
       </div>
     );
   }
 
+  // Sidebar contact: use primary location fields if they exist, else center root
+  const contactPhone   = primaryLocation?.phone   ?? c.phone;
+  const contactEmail   = primaryLocation?.email   ?? c.email;
+  const contactAddress = primaryLocation?.address ?? c.address;
+
   return (
     <main>
       {localBusinessSchema && <JsonLd id="center-localbusiness" data={localBusinessSchema} />}
-      {breadcrumbSchema && <JsonLd id="center-breadcrumb" data={breadcrumbSchema} />}
+      {breadcrumbSchema    && <JsonLd id="center-breadcrumb"    data={breadcrumbSchema} />}
 
       {/* Breadcrumb */}
       <div className="container pt-4">
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink>
+            </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem><BreadcrumbLink asChild><Link to="/directory">Directory</Link></BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link to="/directory">Directory</Link></BreadcrumbLink>
+            </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="max-w-[240px] truncate">{c.name}</BreadcrumbPage>
@@ -203,6 +324,11 @@ export default function CenterDetail() {
                     <MapPin className="h-3.5 w-3.5" /> {c.location}
                   </span>
                 )}
+                {hasMultipleLocations && (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <MapPin className="h-3 w-3" /> {locations.length} locations
+                  </Badge>
+                )}
               </div>
               <div className="mt-3">
                 <ShareButton name={c.name} />
@@ -216,6 +342,8 @@ export default function CenterDetail() {
       <section className="container grid gap-8 py-8 lg:grid-cols-3">
         {/* Left — main content */}
         <div className="space-y-8 lg:col-span-2">
+
+          {/* About */}
           {c.about && (
             <div>
               <h2 className="mb-3 font-display text-xl font-bold">About</h2>
@@ -223,6 +351,7 @@ export default function CenterDetail() {
             </div>
           )}
 
+          {/* Services */}
           {c.modalities.length > 0 && (
             <div>
               <h2 className="mb-3 font-display text-xl font-bold">Services &amp; Modalities</h2>
@@ -237,10 +366,20 @@ export default function CenterDetail() {
             </div>
           )}
 
-          {hasHours && c.workingHours && (
-            <WorkingHours hours={c.workingHours as Record<string, { open: string; close: string } | null>} />
+          {/* Locations (multi-location centers) */}
+          <LocationsSection locations={locations} />
+
+          {/* Hours — single location, or center root hours when no location records exist */}
+          {locations.length <= 1 && hasHours && hoursSource && (
+            <div>
+              <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-bold">
+                <Clock className="h-5 w-5 text-primary" /> Hours
+              </h2>
+              <WorkingHoursTable hours={hoursSource as Record<string, { open: string; close: string } | null>} />
+            </div>
           )}
 
+          {/* Photo gallery */}
           {c.photos.length > 1 && (
             <div>
               <h2 className="mb-3 font-display text-xl font-bold">Gallery</h2>
@@ -258,6 +397,7 @@ export default function CenterDetail() {
             </div>
           )}
 
+          {/* Testimonials */}
           {c.testimonials.length > 0 && (
             <div>
               <h2 className="mb-4 font-display text-xl font-bold">What Clients Say</h2>
@@ -269,7 +409,9 @@ export default function CenterDetail() {
                       <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{t.text}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">{t.author}</span>
-                        {t.date && <span className="text-xs text-muted-foreground">{t.date}</span>}
+                        {t.date && (
+                          <span className="text-xs text-muted-foreground">{t.date}</span>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -283,25 +425,51 @@ export default function CenterDetail() {
         <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <Card>
             <CardContent className="p-0">
+              {/* Map placeholder */}
               <div className="flex h-40 items-center justify-center rounded-t-lg bg-ocean-light">
-                <MapPin className="h-8 w-8 text-ocean" />
+                {c.lat && c.lng ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-2 text-ocean hover:opacity-80"
+                  >
+                    <MapPin className="h-8 w-8" />
+                    <span className="text-xs font-medium">Get directions</span>
+                  </a>
+                ) : (
+                  <MapPin className="h-8 w-8 text-ocean" />
+                )}
               </div>
+
               <div className="space-y-3 p-4">
-                {c.address && <p className="text-sm font-medium">{c.address}</p>}
+                {contactAddress && (
+                  <p className="text-sm font-medium">{contactAddress}</p>
+                )}
+
+                {hasMultipleLocations && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" />
+                    {locations.length} locations — see full list above
+                  </p>
+                )}
+
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  {c.phone && (
-                    <a href={`tel:${c.phone}`} className="flex items-center gap-2 hover:text-foreground">
-                      <Phone className="h-4 w-4" /> {c.phone}
+                  {contactPhone && (
+                    <a href={`tel:${contactPhone}`}
+                      className="flex items-center gap-2 hover:text-foreground">
+                      <Phone className="h-4 w-4" /> {contactPhone}
                     </a>
                   )}
-                  {c.email && (
-                    <a href={`mailto:${c.email}`} className="flex items-center gap-2 hover:text-foreground">
-                      <Mail className="h-4 w-4" /> {c.email}
+                  {contactEmail && (
+                    <a href={`mailto:${contactEmail}`}
+                      className="flex items-center gap-2 hover:text-foreground">
+                      <Mail className="h-4 w-4" /> {contactEmail}
                     </a>
                   )}
                   {c.website && (
-                    <a href={c.website} className="flex items-center gap-2 hover:text-foreground"
-                      target="_blank" rel="noopener noreferrer">
+                    <a href={c.website} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 hover:text-foreground">
                       <Globe className="h-4 w-4" /> Website
                     </a>
                   )}
@@ -343,6 +511,7 @@ export default function CenterDetail() {
             </CardContent>
           </Card>
 
+          {/* Book CTA */}
           {c.externalBookingUrl && (
             <Button className="w-full gap-2" size="lg" asChild>
               <a href={c.externalBookingUrl} target="_blank" rel="noopener noreferrer">

@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Star, Crown, Loader2, ArrowRight } from "lucide-react";
+import { CheckCircle, Star, Crown, Loader2, ArrowRight, User, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useCreateCheckoutSession } from "@/hooks/useStripe";
 import { STRIPE_PRICES, VALID_PRICE_IDS, PROMO_ACTIVE } from "@/lib/stripe";
 import { supabase } from "@/lib/supabase";
+
+// ─── Feature lists ────────────────────────────────────────────────────────────
 
 const FREE_FEATURES = [
   "Basic directory listing",
@@ -16,7 +19,7 @@ const FREE_FEATURES = [
   "Photo upload",
 ];
 
-const PREMIUM_FEATURES = [
+const PRAC_PREMIUM_FEATURES = [
   "Everything in Free",
   "Offerings, Classes & Testimonials",
   "Social media links on your profile",
@@ -25,13 +28,57 @@ const PREMIUM_FEATURES = [
   "Priority listing placement",
 ];
 
-const FEATURED_FEATURES = [
+const PRAC_FEATURED_FEATURES = [
   "Everything in Premium",
   '"Featured Practitioner" badge',
   "Homepage spotlight rotation",
   "Top placement on island search pages",
   "Maximum visibility — limited to 5 per island",
 ];
+
+const CENTER_FREE_FEATURES = [
+  "Basic center listing",
+  "Center type, location & modalities",
+  "Contact information & website",
+  "Photo upload",
+  "Multiple locations support",
+];
+
+const CENTER_PREMIUM_FEATURES = [
+  "Everything in Free",
+  "Full photo gallery (up to 5 photos)",
+  "Events & classes calendar",
+  "Staff / practitioner roster",
+  "Client testimonials",
+  "Social media links",
+  "Working hours per location",
+  "Priority listing placement",
+];
+
+const CENTER_FEATURED_FEATURES = [
+  "Everything in Premium",
+  '"Featured Center" badge',
+  "Homepage spotlight rotation",
+  "Top placement on island search pages",
+  "Maximum visibility — limited to 5 per island",
+];
+
+// ─── Pricing data ─────────────────────────────────────────────────────────────
+
+type PricingMode = "practitioner" | "center";
+
+const PRICING = {
+  practitioner: {
+    premium: { regular: 49, promo: 39.20, priceId: STRIPE_PRICES.PREMIUM_MONTHLY },
+    featured: { regular: 129, promo: 103.20, priceId: STRIPE_PRICES.FEATURED_MONTHLY },
+  },
+  center: {
+    premium: { regular: 79, promo: 63.20, priceId: STRIPE_PRICES.CENTER_PREMIUM_MONTHLY },
+    featured: { regular: 199, promo: 159.20, priceId: STRIPE_PRICES.CENTER_FEATURED_MONTHLY },
+  },
+} as const;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ListYourPractice() {
   usePageMeta(
@@ -41,46 +88,46 @@ export default function ListYourPractice() {
 
   const navigate = useNavigate();
   const checkout = useCreateCheckoutSession();
+  const [mode, setMode] = useState<PricingMode>("practitioner");
+
+  const isPrac = mode === "practitioner";
+  const prices = PRICING[mode];
+  const freeFeatures      = FREE_FEATURES;
+  const premiumFeatures   = isPrac ? PRAC_PREMIUM_FEATURES   : CENTER_PREMIUM_FEATURES;
+  const featuredFeatures  = isPrac ? PRAC_FEATURED_FEATURES  : CENTER_FEATURED_FEATURES;
+  const freeCenterFeats   = !isPrac ? CENTER_FREE_FEATURES   : null;
 
   async function handlePaidPlan(priceId: string) {
     if (!supabase) return;
-    // Validate priceId is one of the known price IDs
     if (!VALID_PRICE_IDS.includes(priceId)) {
-      toast.error('Invalid plan selected');
+      toast.error("Invalid plan selected");
       return;
     }
-
     const { data: { user } } = await supabase.auth.getUser();
-    // Persist intent so auth page can resume it after sign-in
-    localStorage.setItem('pendingPlan', priceId);
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    localStorage.removeItem('pendingPlan');
-    checkout.mutate(
-      { priceId },
-      { onError: (e: Error) => toast.error(e.message) },
-    );
+    localStorage.setItem("pendingPlan", priceId);
+    if (!user) { navigate("/auth"); return; }
+    localStorage.removeItem("pendingPlan");
+    checkout.mutate({ priceId }, { onError: (e: Error) => toast.error(e.message) });
   }
 
   async function handleFreePlan() {
     if (!supabase) return;
     const { data: { user } } = await supabase.auth.getUser();
-    localStorage.setItem('pendingPlan', 'free');
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    localStorage.removeItem('pendingPlan');
-    navigate("/dashboard/profile");
+    localStorage.setItem("pendingPlan", "free");
+    if (!user) { navigate("/auth"); return; }
+    localStorage.removeItem("pendingPlan");
+    navigate(isPrac ? "/dashboard/profile" : "/dashboard/centers");
   }
+
+  const premiumPrice  = PROMO_ACTIVE ? prices.premium.promo  : prices.premium.regular;
+  const featuredPrice = PROMO_ACTIVE ? prices.featured.promo : prices.featured.regular;
 
   return (
     <main className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl text-center mb-12">
+      {/* Header */}
+      <div className="mx-auto max-w-4xl text-center mb-10">
         <h1 className="font-display text-3xl font-bold md:text-4xl mb-3">
-          List Your Practice
+          List Your {isPrac ? "Practice" : "Center"}
         </h1>
         <p className="text-muted-foreground text-lg">
           Join Hawaiʻi Wellness — the islands' premier wellness directory.
@@ -89,6 +136,35 @@ export default function ListYourPractice() {
         </p>
       </div>
 
+      {/* Toggle */}
+      <div className="flex justify-center mb-10">
+        <div className="flex items-center rounded-full border bg-muted p-1 gap-1">
+          <button
+            onClick={() => setMode("practitioner")}
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all ${
+              isPrac
+                ? "bg-background shadow text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <User className="h-4 w-4" />
+            Practitioners
+          </button>
+          <button
+            onClick={() => setMode("center")}
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all ${
+              !isPrac
+                ? "bg-background shadow text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Building2 className="h-4 w-4" />
+            Centers &amp; Spas
+          </button>
+        </div>
+      </div>
+
+      {/* Pricing cards */}
       <div className="mx-auto max-w-5xl grid gap-6 md:grid-cols-3">
 
         {/* ── Free ── */}
@@ -104,7 +180,7 @@ export default function ListYourPractice() {
             </div>
 
             <ul className="space-y-2.5 flex-1">
-              {FREE_FEATURES.map((f) => (
+              {(freeCenterFeats ?? freeFeatures).map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm">
                   <CheckCircle className="h-4 w-4 shrink-0 text-sage mt-0.5" />
                   {f}
@@ -112,11 +188,7 @@ export default function ListYourPractice() {
               ))}
             </ul>
 
-            <Button
-              variant="outline"
-              className="w-full mt-auto"
-              onClick={handleFreePlan}
-            >
+            <Button variant="outline" className="w-full mt-auto" onClick={handleFreePlan}>
               Get Started Free
               <ArrowRight className="h-4 w-4 ml-1.5" />
             </Button>
@@ -129,27 +201,35 @@ export default function ListYourPractice() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-sm font-medium text-primary uppercase tracking-wider">Premium</p>
-                <span className="text-xs bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full">Popular</span>
+                <span className="text-xs bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full">
+                  Popular
+                </span>
               </div>
               <div className="flex items-baseline gap-1">
                 {PROMO_ACTIVE ? (
                   <>
-                    <span className="font-display text-4xl font-bold">$39.20</span>
-                    <span className="text-muted-foreground text-sm line-through ml-1">$49</span>
+                    <span className="font-display text-4xl font-bold">${premiumPrice}</span>
+                    <span className="text-muted-foreground text-sm line-through ml-1">
+                      ${prices.premium.regular}
+                    </span>
                   </>
                 ) : (
-                  <span className="font-display text-4xl font-bold">$49</span>
+                  <span className="font-display text-4xl font-bold">${prices.premium.regular}</span>
                 )}
                 <span className="text-muted-foreground text-sm">/ month</span>
               </div>
               {PROMO_ACTIVE && (
-                <p className="text-xs text-emerald-700 font-medium mt-1">🎉 20% off locked in for 12 months</p>
+                <p className="text-xs text-emerald-700 font-medium mt-1">
+                  🎉 20% off locked in for 12 months
+                </p>
               )}
-              <p className="text-sm text-muted-foreground mt-1">Grow your practice online.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isPrac ? "Grow your practice online." : "Showcase your full center."}
+              </p>
             </div>
 
             <ul className="space-y-2.5 flex-1">
-              {PREMIUM_FEATURES.map((f) => (
+              {premiumFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm">
                   <CheckCircle className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                   {f}
@@ -159,7 +239,7 @@ export default function ListYourPractice() {
 
             <Button
               className="w-full mt-auto"
-              onClick={() => handlePaidPlan(STRIPE_PRICES.PREMIUM_MONTHLY)}
+              onClick={() => handlePaidPlan(prices.premium.priceId)}
               disabled={checkout.isPending}
             >
               {checkout.isPending
@@ -179,28 +259,30 @@ export default function ListYourPractice() {
           </div>
           <CardContent className="flex flex-col flex-1 p-6 pt-7 gap-5">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-medium text-amber-600 uppercase tracking-wider">Featured</p>
-              </div>
+              <p className="text-sm font-medium text-amber-600 uppercase tracking-wider mb-1">Featured</p>
               <div className="flex items-baseline gap-1">
                 {PROMO_ACTIVE ? (
                   <>
-                    <span className="font-display text-4xl font-bold">$103.20</span>
-                    <span className="text-muted-foreground text-sm line-through ml-1">$129</span>
+                    <span className="font-display text-4xl font-bold">${featuredPrice}</span>
+                    <span className="text-muted-foreground text-sm line-through ml-1">
+                      ${prices.featured.regular}
+                    </span>
                   </>
                 ) : (
-                  <span className="font-display text-4xl font-bold">$129</span>
+                  <span className="font-display text-4xl font-bold">${prices.featured.regular}</span>
                 )}
                 <span className="text-muted-foreground text-sm">/ month</span>
               </div>
               {PROMO_ACTIVE && (
-                <p className="text-xs text-emerald-700 font-medium mt-1">🎉 20% off locked in for 12 months</p>
+                <p className="text-xs text-emerald-700 font-medium mt-1">
+                  🎉 20% off locked in for 12 months
+                </p>
               )}
               <p className="text-sm text-muted-foreground mt-1">Stand out across the islands.</p>
             </div>
 
             <ul className="space-y-2.5 flex-1">
-              {FEATURED_FEATURES.map((f) => (
+              {featuredFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm">
                   <CheckCircle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
                   {f}
@@ -214,7 +296,7 @@ export default function ListYourPractice() {
 
             <Button
               className="w-full mt-auto bg-amber-500 hover:bg-amber-600 text-white"
-              onClick={() => handlePaidPlan(STRIPE_PRICES.FEATURED_MONTHLY)}
+              onClick={() => handlePaidPlan(prices.featured.priceId)}
               disabled={checkout.isPending}
             >
               {checkout.isPending

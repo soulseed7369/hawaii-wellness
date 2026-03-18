@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { CenterRow } from '@/types/database';
+import type { CenterRow, CenterLocationRow } from '@/types/database';
 
 const CENTER_TYPE_LABELS: Record<string, string> = {
   spa: 'Spa',
@@ -73,6 +73,26 @@ function rowToProfile(row: CenterRow): CenterProfile {
     workingHours: row.working_hours ?? null,
     socialLinks: row.social_links ?? null,
   };
+}
+
+/** Public fetch of all locations for a center — no auth needed. */
+export function usePublicCenterLocations(centerId: string | undefined) {
+  return useQuery<CenterLocationRow[]>({
+    queryKey: ['public-center-locations', centerId],
+    enabled: !!centerId && !!supabase,
+    queryFn: async () => {
+      if (!centerId || !supabase) return [];
+      const { data, error } = await supabase
+        .from('center_locations')
+        .select('*')
+        .eq('center_id', centerId)
+        .order('is_primary', { ascending: false })
+        .order('sort_order');
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 }
 
 export function useCenter(id: string | undefined) {
