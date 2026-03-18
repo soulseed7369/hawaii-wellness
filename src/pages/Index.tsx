@@ -10,7 +10,7 @@ import { useArticles } from "@/hooks/useArticles";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 const Index = () => {
-  usePageMeta("Hawaiʻi Big Island Wellness Directory", "Discover top practitioners, wellness centers, and retreats on the Big Island of Hawaiʻi. Browse holistic health providers and book through external links.");
+  usePageMeta("Hawaiʻi Big Island Wellness Directory", "Discover top practitioners and wellness centers on the Big Island of Hawaiʻi. Browse holistic health providers and book through external links.");
   const { data: practitioners = [], isLoading: loadingPractitioners } = usePractitioners();
   const { data: centers = [], isLoading: loadingCenters } = useCenters();
   const { data: articles = [], isLoading: loadingArticles } = useArticles();
