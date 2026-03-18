@@ -24,28 +24,39 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://hawaiiwellness.net',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const ALLOWED_ORIGINS = [
+  'https://hawaiiwellness.net',
+  'https://www.hawaiiwellness.net',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
+
+function corsHeaders(origin: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get('origin');
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204, headers: corsHeaders(origin) });
   }
 
   // Verify auth
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) return json({ error: 'Unauthorized' }, 401);
+  if (!authHeader) return json({ error: 'Unauthorized' }, 401, origin);
 
   const token = authHeader.replace('Bearer ', '');
   const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-  if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
+  if (authErr || !user) return json({ error: 'Unauthorized' }, 401, origin);
 
   const { priceId, successUrl, cancelUrl } = await req.json();
   if (!priceId || !successUrl || !cancelUrl) {
-    return json({ error: 'Missing required fields' }, 400);
+    return json({ error: 'Missing required fields' }, 400, origin);
   }
 
   // Validate priceId is one of the known price IDs (strict whitelist)
@@ -56,23 +67,25 @@ Deno.serve(async (req) => {
     'price_1TCA7KAmznBlrx8s2IOtOThI', // Center Featured $199/mo
   ];
   if (typeof priceId !== 'string' || !VALID_PRICE_IDS.includes(priceId)) {
-    return json({ error: 'Invalid price ID' }, 400);
+    return json({ error: 'Invalid price ID' }, 400, origin);
   }
 
   // Active launch promo — ALOHA20 (20% off for 12 months)
   const PROMO_ACTIVE = Deno.env.get('PROMO_ACTIVE') === 'true';
   const PROMO_COUPON_ID = 'o1QERmQL';
 
-  // Validate URLs are absolute and from same origin
+  // Validate URLs are absolute and from an allowed origin
   try {
     const success = new URL(successUrl);
-    const cancel = new URL(cancelUrl);
-    const origin = new URL(req.headers.get('origin') || '', req.url).origin;
-    if (success.origin !== origin || cancel.origin !== origin) {
-      return json({ error: 'URLs must be from the same origin' }, 400);
+    const cancel  = new URL(cancelUrl);
+    if (
+      !ALLOWED_ORIGINS.some(o => success.origin === o) ||
+      !ALLOWED_ORIGINS.some(o => cancel.origin  === o)
+    ) {
+      return json({ error: 'URLs must be from an allowed origin' }, 400, origin);
     }
   } catch {
-    return json({ error: 'Invalid URLs provided' }, 400);
+    return json({ error: 'Invalid URLs provided' }, 400, origin);
   }
 
   // Look up or create Stripe customer
@@ -111,12 +124,12 @@ Deno.serve(async (req) => {
     ...(PROMO_ACTIVE ? { discounts: [{ coupon: PROMO_COUPON_ID }] } : { allow_promotion_codes: true }),
   });
 
-  return json({ url: session.url });
+  return json({ url: session.url }, 200, origin);
 });
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, origin: string | null = null) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
   });
 }

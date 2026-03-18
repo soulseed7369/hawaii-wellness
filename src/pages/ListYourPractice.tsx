@@ -69,12 +69,12 @@ type PricingMode = "practitioner" | "center";
 
 const PRICING = {
   practitioner: {
-    premium: { regular: 49, promo: 39.20, priceId: STRIPE_PRICES.PREMIUM_MONTHLY },
-    featured: { regular: 129, promo: 103.20, priceId: STRIPE_PRICES.FEATURED_MONTHLY },
+    premium: { price: 49, priceId: STRIPE_PRICES.PREMIUM_MONTHLY },
+    featured: { price: 129, priceId: STRIPE_PRICES.FEATURED_MONTHLY },
   },
   center: {
-    premium: { regular: 79, promo: 63.20, priceId: STRIPE_PRICES.CENTER_PREMIUM_MONTHLY },
-    featured: { regular: 199, promo: 159.20, priceId: STRIPE_PRICES.CENTER_FEATURED_MONTHLY },
+    premium: { price: 79, priceId: STRIPE_PRICES.CENTER_PREMIUM_MONTHLY },
+    featured: { price: 199, priceId: STRIPE_PRICES.CENTER_FEATURED_MONTHLY },
   },
 } as const;
 
@@ -119,9 +119,6 @@ export default function ListYourPractice() {
     navigate(isPrac ? "/dashboard/profile" : "/dashboard/centers");
   }
 
-  const premiumPrice  = PROMO_ACTIVE ? prices.premium.promo  : prices.premium.regular;
-  const featuredPrice = PROMO_ACTIVE ? prices.featured.promo : prices.featured.regular;
-
   return (
     <main className="container py-12 md:py-16">
       {/* Header */}
@@ -134,6 +131,16 @@ export default function ListYourPractice() {
           <br className="hidden md:block" />
           Choose the plan that fits where you are.
         </p>
+        {PROMO_ACTIVE && (
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-5 py-2.5 text-sm text-emerald-800">
+            <span className="text-base">🎉</span>
+            <span>
+              <strong>Launch offer:</strong> Use code{" "}
+              <span className="font-mono font-bold tracking-wider bg-emerald-100 px-1.5 py-0.5 rounded">ALOHA20</span>{" "}
+              at checkout for 20% off your first 12 months.
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Toggle */}
@@ -206,23 +213,9 @@ export default function ListYourPractice() {
                 </span>
               </div>
               <div className="flex items-baseline gap-1">
-                {PROMO_ACTIVE ? (
-                  <>
-                    <span className="font-display text-4xl font-bold">${premiumPrice}</span>
-                    <span className="text-muted-foreground text-sm line-through ml-1">
-                      ${prices.premium.regular}
-                    </span>
-                  </>
-                ) : (
-                  <span className="font-display text-4xl font-bold">${prices.premium.regular}</span>
-                )}
+                <span className="font-display text-4xl font-bold">${prices.premium.price}</span>
                 <span className="text-muted-foreground text-sm">/ month</span>
               </div>
-              {PROMO_ACTIVE && (
-                <p className="text-xs text-emerald-700 font-medium mt-1">
-                  🎉 20% off locked in for 12 months
-                </p>
-              )}
               <p className="text-sm text-muted-foreground mt-1">
                 {isPrac ? "Grow your practice online." : "Showcase your full center."}
               </p>
@@ -261,23 +254,9 @@ export default function ListYourPractice() {
             <div>
               <p className="text-sm font-medium text-amber-600 uppercase tracking-wider mb-1">Featured</p>
               <div className="flex items-baseline gap-1">
-                {PROMO_ACTIVE ? (
-                  <>
-                    <span className="font-display text-4xl font-bold">${featuredPrice}</span>
-                    <span className="text-muted-foreground text-sm line-through ml-1">
-                      ${prices.featured.regular}
-                    </span>
-                  </>
-                ) : (
-                  <span className="font-display text-4xl font-bold">${prices.featured.regular}</span>
-                )}
+                <span className="font-display text-4xl font-bold">${prices.featured.price}</span>
                 <span className="text-muted-foreground text-sm">/ month</span>
               </div>
-              {PROMO_ACTIVE && (
-                <p className="text-xs text-emerald-700 font-medium mt-1">
-                  🎉 20% off locked in for 12 months
-                </p>
-              )}
               <p className="text-sm text-muted-foreground mt-1">Stand out across the islands.</p>
             </div>
 
