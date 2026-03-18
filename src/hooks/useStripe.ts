@@ -19,8 +19,16 @@ export function useCreateCheckoutSession() {
     mutationFn: async ({ priceId, successUrl, cancelUrl }: CheckoutParams) => {
       if (!supabase) throw new Error('Supabase not configured');
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('You must be logged in to upgrade');
+      // Force a token refresh so we always send a valid, non-expired JWT.
+      // getSession() only returns the cached token and does NOT auto-refresh.
+      const { data: refreshData, error: refreshErr } = await supabase.auth.refreshSession();
+      const session = refreshData?.session;
+      if (refreshErr || !session) {
+        console.error('[checkout] session refresh failed:', refreshErr?.message);
+        throw new Error('You must be logged in to upgrade. Please sign in again.');
+      }
+
+      console.log('[checkout] token refreshed, expires_at:', session.expires_at);
 
       // Use supabase.functions.invoke — the official SDK method that correctly
       // handles apikey, Authorization, session refresh, and response parsing.
@@ -32,8 +40,7 @@ export function useCreateCheckoutSession() {
             successUrl: successUrl ?? `${window.location.origin}/dashboard/billing?success=1`,
             cancelUrl:  cancelUrl  ?? `${window.location.origin}/dashboard/billing`,
           },
-          // Explicitly pass the session token we just fetched — don't rely on
-          // the functions client's internally-stored token which may be stale.
+          // Explicitly pass the freshly-refreshed token.
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
