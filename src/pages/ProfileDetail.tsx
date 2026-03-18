@@ -2,6 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { usePractitioner } from "@/hooks/usePractitioner";
 import { useSimilarPractitioners } from "@/hooks/usePractitioners";
+import { usePractitionerOfferings } from "@/hooks/usePractitionerOfferings";
+import { usePractitionerClasses } from "@/hooks/usePractitionerClasses";
+import { usePractitionerTestimonials } from "@/hooks/usePractitionerTestimonials";
 import { ProviderCard } from "@/components/ProviderCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +21,7 @@ import {
 import {
   CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft,
   Store, Instagram, Facebook, Linkedin, Link2, Check, Clock,
-  CalendarClock,
+  CalendarClock, Lock, Flag, Share2, Building2,
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { RequestInfoModal } from "@/components/RequestInfoModal";
@@ -26,6 +29,24 @@ import { BookingEmbed } from "@/components/BookingEmbed";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useSubmitFlag } from "@/hooks/useListingFlags";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 // ── Modality chip colour (matches ProviderCard logic) ────────────────────────
 const M_SAGE = new Set(["Massage","Craniosacral","Reiki","Energy Healing","Lomilomi / Hawaiian Healing","Hawaiian Healing","Watsu / Water Therapy","Physical Therapy","Osteopathic","Chiropractic","Network Chiropractic","Acupuncture","TCM (Traditional Chinese Medicine)","Ayurveda","Naturopathic","Functional Medicine","Herbalism","IV Therapy","Longevity","Dentistry","Nervous System Regulation"]);
@@ -140,10 +161,116 @@ function WorkingHours({ hours }: { hours: Record<string, { open: string; close: 
   );
 }
 
+// ── Type for active tab ───────────────────────────────────────────────────
+type TabType = 'about' | 'classes' | 'offerings' | 'testimonials';
+
+// ── Helper: format time HH:mm:ss → "HH:mm AM/PM" ────────────────────────
+function formatTime(timeStr: string | null): string {
+  if (!timeStr) return '';
+  try {
+    const [h, m] = timeStr.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const displayH = h % 12 || 12;
+    return `${displayH}:${String(m).padStart(2, '0')} ${ampm}`;
+  } catch {
+    return timeStr;
+  }
+}
+
+// ── Helper: format price ───────────────────────────────────────────────────
+function formatPrice(mode: string | undefined, fixed: number | null, min: number | null, max: number | null): string {
+  if (!mode) return '';
+  if (mode === 'free') return 'Free';
+  if (mode === 'contact') return 'Contact for pricing';
+  if (mode === 'fixed' && fixed !== null) return `$${fixed}`;
+  if ((mode === 'range' || mode === 'sliding') && min !== null && max !== null) return `$${min}–$${max}`;
+  return '';
+}
+
+// ── Helper: format date ISO → "Month Year" ─────────────────────────────────
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '';
+  try {
+    return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(dateStr));
+  } catch {
+    return dateStr;
+  }
+}
+
+// ── Helper: day of week to label ───────────────────────────────────────────
+const DAY_LABELS_SHORT: Record<string, string> = {
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+  sun: 'Sunday',
+};
+
+function dayToLabel(day: string | null): string {
+  if (!day) return '';
+  const label = DAY_LABELS_SHORT[day];
+  return label ? `Every ${label}` : '';
+}
+
+// ── Offering type badge color ──────────────────────────────────────────────
+function offeringTypeColor(type: string | undefined): string {
+  switch (type) {
+    case 'retreat':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    case 'workshop':
+      return 'bg-amber-100 text-amber-800 border-amber-200';
+    case 'mentorship':
+      return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+    case 'ceremony':
+      return 'bg-orange-100 text-orange-800 border-orange-200';
+    case 'immersion':
+      return 'bg-rose-100 text-rose-800 border-rose-200';
+    case 'event':
+      return 'bg-violet-100 text-violet-800 border-violet-200';
+    default:
+      return 'bg-secondary text-secondary-foreground border-border';
+  }
+}
+
 const ProfileDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: p, isLoading } = usePractitioner(id);
   const { data: similarProviders } = useSimilarPractitioners(p?.island, p?.modalities ?? [], p?.id);
+  const { data: classes } = usePractitionerClasses(p?.id ?? null);
+  const { data: offerings } = usePractitionerOfferings(p?.id ?? null);
+  const { data: newTestimonials } = usePractitionerTestimonials(p?.id ?? null);
+
+  const [activeTab, setActiveTab] = useState<TabType>('about');
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState<string>('');
+  const [reportDetails, setReportDetails] = useState<string>('');
+
+  const submitFlag = useSubmitFlag();
+  const { toast } = useToast();
+
+  const handleSubmitReport = async () => {
+    if (!reportReason) {
+      toast({ title: "Please select a reason", variant: "destructive" });
+      return;
+    }
+    try {
+      await submitFlag.mutateAsync({
+        listing_type: 'practitioner',
+        listing_id: id || '',
+        listing_name: p?.name || 'Unknown',
+        reason: reportReason as any,
+        details: reportDetails || undefined,
+      });
+      toast({ title: "Report submitted", description: "Thank you for helping keep our directory accurate." });
+      setReportOpen(false);
+      setReportReason('');
+      setReportDetails('');
+    } catch (error) {
+      toast({ title: "Error submitting report", variant: "destructive" });
+    }
+  };
 
   const metaDesc = p
     ? p.about
@@ -190,6 +317,11 @@ const ProfileDetail = () => {
   }
 
   const isClaimed = !!p.ownerId;
+  const isTiered = p.tier === 'premium' || p.tier === 'featured';
+
+  // ── Tab visibility ───────────────────────────────────────────────────────
+  const showClassesTab = isTiered && (classes?.length ?? 0) > 0;
+  const showOfferingsTab = isTiered && (offerings?.length ?? 0) > 0;
 
   // ── Structured data ──────────────────────────────────────────────────────
   const profileUrl = `${SITE_URL}/profile/${p.id}`;
@@ -369,101 +501,478 @@ const ProfileDetail = () => {
         </div>
       </section>
 
+      {/* Tab Bar */}
+      <section className="border-b border-border bg-background sticky top-16 z-30">
+        <div className="container overflow-x-auto">
+          <div className="flex gap-0 min-w-max">
+            {/* About tab */}
+            <button
+              onClick={() => setActiveTab('about')}
+              className={`relative px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === 'about'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              About
+              {activeTab === 'about' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
+              )}
+            </button>
+
+            {/* Classes tab */}
+            {showClassesTab && (
+              <button
+                onClick={() => setActiveTab('classes')}
+                className={`relative px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                  activeTab === 'classes'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Classes
+                {activeTab === 'classes' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
+                )}
+              </button>
+            )}
+
+            {/* Offerings tab */}
+            {showOfferingsTab && (
+              <button
+                onClick={() => setActiveTab('offerings')}
+                className={`relative px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                  activeTab === 'offerings'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Offerings
+                {activeTab === 'offerings' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
+                )}
+              </button>
+            )}
+
+            {/* Testimonials tab */}
+            <button
+              onClick={() => setActiveTab('testimonials')}
+              className={`relative px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === 'testimonials'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Testimonials
+              {activeTab === 'testimonials' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
+              )}
+            </button>
+
+          </div>
+        </div>
+      </section>
+
       {/* Content */}
       <section className="container grid gap-8 py-8 lg:grid-cols-3">
         {/* Left - Main Content */}
         <div className="space-y-8 lg:col-span-2">
-          {p.about && (
-            <div>
-              <h2 className="mb-3 font-display text-xl font-bold">About</h2>
-              <p className="leading-relaxed text-muted-foreground">{p.about}</p>
-            </div>
-          )}
+          {/* ABOUT TAB */}
+          {activeTab === 'about' && (
+            <>
+              {p.about && (
+                <div>
+                  <h2 className="mb-3 font-display text-xl font-bold">About</h2>
+                  <p className="leading-relaxed text-muted-foreground">{p.about}</p>
+                </div>
+              )}
 
-          {p.services.length > 0 && (
-            <div>
-              <h2 className="mb-3 font-display text-xl font-bold">Services &amp; Modalities</h2>
-              <div className="flex flex-wrap gap-2">
-                {p.services.map((service) => (
-                  <span
-                    key={service}
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border ${modalityChipClass(service)}`}
-                  >
-                    {service}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+              {/* CTA Block for tiered listings */}
+              {isTiered && (
+                <div className="border border-teal-200 bg-teal-50 rounded-lg p-5">
+                  <h3 className="mb-3 font-semibold text-sm text-teal-900">Connect with {p.name}</h3>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {p.bookingLabel && p.externalBookingUrl && (
+                      <Button
+                        className="gap-2 bg-teal-600 text-white hover:bg-teal-700"
+                        asChild
+                      >
+                        <a href={p.externalBookingUrl} target="_blank" rel="noopener noreferrer">
+                          {p.bookingLabel}
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    {p.discoveryCallUrl && (
+                      <Button
+                        variant="outline"
+                        className="gap-2 bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100"
+                        asChild
+                      >
+                        <a href={p.discoveryCallUrl} target="_blank" rel="noopener noreferrer">
+                          Discovery Call
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    {!p.externalBookingUrl && (
+                      <RequestInfoModal
+                        practitionerName={p.name}
+                        practitionerEmail={p.email}
+                        practitionerWebsite={p.website}
+                      />
+                    )}
+                  </div>
 
-          {p.whatToExpect && (
-            <div>
-              <h2 className="mb-3 font-display text-xl font-bold">What to Expect</h2>
-              <p className="leading-relaxed text-muted-foreground">{p.whatToExpect}</p>
-            </div>
-          )}
-
-          {/* Working Hours */}
-          {hasHours && workingHours && (
-            <WorkingHours hours={workingHours} />
-          )}
-
-          {p.gallery.length > 0 && (
-            <div>
-              <h2 className="mb-3 font-display text-xl font-bold">Gallery</h2>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {p.gallery.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt={`Gallery ${i + 1}`}
-                    className="aspect-[4/3] rounded-lg object-cover"
-                    loading="lazy"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Testimonials */}
-          {p.testimonials.length > 0 && (
-            <div>
-              <h2 className="mb-4 font-display text-xl font-bold">What Clients Say</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {p.testimonials.map((t, i) => (
-                  <Card key={i} className="border border-border bg-card shadow-sm">
-                    <CardContent className="p-4">
-                      {/* Star rating — these are curated testimonials, always 5-star */}
-                      <div className="mb-2 text-sm text-amber-400 leading-none" aria-label="5 star rating">
-                        ★★★★★
-                      </div>
-                      <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
-                        {t.text}
-                      </p>
-                      <div className="flex items-center justify-between border-t border-border/40 pt-2">
-                        <span className="text-sm font-semibold">{t.author}</span>
-                        {t.date && (
-                          <span className="text-xs text-muted-foreground">{t.date}</span>
+                  {/* Teasers for classes and offerings */}
+                  {(showClassesTab || showOfferingsTab) && (
+                    <div className="space-y-2 pt-3 border-t border-teal-200/50">
+                      <p className="text-xs font-medium text-teal-900">Featured</p>
+                      <div className="flex flex-wrap gap-2">
+                        {showClassesTab && classes && classes.slice(0, 3).map((cls) => (
+                          <button
+                            key={cls.id}
+                            onClick={() => setActiveTab('classes')}
+                            className="inline-flex items-center gap-1 text-xs bg-white border border-teal-200 rounded px-2 py-1 text-teal-700 hover:bg-teal-50 transition-colors"
+                          >
+                            {cls.title}
+                            <span className="text-teal-500">→</span>
+                          </button>
+                        ))}
+                        {showOfferingsTab && offerings && offerings.slice(0, 2).map((off) => (
+                          <button
+                            key={off.id}
+                            onClick={() => setActiveTab('offerings')}
+                            className="inline-flex items-center gap-1 text-xs bg-white border border-teal-200 rounded px-2 py-1 text-teal-700 hover:bg-teal-50 transition-colors"
+                          >
+                            {off.title}
+                            <span className="text-teal-500">→</span>
+                          </button>
+                        ))}
+                        {showClassesTab && classes && classes.length > 3 && (
+                          <button
+                            onClick={() => setActiveTab('classes')}
+                            className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                          >
+                            View all classes →
+                          </button>
+                        )}
+                        {showOfferingsTab && offerings && offerings.length > 2 && (
+                          <button
+                            onClick={() => setActiveTab('offerings')}
+                            className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                          >
+                            View all offerings →
+                          </button>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {p.services.length > 0 && (
+                <div>
+                  <h2 className="mb-3 font-display text-xl font-bold">Services &amp; Modalities</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {p.services.map((service) => (
+                      <span
+                        key={service}
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border ${modalityChipClass(service)}`}
+                      >
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {p.whatToExpect && (
+                <div>
+                  <h2 className="mb-3 font-display text-xl font-bold">What to Expect</h2>
+                  <p className="leading-relaxed text-muted-foreground">{p.whatToExpect}</p>
+                </div>
+              )}
+
+              {/* Working Hours */}
+              {hasHours && workingHours && (
+                <WorkingHours hours={workingHours} />
+              )}
+
+              {p.gallery.length > 0 && (
+                <div>
+                  <h2 className="mb-3 font-display text-xl font-bold">Gallery</h2>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    {p.gallery.map((img, i) => (
+                      <img
+                        key={i}
+                        src={img}
+                        alt={`Gallery ${i + 1}`}
+                        className="aspect-[4/3] rounded-lg object-cover"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Booking calendar embed — premium/featured only */}
+              {p.externalBookingUrl && (p.tier === 'premium' || p.tier === 'featured') && (
+                <BookingEmbed
+                  bookingUrl={p.externalBookingUrl}
+                  practitionerName={p.name}
+                  tier={p.tier}
+                />
+              )}
+
+              {/* Claim this listing card — only show if no owner */}
+              {!p.ownerId && (
+                <Card className="border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-50 overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-200">
+                          <Building2 className="h-6 w-6 text-teal-700" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="mb-1 font-semibold text-teal-900">Is this your practice?</h3>
+                        <p className="mb-4 text-sm text-teal-800">
+                          Claim this listing to update your information, respond to reviews, and grow your practice.
+                        </p>
+                        <Button
+                          className="bg-teal-600 text-white hover:bg-teal-700"
+                          asChild
+                        >
+                          <Link to={`/claim/${p.id}`}>
+                            Claim this listing
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Profile last updated timestamp */}
+              {p.updatedAt && (
+                <div className="text-xs text-gray-400">
+                  Profile last updated: {formatDate(p.updatedAt)}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* CLASSES TAB */}
+          {activeTab === 'classes' && (
+            <div>
+              <h2 className="mb-4 font-display text-xl font-bold">Classes & Sessions</h2>
+              {classes && classes.length > 0 ? (
+                <div className="space-y-4">
+                  {classes.map((cls) => (
+                    <Card key={cls.id} className="border border-border">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              {cls.day_of_week && (
+                                <Badge variant="outline" className="text-xs">
+                                  {dayToLabel(cls.day_of_week)}
+                                </Badge>
+                              )}
+                            </div>
+                            <h3 className="font-semibold text-sm mb-1">{cls.title}</h3>
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-2">
+                              {cls.start_time && (
+                                <span>{formatTime(cls.start_time)}</span>
+                              )}
+                              {cls.duration_minutes && (
+                                <span>·</span>
+                              )}
+                              {cls.duration_minutes && (
+                                <span>{cls.duration_minutes} min</span>
+                              )}
+                              {cls.location && (
+                                <span>·</span>
+                              )}
+                              {cls.location && (
+                                <span>{cls.location}</span>
+                              )}
+                            </div>
+                            {cls.price_mode && (
+                              <p className="text-sm font-medium text-foreground">{formatPrice(cls.price_mode, cls.price_fixed, cls.price_min, cls.price_max)}</p>
+                            )}
+                            {cls.max_spots && cls.spots_booked / cls.max_spots >= 0.5 && (
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                {cls.max_spots - cls.spots_booked} spots remaining
+                              </div>
+                            )}
+                          </div>
+                          {cls.registration_url && (
+                            <Button size="sm" className="mt-2 sm:mt-0 gap-1" asChild>
+                              <a href={cls.registration_url} target="_blank" rel="noopener noreferrer">
+                                Register
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No classes scheduled — check back soon.</p>
+              )}
             </div>
           )}
 
-          {/* Booking calendar embed — premium/featured only */}
-          {p.externalBookingUrl && (p.tier === 'premium' || p.tier === 'featured') && (
-            <BookingEmbed
-              bookingUrl={p.externalBookingUrl}
-              practitionerName={p.name}
-              tier={p.tier}
-            />
+          {/* OFFERINGS TAB */}
+          {activeTab === 'offerings' && (
+            <div>
+              <h2 className="mb-4 font-display text-xl font-bold">Offerings & Events</h2>
+              {offerings && offerings.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {offerings.map((off) => {
+                    const isSoldOut = off.max_spots && off.spots_booked >= off.max_spots;
+                    const hasSpotsBadge = off.max_spots && off.spots_booked / off.max_spots >= 0.5;
+                    return (
+                      <Card key={off.id} className="border border-border overflow-hidden">
+                        {off.image_url && (
+                          <img
+                            src={off.image_url}
+                            alt={off.title}
+                            className="w-full h-48 object-cover"
+                          />
+                        )}
+                        <CardContent className="p-4">
+                          <div className="mb-2">
+                            <Badge className={`text-xs ${offeringTypeColor(off.offering_type)}`}>
+                              {off.offering_type}
+                            </Badge>
+                          </div>
+                          <h3 className="font-semibold mb-1 line-clamp-2">{off.title}</h3>
+                          {off.description && (
+                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{off.description}</p>
+                          )}
+                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-3">
+                            {off.price_mode && (
+                              <span className="font-medium text-foreground">{formatPrice(off.price_mode, off.price_fixed, off.price_min, off.price_max)}</span>
+                            )}
+                            {off.start_date ? (
+                              <span>
+                                {formatDate(off.start_date)}
+                                {off.end_date && ` – ${formatDate(off.end_date)}`}
+                              </span>
+                            ) : (
+                              <span>Ongoing — flexible start</span>
+                            )}
+                            {off.location && (
+                              <span>·</span>
+                            )}
+                            {off.location && (
+                              <span>{off.location}</span>
+                            )}
+                          </div>
+                          {hasSpotsBadge && !isSoldOut && (
+                            <div className="mb-3 text-xs text-muted-foreground">
+                              {off.max_spots! - off.spots_booked} spots remaining
+                            </div>
+                          )}
+                          {off.registration_url && (
+                            <Button
+                              size="sm"
+                              variant={isSoldOut ? 'outline' : 'default'}
+                              className="w-full gap-1"
+                              asChild
+                            >
+                              <a href={off.registration_url} target="_blank" rel="noopener noreferrer">
+                                {isSoldOut ? 'Join Waitlist' : 'Register'}
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No offerings posted — check back soon.</p>
+              )}
+            </div>
+          )}
+
+          {/* TESTIMONIALS TAB */}
+          {activeTab === 'testimonials' && (
+            <div>
+              <h2 className="mb-4 font-display text-xl font-bold">What Clients Say</h2>
+              {newTestimonials && newTestimonials.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {newTestimonials.map((t) => (
+                    <Card key={t.id} className="border border-border bg-card shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="mb-3 text-lg text-amber-400">"</div>
+                        <p className="mb-3 text-sm leading-relaxed text-muted-foreground italic">
+                          {t.text}
+                        </p>
+                        <div className="border-t border-border/40 pt-2">
+                          <p className="text-sm font-semibold">{t.author}</p>
+                          {t.author_location && (
+                            <p className="text-xs text-muted-foreground">{t.author_location}</p>
+                          )}
+                          {t.testimonial_date && (
+                            <p className="text-xs text-muted-foreground mt-1">{formatDate(t.testimonial_date)}</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : p.testimonials && p.testimonials.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {p.testimonials.map((t, i) => (
+                    <Card key={i} className="border border-border bg-card shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="mb-2 text-sm text-amber-400 leading-none" aria-label="5 star rating">
+                          ★★★★★
+                        </div>
+                        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                          {t.text}
+                        </p>
+                        <div className="flex items-center justify-between border-t border-border/40 pt-2">
+                          <span className="text-sm font-semibold">{t.author}</span>
+                          {t.date && (
+                            <span className="text-xs text-muted-foreground">{t.date}</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No testimonials yet.</p>
+              )}
+            </div>
+          )}
+
+          {/* Similar practitioners — shown for all tabs */}
+          {similarProviders && similarProviders.length > 0 && (
+            <div>
+              <h2 className="mb-4 font-display text-xl font-bold">
+                Similar practitioners on {ISLAND_CONFIG[p.island ?? '']?.label ?? 'Hawaiʻi'}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {similarProviders.slice(0, 4).map(sp => (
+                  <ProviderCard key={sp.id} provider={sp} compact />
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Right Sidebar */}
+        {/* Right Sidebar — only on About tab */}
+        {activeTab === 'about' && (
         <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           {/* Primary CTA — top of sidebar (desktop) */}
           {p.externalBookingUrl ? (
@@ -505,12 +1014,12 @@ const ProfileDetail = () => {
               <div className="space-y-3 p-4">
                 {p.address && <p className="text-sm font-medium">{p.address}</p>}
                 <div className="space-y-2 text-sm">
-                  {p.phone && (
+                  {p.phone && p.showPhone && (
                     <a href={`tel:${p.phone}`} className="flex items-center gap-2 font-medium text-primary hover:text-primary/80 transition-colors">
                       <Phone className="h-4 w-4 flex-shrink-0" /> {p.phone}
                     </a>
                   )}
-                  {p.email && (
+                  {p.email && p.showEmail && (
                     <a href={`mailto:${p.email}`} className="flex items-center gap-2 font-medium text-primary hover:text-primary/80 transition-colors min-w-0">
                       <Mail className="h-4 w-4 flex-shrink-0" /> <span className="truncate">{p.email}</span>
                     </a>
@@ -585,57 +1094,69 @@ const ProfileDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Claim this listing */}
-          {!isClaimed && (
-            <Card className="border-dashed border-primary/30 bg-primary/5">
-              <CardContent className="p-4 text-center">
-                <Store className="mx-auto mb-2 h-5 w-5 text-primary" />
-                <p className="mb-1 text-sm font-medium">Is this your practice?</p>
-                <p className="mb-3 text-xs text-muted-foreground">
-                  Claim this listing to manage your profile, add photos, and respond to clients.
-                </p>
-                <Button asChild size="sm" className="w-full">
-                  <Link to={`/auth?claim=${id}`}>
-                    Claim this listing →
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Report inaccurate / expired listing */}
-          <div className="flex justify-center pt-1">
-            <FlagListingButton
-              listingType="practitioner"
-              listingId={p.id}
-              listingName={p.name}
-            />
-          </div>
         </div>
+        )}
       </section>
 
-      {/* Similar practitioners */}
-      {similarProviders && similarProviders.length > 0 && (
-        <section className="container pb-4 pt-6">
-          <h2 className="mb-3 font-display text-lg font-semibold text-foreground">
-            Similar practitioners on {ISLAND_CONFIG[p.island ?? '']?.label ?? 'Hawaiʻi'}
-          </h2>
-          <div className="space-y-2">
-            {similarProviders.map(sp => (
-              <ProviderCard key={sp.id} provider={sp} compact />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Bottom nav */}
-      <div className="container pb-8">
+      <div className="container pb-8 flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to="/directory">
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             Back to Directory
           </Link>
         </Button>
+
+        {/* Report listing button */}
+        <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+          <DialogTrigger asChild>
+            <button className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 transition-colors">
+              <Flag className="h-3 w-3" />
+              Report listing
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Report this listing</DialogTitle>
+              <DialogDescription>
+                Help us keep the directory accurate by reporting any issues with this listing.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Reason</label>
+                <Select value={reportReason} onValueChange={setReportReason}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inaccurate">Incorrect information</SelectItem>
+                    <SelectItem value="closed">Business is closed</SelectItem>
+                    <SelectItem value="duplicate">Spam or duplicate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Additional details (optional)</label>
+                <Textarea
+                  placeholder="Please provide any additional context..."
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                  className="min-h-24 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setReportOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmitReport} disabled={submitFlag.isPending || !reportReason}>
+                {submitFlag.isPending ? 'Submitting...' : 'Submit Report'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Mobile sticky CTA — always visible on mobile */}

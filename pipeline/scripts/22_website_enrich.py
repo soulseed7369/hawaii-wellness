@@ -446,10 +446,16 @@ def enrich_from_json_ld(json_ld: dict) -> dict:
         out["phone"] = json_ld["telephone"]
     if json_ld.get("description") and len(json_ld["description"]) > 20:
         out["bio"] = truncate_words(json_ld["description"], MAX_BIO_WORDS)
-    # Image
+    # Image — JSON-LD can represent this as str, dict, or list
     img = json_ld.get("image")
     if img:
-        out["avatar_url"] = img if isinstance(img, str) else img.get("url", "")
+        if isinstance(img, str):
+            out["avatar_url"] = img
+        elif isinstance(img, list) and img:
+            first = img[0]
+            out["avatar_url"] = first if isinstance(first, str) else (first.get("url", "") if isinstance(first, dict) else "")
+        elif isinstance(img, dict):
+            out["avatar_url"] = img.get("url", "")
     # Person-specific name fields
     if json_ld.get("@type") == "Person":
         given  = json_ld.get("givenName", "").strip()

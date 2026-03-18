@@ -1,0 +1,150 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import type { OfferingRow, OfferingInsert, PriceMode } from '@/types/database';
+
+export type OfferingFormData = {
+  id?: string;
+  practitioner_id: string;
+  title: string;
+  description: string;
+  offering_type: OfferingRow['offering_type'];
+  price_mode: PriceMode;
+  price_fixed: string;
+  price_min: string;
+  price_max: string;
+  image_url: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  registration_url: string;
+  max_spots: string;
+  spots_booked: number;
+  sort_order: number;
+  status: 'draft' | 'published';
+};
+
+export function useMyOfferings() {
+  const { user } = useAuth();
+
+  return useQuery<OfferingRow[]>({
+    queryKey: ['my-offerings', user?.id],
+    enabled: !!user && !!supabase,
+    queryFn: async () => {
+      if (!supabase || !user) return [];
+
+      const { data: practitioner, error: practitionerError } = await supabase
+        .from('practitioners')
+        .select('id')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+
+      if (practitionerError) throw practitionerError;
+      if (!practitioner) return [];
+
+      const { data, error } = await supabase
+        .from('offerings')
+        .select('*')
+        .eq('practitioner_id', practitioner.id)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useSaveOffering() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (formData: OfferingFormData) => {
+      if (!supabase || !user) throw new Error('Not authenticated');
+
+      const payload: OfferingInsert = {
+        practitioner_id: formData.practitioner_id,
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        offering_type: formData.offering_type,
+        price_mode: formData.price_mode,
+        price_fixed: formData.price_fixed ? parseFloat(formData.price_fixed) : null,
+        price_min: formData.price_min ? parseFloat(formData.price_min) : null,
+        price_max: formData.price_max ? parseFloat(formData.price_max) : null,
+        image_url: formData.image_url || null,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        location: formData.location.trim() || null,
+        registration_url: formData.registration_url.trim() || null,
+        max_spots: formData.max_spots ? parseInt(formData.max_spots, 10) : null,
+        spots_booked: formData.spots_booked,
+        sort_order: formData.sort_order,
+        status: formData.status,
+      };
+
+      if (formData.id) {
+        const { error } = await supabase
+          .from('offerings')
+          .update(payload)
+          .eq('id', formData.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('offerings')
+          .insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-offerings'] });
+    },
+  });
+}
+
+export function useDeleteOffering() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!supabase) throw new Error('Supabase not configured');
+
+      const { error } = await supabase
+        .from('offerings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-offerings'] });
+    },
+  });
+}
+
+export async function uploadOfferingImage(file: File): Promise<string> {
+  if (!supabase) throw new Error('Supabase not configured');
+
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowedMimeTypes.includes(file.type)) {
+    throw new Error(`Invalid file type. Only JPG, PNG, WebP, and GIF are allowed.`);
+  }
+
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    throw new Error(`File size must be less than 5MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const path = `offerings/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('practitioner-images')
+    .upload(path, file, { upsert: true });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from('practitioner-images').getPublicUrl(path);
+  return data.publicUrl;
+}

@@ -1,17 +1,19 @@
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { Home, User, Building, Calendar, CreditCard, Settings, LogOut, Menu, X, ShieldCheck } from "lucide-react";
+import { Home, User, Building, CalendarDays, Sparkles, Quote, CreditCard, Settings, LogOut, Menu, X, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAdmin } from "@/lib/admin";
 
 const sidebarLinks = [
-  { label: "Dashboard Home", to: "/dashboard", icon: Home },
-  { label: "My Practitioner Profile", to: "/dashboard/profile", icon: User },
-  { label: "My Centers & Spas", to: "/dashboard/centers", icon: Building },
-  { label: "My Retreats & Events", to: "/dashboard/retreats", icon: Calendar },
-  { label: "Billing & Subscription", to: "/dashboard/billing", icon: CreditCard },
-  { label: "Account Settings", to: "/dashboard/settings", icon: Settings },
+  { label: "Dashboard Home",          to: "/dashboard",              icon: Home },
+  { label: "My Practitioner Profile", to: "/dashboard/profile",      icon: User },
+  { label: "My Centers & Spas",       to: "/dashboard/centers",      icon: Building },
+  { label: "Offerings & Events",      to: "/dashboard/offerings",    icon: Sparkles },
+  { label: "Classes",                 to: "/dashboard/classes",      icon: CalendarDays },
+  { label: "Testimonials",            to: "/dashboard/testimonials", icon: Quote },
+  { label: "Billing & Subscription",  to: "/dashboard/billing",      icon: CreditCard },
+  { label: "Account Settings",        to: "/dashboard/settings",     icon: Settings },
 ];
 
 export function DashboardLayout() {

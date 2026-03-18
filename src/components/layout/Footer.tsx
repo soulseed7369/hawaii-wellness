@@ -53,7 +53,6 @@ export function Footer() {
             <h4 className="font-display text-sm font-semibold uppercase tracking-wider opacity-70">Explore</h4>
             <nav className="flex flex-col gap-2 text-sm">
               <Link to="/directory" className="opacity-80 hover:opacity-100">Browse Directory</Link>
-              <Link to="/retreats" className="opacity-80 hover:opacity-100">Retreats</Link>
               <Link to="/articles" className="opacity-80 hover:opacity-100">Articles &amp; Guides</Link>
               <Link to="/list-your-practice" className="opacity-80 hover:opacity-100">List Your Practice</Link>
             </nav>

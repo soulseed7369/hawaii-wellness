@@ -38,6 +38,13 @@ export type PractitionerFormData = {
   accepts_new_clients: boolean;
   avatar_url?: string | null;
   response_time: string;  // '' | 'within_hours' | 'within_day' | 'within_2_3_days' | 'within_week'
+  // Privacy & CTA toggles (Offerings & Events feature)
+  show_phone: boolean;
+  show_email: boolean;
+  booking_enabled: boolean;
+  messaging_enabled: boolean;
+  discovery_call_enabled: boolean;
+  discovery_call_url: string;
 };
 
 export function useSavePractitioner() {
@@ -65,6 +72,12 @@ export function useSavePractitioner() {
         accepts_new_clients: formData.accepts_new_clients,
         response_time: formData.response_time.trim() || null,
         ...(formData.avatar_url !== undefined && { avatar_url: formData.avatar_url }),
+        show_phone: formData.show_phone,
+        show_email: formData.show_email,
+        booking_enabled: formData.booking_enabled,
+        messaging_enabled: formData.messaging_enabled,
+        discovery_call_enabled: formData.discovery_call_enabled,
+        discovery_call_url: formData.discovery_call_url.trim() || null,
         status: 'draft',
       };
 

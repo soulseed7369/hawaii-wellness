@@ -23,6 +23,7 @@ export interface PractitionerProfile {
   website: string | null;
   externalBookingUrl: string | null;
   bookingLabel: string | null;  // custom button label (premium/featured only)
+  discoveryCallUrl: string | null;
   lat: number | null;
   lng: number | null;
   about: string | null;
@@ -42,6 +43,11 @@ export interface PractitionerProfile {
     x?: string;
     substack?: string;
   } | null;
+  showPhone: boolean;
+  showEmail: boolean;
+  bookingEnabled: boolean;
+  messagingEnabled: boolean;
+  discoveryCallEnabled: boolean;
 }
 
 const PLACEHOLDER_COVER =
@@ -66,6 +72,7 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     website: row.website_url,
     externalBookingUrl: row.external_booking_url,
     bookingLabel: row.booking_label ?? null,
+    discoveryCallUrl: row.discovery_call_url ?? null,
     lat: row.lat,
     lng: row.lng,
     about: row.bio,
@@ -79,6 +86,11 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     responseTime: row.response_time ?? null,
     testimonials: row.testimonials ?? [],
     socialLinks: row.social_links ?? null,
+    showPhone: row.show_phone ?? true,
+    showEmail: row.show_email ?? true,
+    bookingEnabled: row.booking_enabled ?? false,
+    messagingEnabled: row.messaging_enabled ?? false,
+    discoveryCallEnabled: row.discovery_call_enabled ?? false,
   };
 }
 
@@ -111,6 +123,7 @@ export function usePractitioner(id: string | undefined) {
           website: profileData.website,
           externalBookingUrl: null,
           bookingLabel: null,
+          discoveryCallUrl: null,
           lat: profileData.lat,
           lng: profileData.lng,
           about: profileData.about,
@@ -124,6 +137,11 @@ export function usePractitioner(id: string | undefined) {
           responseTime: null,
           testimonials: [],
           socialLinks: null,
+          showPhone: true,
+          showEmail: true,
+          bookingEnabled: false,
+          messagingEnabled: false,
+          discoveryCallEnabled: false,
         };
       }
 

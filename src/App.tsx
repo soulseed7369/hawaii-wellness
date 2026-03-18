@@ -19,8 +19,6 @@ import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_EMAIL } from "@/lib/siteCon
 // ── Lazy-loaded page bundles ──────────────────────────────────────────────────
 const Index             = lazy(() => import("./pages/Index"));
 const Directory         = lazy(() => import("./pages/Directory"));
-const Retreats          = lazy(() => import("./pages/Retreats"));
-const RetreatDetail     = lazy(() => import("./pages/RetreatDetail"));
 const Articles          = lazy(() => import("./pages/Articles"));
 const ArticleDetail     = lazy(() => import("./pages/ArticleDetail"));
 const ListYourPractice  = lazy(() => import("./pages/ListYourPractice"));
@@ -46,9 +44,12 @@ const AdminPanel        = lazy(() => import("./pages/admin/AdminPanel"));
 const DashboardHome     = lazy(() => import("./pages/dashboard/DashboardHome"));
 const DashboardProfile  = lazy(() => import("./pages/dashboard/DashboardProfile"));
 const DashboardCenters  = lazy(() => import("./pages/dashboard/DashboardCenters"));
-const DashboardRetreats = lazy(() => import("./pages/dashboard/DashboardRetreats"));
-const DashboardBilling  = lazy(() => import("./pages/dashboard/DashboardBilling"));
-const DashboardSettings = lazy(() => import("./pages/dashboard/DashboardSettings"));
+const DashboardRetreats     = lazy(() => import("./pages/dashboard/DashboardRetreats"));
+const DashboardOfferings    = lazy(() => import("./pages/dashboard/DashboardOfferings"));
+const DashboardClasses      = lazy(() => import("./pages/dashboard/DashboardClasses"));
+const DashboardTestimonials = lazy(() => import("./pages/dashboard/DashboardTestimonials"));
+const DashboardBilling      = lazy(() => import("./pages/dashboard/DashboardBilling"));
+const DashboardSettings     = lazy(() => import("./pages/dashboard/DashboardSettings"));
 
 // ── Shared page-level loading fallback ───────────────────────────────────────
 function PageSpinner() {
@@ -119,8 +120,11 @@ const App = () => (
                   <Route index element={<DashboardHome />} />
                   <Route path="profile"  element={<DashboardProfile />} />
                   <Route path="centers"  element={<DashboardCenters />} />
-                  <Route path="retreats" element={<DashboardRetreats />} />
-                  <Route path="billing"  element={<DashboardBilling />} />
+                  <Route path="retreats"     element={<DashboardRetreats />} />
+                  <Route path="offerings"   element={<DashboardOfferings />} />
+                  <Route path="classes"     element={<DashboardClasses />} />
+                  <Route path="testimonials" element={<DashboardTestimonials />} />
+                  <Route path="billing"     element={<DashboardBilling />} />
                   <Route path="settings" element={<DashboardSettings />} />
                 </Route>
               </Route>
@@ -140,8 +144,6 @@ const App = () => (
                 <Route path="/oahu"      element={<OahuHome />} />
                 <Route path="/kauai"     element={<KauaiHome />} />
                 <Route path="/directory"          element={<Directory />} />
-                <Route path="/retreats"           element={<Retreats />} />
-                <Route path="/retreats/:id"       element={<RetreatDetail />} />
                 <Route path="/articles"           element={<Articles />} />
                 <Route path="/articles/:slug"     element={<ArticleDetail />} />
                 <Route path="/list-your-practice" element={<ListYourPractice />} />

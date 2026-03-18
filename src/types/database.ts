@@ -8,6 +8,84 @@
 
 // ─── Row types (SELECT results) ───────────────────────────────────────────────
 
+// ─── Shared price-mode type ───────────────────────────────────────────────────
+
+export type PriceMode = 'fixed' | 'range' | 'sliding' | 'contact' | 'free';
+
+// ─── Offerings (retreats, workshops, immersions, mentorship, ceremonies) ──────
+
+export interface OfferingRow {
+  id: string;
+  practitioner_id: string;
+  title: string;
+  description: string | null;
+  offering_type: 'retreat' | 'workshop' | 'immersion' | 'mentorship' | 'ceremony' | 'event';
+  price_mode: PriceMode;
+  price_fixed: number | null;
+  price_min: number | null;
+  price_max: number | null;
+  image_url: string | null;
+  start_date: string | null;    // ISO date "YYYY-MM-DD", null = evergreen/ongoing
+  end_date: string | null;
+  location: string | null;
+  registration_url: string | null;
+  max_spots: number | null;     // null = unlimited
+  spots_booked: number;
+  sort_order: number;
+  status: 'draft' | 'published';
+  created_at: string;
+  updated_at: string;
+}
+
+export type OfferingInsert = Omit<OfferingRow, 'id' | 'created_at' | 'updated_at'>;
+
+// ─── Classes (recurring sessions) ────────────────────────────────────────────
+
+export interface ClassRow {
+  id: string;
+  practitioner_id: string;
+  title: string;
+  description: string | null;
+  price_mode: PriceMode;
+  price_fixed: number | null;
+  price_min: number | null;
+  price_max: number | null;
+  duration_minutes: number | null;
+  day_of_week: 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun' | null;
+  start_time: string | null;    // "HH:mm:ss" from Postgres time
+  location: string | null;
+  registration_url: string | null;
+  max_spots: number | null;
+  spots_booked: number;
+  sort_order: number;
+  status: 'draft' | 'published';
+  created_at: string;
+  updated_at: string;
+}
+
+export type ClassInsert = Omit<ClassRow, 'id' | 'created_at' | 'updated_at'>;
+
+// ─── Practitioner testimonials (provider-curated quotes) ─────────────────────
+
+export interface PractitionerTestimonialRow {
+  id: string;
+  practitioner_id: string;
+  author: string;
+  text: string;
+  author_location: string | null;
+  testimonial_date: string | null;  // ISO date
+  linked_type: 'offering' | 'class' | null;
+  linked_id: string | null;
+  sort_order: number;
+  status: 'draft' | 'published';
+  created_at: string;
+  updated_at: string;
+}
+
+export type PractitionerTestimonialInsert = Omit<PractitionerTestimonialRow, 'id' | 'created_at' | 'updated_at'>;
+
+// ─── Row types (SELECT results) ───────────────────────────────────────────────
+
 export interface PractitionerRow {
   id: string;
   owner_id: string | null;
@@ -69,6 +147,13 @@ export interface PractitionerRow {
   };
   retreat_links: string[];
   response_time: string | null;  // e.g. 'within_hours' | 'within_day' | 'within_2_3_days' | 'within_week'
+  // Offerings & Events feature (migration 20260317000001)
+  show_phone: boolean;
+  show_email: boolean;
+  booking_enabled: boolean;
+  messaging_enabled: boolean;
+  discovery_call_enabled: boolean;
+  discovery_call_url: string | null;
 }
 
 export interface CenterRow {
@@ -195,6 +280,21 @@ export interface Database {
         Row: ArticleRow;
         Insert: ArticleInsert;
         Update: Partial<ArticleInsert>;
+      };
+      offerings: {
+        Row: OfferingRow;
+        Insert: OfferingInsert;
+        Update: Partial<OfferingInsert>;
+      };
+      classes: {
+        Row: ClassRow;
+        Insert: ClassInsert;
+        Update: Partial<ClassInsert>;
+      };
+      practitioner_testimonials: {
+        Row: PractitionerTestimonialRow;
+        Insert: PractitionerTestimonialInsert;
+        Update: Partial<PractitionerTestimonialInsert>;
       };
     };
     Views: Record<string, never>;
