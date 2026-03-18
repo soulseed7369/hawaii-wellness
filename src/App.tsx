@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -97,6 +97,12 @@ function PublicLayout() {
 
 const queryClient = new QueryClient();
 
+/** Passes the current pathname to ErrorBoundary so it resets on navigation */
+function LocationAwareErrorBoundary({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  return <ErrorBoundary resetKey={location.pathname}>{children}</ErrorBoundary>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -105,7 +111,7 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
-          <ErrorBoundary>
+          <LocationAwareErrorBoundary>
           <Suspense fallback={<PageSpinner />}>
             <Routes>
               {/* Auth — full screen, no nav */}
@@ -161,7 +167,7 @@ const App = () => (
               </Route>
             </Routes>
           </Suspense>
-          </ErrorBoundary>
+          </LocationAwareErrorBoundary>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
