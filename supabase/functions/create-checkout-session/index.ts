@@ -36,7 +36,7 @@ function corsHeaders(origin: string | null) {
   const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 }
@@ -47,16 +47,12 @@ Deno.serve(async (req) => {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
   }
 
-  // Verify auth — use a per-request client with the user's token (recommended Supabase pattern)
+  // Verify auth
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return json({ error: 'No authorization header' }, 401, origin);
 
-  const supabaseUser = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
-    { global: { headers: { Authorization: authHeader } } },
-  );
-  const { data: { user }, error: authErr } = await supabaseUser.auth.getUser();
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
   if (authErr || !user) return json({ error: authErr?.message ?? 'Unauthorized' }, 401, origin);
 
   const { priceId, successUrl, cancelUrl } = await req.json();

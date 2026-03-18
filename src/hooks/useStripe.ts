@@ -28,6 +28,7 @@ export function useCreateCheckoutSession() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
