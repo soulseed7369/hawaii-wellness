@@ -45,8 +45,8 @@ export interface CenterProfile {
   } | null;
 }
 
-const PLACEHOLDER_CENTER =
-  'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&h=400&fit=crop';
+// Empty string so CenterDetail can render initials fallback instead of a stock photo
+const PLACEHOLDER_CENTER = '';
 
 function rowToProfile(row: CenterRow): CenterProfile {
   return {

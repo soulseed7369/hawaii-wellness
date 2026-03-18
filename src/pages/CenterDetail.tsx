@@ -134,7 +134,7 @@ function PublicEventCard({ event: ev }: { event: CenterEventRow }) {
 }
 
 // ── Share button ───────────────────────────────────────────────────────────────
-function ShareButton({ name }: { name: string }) {
+function ShareButton({ name, isTiered }: { name: string; isTiered?: boolean }) {
   const [copied, setCopied] = useState(false);
   const url = window.location.href;
 
@@ -150,10 +150,14 @@ function ShareButton({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-muted-foreground">Share:</span>
-      <a href={fbUrl} target="_blank" rel="noopener noreferrer"
-        className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">Facebook</a>
-      <a href={xUrl} target="_blank" rel="noopener noreferrer"
-        className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">X</a>
+      {isTiered && (
+        <>
+          <a href={fbUrl} target="_blank" rel="noopener noreferrer"
+            className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">Facebook</a>
+          <a href={xUrl} target="_blank" rel="noopener noreferrer"
+            className="rounded border border-border px-2 py-1 text-xs hover:bg-muted">X</a>
+        </>
+      )}
       <button onClick={handleCopy}
         className="flex items-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-muted">
         {copied ? <><Check className="h-3 w-3" /> Copied</> : <><Link2 className="h-3 w-3" /> Copy link</>}
@@ -461,11 +465,17 @@ export default function CenterDetail() {
         </div>
         <div className="container relative">
           <div className="flex flex-col items-start gap-4 pb-6 pt-0 md:flex-row md:items-end md:gap-6">
-            <img
-              src={c.profileImage}
-              alt={c.name}
-              className="-mt-16 h-32 w-32 rounded-xl border-4 border-background object-cover shadow-lg"
-            />
+            {c.profileImage ? (
+              <img
+                src={c.profileImage}
+                alt={c.name}
+                className="-mt-16 h-32 w-32 rounded-xl border-4 border-background object-cover shadow-lg"
+              />
+            ) : (
+              <div className="-mt-16 h-32 w-32 rounded-xl border-4 border-background bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-3xl font-semibold text-white shadow-lg">
+                {c.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+              </div>
+            )}
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <h1 className="font-display text-2xl font-bold md:text-3xl">{c.name}</h1>
@@ -487,7 +497,7 @@ export default function CenterDetail() {
                 )}
               </div>
               <div className="mt-3">
-                <ShareButton name={c.name} />
+                <ShareButton name={c.name} isTiered={!!isTiered} />
               </div>
             </div>
           </div>

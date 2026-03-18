@@ -53,7 +53,7 @@ export function CenterCard({ center, highlightModality, compact = false }: Cente
       })
     : displayModalities;
 
-  const hasImage = !!center.image && !center.image.includes("no%20image") && !center.image.includes("no image");
+  const hasImage = !!center.image && !center.image.includes("no%20image") && !center.image.includes("no image") && !center.image.includes("unsplash.com/photo-1540555700478");
 
   // ── Compact (directory list) layout ────────────────────────────────────────
   if (compact) {

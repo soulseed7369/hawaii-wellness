@@ -87,7 +87,7 @@ function IslandBadge({ island }: { island: string }) {
 }
 
 // ── Share button ──────────────────────────────────────────────────────────────
-function ShareProfileButton({ name }: { name: string }) {
+function ShareProfileButton({ name, isTiered }: { name: string; isTiered?: boolean }) {
   const [copied, setCopied] = useState(false);
   const url = window.location.href;
 
@@ -112,16 +112,20 @@ function ShareProfileButton({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm text-muted-foreground">Share:</span>
-      <a href={fbUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#1877F2] text-white hover:bg-[#1877F2]/90 transition-colors">
-        <Facebook className="h-4 w-4" />
-      </a>
-      <a href={xUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on X"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-black/80 transition-colors">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-      </a>
+      {isTiered && (
+        <>
+          <a href={fbUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#1877F2] text-white hover:bg-[#1877F2]/90 transition-colors">
+            <Facebook className="h-4 w-4" />
+          </a>
+          <a href={xUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on X"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-black/80 transition-colors">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+        </>
+      )}
       <button onClick={handleCopy} aria-label="Copy link"
         className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/70 transition-colors">
         {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
@@ -535,7 +539,7 @@ const ProfileDetail = () => {
 
             {/* Share + last-updated footer strip */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 bg-background/40 px-5 py-2.5">
-              <ShareProfileButton name={p.name} />
+              <ShareProfileButton name={p.name} isTiered={isTiered} />
               {lastUpdatedLabel && (
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CalendarClock className="h-3.5 w-3.5" />

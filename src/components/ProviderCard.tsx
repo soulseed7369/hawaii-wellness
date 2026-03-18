@@ -118,7 +118,7 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
       })
     : displayModalities;
 
-  const hasImage = !!provider.image && !provider.image.includes("no%20image") && !provider.image.includes("no image");
+  const hasImage = !!provider.image && !provider.image.includes("no%20image") && !provider.image.includes("no image") && !provider.image.includes("unsplash.com/photo-1540555700478");
 
   // ── Compact (directory list) layout ────────────────────────────────────────
   if (compact) {
