@@ -412,6 +412,7 @@ export default function CenterDetail() {
             alt={`${c.name} cover`}
             className="h-full w-full object-cover"
             loading="eager"
+            onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_COVER; }}
           />
         </div>
         <div className="container relative">
@@ -634,9 +635,8 @@ export default function CenterDetail() {
           )}
         </div>
 
-        {/* Right sidebar — only show on About tab */}
-        {activeTab === 'about' && (
-        <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        {/* Right sidebar — always in DOM to prevent layout shift, hidden on non-About tabs */}
+        <div className={`space-y-4 lg:sticky lg:top-20 lg:self-start ${activeTab !== 'about' ? 'hidden lg:block lg:invisible' : ''}`}>
           <Card>
             <CardContent className="p-0">
               {/* Map placeholder */}
@@ -765,7 +765,6 @@ export default function CenterDetail() {
             </Button>
           </div>
         </div>
-        )}
       </section>
     </main>
   );

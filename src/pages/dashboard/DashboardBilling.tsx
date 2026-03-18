@@ -110,30 +110,23 @@ export default function DashboardBilling() {
         {accountTypeLoading ? (
           // Show skeleton cards while accountType loads
           <div className="grid gap-4 sm:grid-cols-2">
-            <Card>
-              <CardContent className="flex flex-col gap-4 p-5">
-                <Skeleton className="h-6 w-24" />
-                <Skeleton className="h-8 w-32" />
-                <div className="space-y-2 flex-1">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-4 w-full" />
-                  ))}
-                </div>
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex flex-col gap-4 p-5">
-                <Skeleton className="h-6 w-24" />
-                <Skeleton className="h-8 w-32" />
-                <div className="space-y-2 flex-1">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-4 w-full" />
-                  ))}
-                </div>
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
+            {[1, 2].map((i) => (
+              <Card key={i} className="min-h-[320px]">
+                <CardContent className="flex flex-col gap-4 p-5">
+                  <div>
+                    <Skeleton className="h-5 w-20 mb-2" />
+                    <Skeleton className="h-9 w-28" />
+                    <Skeleton className="h-4 w-40 mt-2" />
+                  </div>
+                  <div className="space-y-2.5 flex-1">
+                    {[1, 2, 3, 4, 5].map((j) => (
+                      <Skeleton key={j} className="h-4 w-full" />
+                    ))}
+                  </div>
+                  <Skeleton className="h-10 w-full mt-auto" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
