@@ -19,7 +19,8 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   httpClient: Stripe.createFetchHttpClient(),
 });
 
-const supabase = createClient(
+// Admin client for DB operations (service role)
+const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
@@ -46,13 +47,17 @@ Deno.serve(async (req) => {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
   }
 
-  // Verify auth
+  // Verify auth — use a per-request client with the user's token (recommended Supabase pattern)
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) return json({ error: 'Unauthorized' }, 401, origin);
+  if (!authHeader) return json({ error: 'No authorization header' }, 401, origin);
 
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-  if (authErr || !user) return json({ error: 'Unauthorized' }, 401, origin);
+  const supabaseUser = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+  const { data: { user }, error: authErr } = await supabaseUser.auth.getUser();
+  if (authErr || !user) return json({ error: authErr?.message ?? 'Unauthorized' }, 401, origin);
 
   const { priceId, successUrl, cancelUrl } = await req.json();
   if (!priceId || !successUrl || !cancelUrl) {
@@ -90,7 +95,7 @@ Deno.serve(async (req) => {
 
   try {
     // Look up or create Stripe customer
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseAdmin
       .from('user_profiles')
       .select('stripe_customer_id')
       .eq('id', user.id)
@@ -103,7 +108,7 @@ Deno.serve(async (req) => {
         metadata: { supabase_user_id: user.id },
       });
       customerId = customer.id;
-      await supabase
+      await supabaseAdmin
         .from('user_profiles')
         .update({ stripe_customer_id: customerId })
         .eq('id', user.id);
