@@ -40,6 +40,7 @@ export interface DirectoryResult {
   external_booking_url: string | null;
   lat: number | null;
   lng: number | null;
+  center_type: string | null;
   modality_labels: string[];
   concern_labels: string[];
   approach_labels: string[];

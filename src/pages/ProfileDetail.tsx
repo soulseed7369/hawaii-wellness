@@ -322,6 +322,11 @@ const ProfileDetail = () => {
   // ── Tab visibility ───────────────────────────────────────────────────────
   const showClassesTab = isTiered && (classes?.length ?? 0) > 0;
   const showOfferingsTab = isTiered && (offerings?.length ?? 0) > 0;
+  // Hide testimonials tab when neither the DB testimonials nor the legacy array have data.
+  // newTestimonials is undefined while loading; fall back to p.testimonials to avoid flickering the tab away on load.
+  const showTestimonialsTab = newTestimonials != null
+    ? newTestimonials.length > 0 || p.testimonials.length > 0
+    : p.testimonials.length > 0;
 
   // ── Structured data ──────────────────────────────────────────────────────
   const profileUrl = `${SITE_URL}/profile/${p.id}`;
@@ -554,20 +559,22 @@ const ProfileDetail = () => {
               </button>
             )}
 
-            {/* Testimonials tab */}
-            <button
-              onClick={() => setActiveTab('testimonials')}
-              className={`relative px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
-                activeTab === 'testimonials'
-                  ? 'text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Testimonials
-              {activeTab === 'testimonials' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
-              )}
-            </button>
+            {/* Testimonials tab — hidden when no testimonials exist */}
+            {showTestimonialsTab && (
+              <button
+                onClick={() => setActiveTab('testimonials')}
+                className={`relative px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                  activeTab === 'testimonials'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Testimonials
+                {activeTab === 'testimonials' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
+                )}
+              </button>
+            )}
 
           </div>
         </div>

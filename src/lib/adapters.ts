@@ -106,6 +106,7 @@ export function centerRowToCenter(row: CenterRow): Center {
     services: [],
     tier: (row.tier as 'free' | 'premium' | 'featured') ?? 'free',
     description: row.description ?? undefined,
+    centerType: row.center_type ?? undefined,
   };
 }
 

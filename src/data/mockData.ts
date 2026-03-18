@@ -87,6 +87,8 @@ export interface Center {
   description?: string;
   /** Distance from user in miles — set when user location is known */
   distanceMiles?: number;
+  /** Raw center_type value from DB — used for directory filtering */
+  centerType?: string;
 }
 
 export interface RetreatEvent {

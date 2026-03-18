@@ -108,7 +108,7 @@ function resultToCenter(r: DirectoryResult): Center {
     lng: r.lng ?? 0,
     tier: r.tier || 'free',
     services: [],
-    centerType: '',
+    centerType: r.center_type || '',
   };
 }
 
@@ -210,15 +210,26 @@ const tierWeight = (tier?: string) => tier === 'featured' ? 0 : tier === 'premiu
 
 // ── Filter panel UI ───────────────────────────────────────────────────────────
 
+const CENTER_TYPE_OPTIONS = [
+  { value: 'spa',            label: 'Spa' },
+  { value: 'wellness_center', label: 'Wellness Center' },
+  { value: 'yoga_studio',    label: 'Yoga Studio' },
+  { value: 'clinic',         label: 'Clinic' },
+  { value: 'retreat_center', label: 'Retreat Center' },
+  { value: 'fitness_center', label: 'Fitness Center' },
+];
+
 interface FilterPanelProps {
   island: string;
   modality: string;
   city: string;
+  centerType: string;
   sessionType: string;
   acceptsClients: boolean;
   tab: DirectoryTab;
   onModality: (v: string) => void;
   onCity: (v: string) => void;
+  onCenterType: (v: string) => void;
   onSessionType: (v: string) => void;
   onAcceptsClients: (v: boolean) => void;
   onClear: () => void;
@@ -226,8 +237,8 @@ interface FilterPanelProps {
 }
 
 function FilterPanel({
-  island, modality, city, sessionType, acceptsClients, tab,
-  onModality, onCity, onSessionType, onAcceptsClients, onClear, activeCount
+  island, modality, city, centerType, sessionType, acceptsClients, tab,
+  onModality, onCity, onCenterType, onSessionType, onAcceptsClients, onClear, activeCount
 }: FilterPanelProps) {
   const cities = island !== 'all' ? (ISLAND_CITIES[island] ?? []) : [];
 
@@ -255,6 +266,24 @@ function FilterPanel({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Center type (centers tab only) */}
+      {tab === 'centers' && (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Center Type</Label>
+          <Select value={centerType || "_all"} onValueChange={v => onCenterType(v === "_all" ? "" : v)}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue placeholder="Any type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all">Any type</SelectItem>
+              {CENTER_TYPE_OPTIONS.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* City */}
       {cities.length > 0 && (
@@ -408,6 +437,7 @@ const Directory = () => {
   });
   const [modality, setModality] = useState(urlModality);
   const [city, setCity] = useState(urlCity);
+  const [centerType, setCenterType] = useState('');
   const [sessionType, setSessionType] = useState(urlSessionType);
   const [acceptsClients, setAcceptsClients] = useState(urlAcceptsClients);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
@@ -434,11 +464,12 @@ const Directory = () => {
 
   const handleModality = (v: string) => { setModality(v); updateParam('modality', v); };
   const handleCity = (v: string) => { setCity(v); updateParam('city', v); };
+  const handleCenterType = (v: string) => { setCenterType(v); };
   const handleSessionType = (v: string) => { setSessionType(v); updateParam('sessionType', v); };
   const handleAcceptsClients = (v: boolean) => { setAcceptsClients(v); updateParam('acceptsClients', v ? '1' : ''); };
   const handleIsland = (v: string) => { setIsland(v); updateParam('island', v); };
   const handleClearFilters = () => {
-    setModality(''); setCity(''); setSessionType(''); setAcceptsClients(false);
+    setModality(''); setCity(''); setCenterType(''); setSessionType(''); setAcceptsClients(false);
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.delete('modality'); next.delete('city'); next.delete('sessionType'); next.delete('acceptsClients');
@@ -446,11 +477,11 @@ const Directory = () => {
     }, { replace: true });
   };
 
-  const activeFilterCount = [modality, city, sessionType, acceptsClients ? '1' : ''].filter(Boolean).length;
+  const activeFilterCount = [modality, city, centerType, sessionType, acceptsClients ? '1' : ''].filter(Boolean).length;
   const effectiveQuery = searchQuery.trim();
 
   // Reset pagination when any filter changes
-  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, sessionType, acceptsClients, tab]);
+  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, centerType, sessionType, acceptsClients, tab]);
 
   // ── NEW SEARCH PATH ────────────────────────────────────────────────────────
   const newSearch = useDirectorySearch({
@@ -520,7 +551,7 @@ const Directory = () => {
   }, [accumulatedResults, userLocation, sortByDistance]);
 
   const newCenters = useMemo(() => {
-    const list = accumulatedResults
+    let list = accumulatedResults
       .filter(r => r.listing_type === 'center')
       .map(r => {
         const c = resultToCenter(r);
@@ -529,12 +560,16 @@ const Directory = () => {
         }
         return c;
       });
+    // Client-side center type filter (not in RPC)
+    if (centerType) {
+      list = list.filter(c => c.centerType === centerType);
+    }
     if (sortByDistance && userLocation) {
       return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
     }
     // Always keep featured before premium in display order
     return [...list].sort((a, b) => tierRank(a.tier) - tierRank(b.tier));
-  }, [accumulatedResults, userLocation, sortByDistance]);
+  }, [accumulatedResults, userLocation, sortByDistance, centerType]);
 
   // ── OLD SEARCH PATH (fallback) ────────────────────────────────────────────
   const fetchIsland = island === 'all' ? 'big_island' : island;
@@ -559,12 +594,13 @@ const Directory = () => {
     const cityFiltered = city
       ? oldCenters.filter(c => c.location?.toLowerCase() === city.toLowerCase() || c.tier === 'premium' || c.tier === 'featured')
       : oldCenters;
-    const results = filterCenters(cityFiltered, effectiveQuery, modality);
+    let results = filterCenters(cityFiltered, effectiveQuery, modality);
+    if (centerType) results = results.filter(c => c.centerType === centerType);
     return [...results].sort((a, b) => {
       const td = tierWeight(a.tier) - tierWeight(b.tier);
       return td !== 0 ? td : a.name.localeCompare(b.name);
     });
-  }, [oldCenters, effectiveQuery, modality, city]);
+  }, [oldCenters, effectiveQuery, modality, city, centerType]);
 
   // ── Unified: pick old or new ──────────────────────────────────────────────
   const practitioners = USE_NEW_SEARCH ? newProviders : oldFilteredPractitioners;
@@ -586,9 +622,10 @@ const Directory = () => {
     : null;
 
   const filterPanelProps: FilterPanelProps = {
-    island, modality, city, sessionType, acceptsClients, tab,
+    island, modality, city, centerType, sessionType, acceptsClients, tab,
     onModality: handleModality,
     onCity: handleCity,
+    onCenterType: handleCenterType,
     onSessionType: handleSessionType,
     onAcceptsClients: handleAcceptsClients,
     onClear: handleClearFilters,
@@ -679,6 +716,12 @@ const Directory = () => {
               {city && (
                 <Badge variant="secondary" className="gap-1 text-xs">{city}
                   <button onClick={() => handleCity('')} aria-label="Remove city filter"><X className="h-3 w-3" /></button>
+                </Badge>
+              )}
+              {centerType && (
+                <Badge variant="secondary" className="gap-1 text-xs">
+                  {CENTER_TYPE_OPTIONS.find(o => o.value === centerType)?.label ?? centerType}
+                  <button onClick={() => handleCenterType('')} aria-label="Remove center type filter"><X className="h-3 w-3" /></button>
                 </Badge>
               )}
               {sessionType && (
