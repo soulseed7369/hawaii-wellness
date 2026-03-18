@@ -1,87 +1,62 @@
-// ── Package definitions ──────────────────────────────────────────────────────
-
-export interface PackageFeature {
-  text: string;
-}
+// ── Website Package definitions (Kamaʻāina Rate pricing) ─────────────────────
 
 export interface Package {
-  id: 'starter' | 'growth' | 'pro';
+  id: 'essentials' | 'standard' | 'pro';
   name: string;
-  setupFee: number;
-  monthlyFee: number;
+  price: number;
+  kamaaiaPrice: number;
   features: string[];
-  bonus: string;
-  bonusTier: 'premium' | 'featured';
-  bonusMonths: number;
-  bestFor: string;
-  cta: string;
-  highlight?: boolean; // "Most Popular" badge on Growth card
+  includedSubscription: string;
+  highlight?: boolean;
+  mailto: string;
 }
 
 export const PACKAGES: Package[] = [
   {
-    id: 'starter',
-    name: 'Starter',
-    setupFee: 499,
-    monthlyFee: 19,
+    id: 'essentials',
+    name: 'Essentials',
+    price: 597,
+    kamaaiaPrice: 497,
     features: [
-      '1-page custom website',
-      'Mobile-friendly design',
-      'About and services sections',
+      '3–4 page site (Home, About, Services, Contact)',
+      'Mobile-responsive design',
       'Contact form',
-      'Social links',
-      'Domain connection',
-      'Basic SEO setup',
+      'Linked to your Hawaiʻi Wellness directory profile',
     ],
-    bonus: '1 month Premium Listing on HawaiiWellness.net',
-    bonusTier: 'premium',
-    bonusMonths: 1,
-    bestFor: 'Solo practitioners who want an affordable site that looks polished and credible.',
-    cta: 'Get Started',
+    includedSubscription: 'Includes 6 months Premium subscription ($294 value)',
+    mailto: 'mailto:aloha@hawaiiwellness.net?subject=Website%20Bundle%20—%20Essentials',
   },
   {
-    id: 'growth',
-    name: 'Growth',
-    setupFee: 999,
-    monthlyFee: 39,
+    id: 'standard',
+    name: 'Standard',
+    price: 997,
+    kamaaiaPrice: 897,
     features: [
-      'Up to 5 custom pages',
-      'Home, About, Services, Contact + FAQ or Testimonials',
-      'Booking link integration',
-      'Testimonials section',
-      'Basic blog or article capability',
-      'Local SEO structure',
-      'Domain connection',
-      'Basic analytics setup',
+      '5-page site',
+      'Booking integration (Calendly / Acuity embed)',
+      'Google Business Profile setup',
+      'Basic SEO optimization (meta tags, local schema, Google indexing)',
+      '2 rounds of revisions',
     ],
-    bonus: '3 months Premium Listing on HawaiiWellness.net',
-    bonusTier: 'premium',
-    bonusMonths: 3,
-    bestFor: 'Established practitioners ready for a more complete website and better conversion.',
-    cta: 'Choose Growth',
+    includedSubscription: 'Includes 12 months Premium subscription ($588 value)',
     highlight: true,
+    mailto: 'mailto:aloha@hawaiiwellness.net?subject=Website%20Bundle%20—%20Standard',
   },
   {
     id: 'pro',
     name: 'Pro',
-    setupFee: 1999,
-    monthlyFee: 79,
+    price: 1497,
+    kamaaiaPrice: 1397,
     features: [
-      'Up to 8 custom pages',
-      'Custom layout and stronger branding',
-      'Booking + payments/deposit integration',
-      'Intake form integration',
-      'Packages, workshops, or offerings pages',
-      'Testimonials and social proof sections',
-      'Blog, event, or retreat pages',
-      'Enhanced SEO structure',
-      'Priority support',
+      'Everything in Standard, plus:',
+      'Blog page',
+      'Advanced SEO (keyword research, internal linking, image optimization, sitemap)',
+      'AI search optimization (FAQ schema, service schema, LocalBusiness structured data)',
+      'Social media header graphics',
+      '3 rounds of revisions',
     ],
-    bonus: '6 months Premium Listing on HawaiiWellness.net',
-    bonusTier: 'premium',
-    bonusMonths: 6,
-    bestFor: 'High-touch practices, retreat businesses, and wellness providers ready for a more advanced site.',
-    cta: 'Go Pro',
+    includedSubscription: 'Includes 12 months Premium subscription ($588 value)',
+    mailto: 'mailto:aloha@hawaiiwellness.net?subject=Website%20Bundle%20—%20Pro',
   },
 ];
 
@@ -94,7 +69,7 @@ export interface AddOn {
 
 export interface AddOnCategory {
   title: string;
-  icon: string; // lucide icon name, used in component
+  icon: string;
   items: AddOn[];
 }
 
@@ -135,78 +110,21 @@ export const ADD_ON_CATEGORIES: AddOnCategory[] = [
     items: [
       { name: 'Monthly content updates', price: '$50–$150/mo' },
       { name: 'SEO & content support', price: '$99–$299/mo' },
-      { name: 'Priority edits & support', price: 'Custom' },
+      { name: 'Additional major revision', price: '$149' },
     ],
   },
 ];
 
-// ── Discount logic ────────────────────────────────────────────────────────────
+// Kamaʻāina Rate spots
+export const KAMAAINA_WEBSITE_SPOTS = 10;
 
-export const EARLY_BIRD_WINDOW_DAYS = 7;
-export const EARLY_BIRD_DISCOUNT_PCT = 0.10;
-export const BITCOIN_DISCOUNT_PCT = 0.10;
-
-// March 2026 promo — fixed dollar savings per package
-export const MARCH_PROMO_SAVINGS: Record<'starter' | 'growth' | 'pro', number> = {
-  starter: 50,
-  growth: 100,
-  pro: 200,
-};
-export const MARCH_PROMO_LABEL = 'March Special';
-
-export function isMarchPromoActive(): boolean {
-  const now = new Date();
-  return now.getFullYear() === 2026 && now.getMonth() === 2; // month is 0-indexed
-}
-
+// Legacy exports for compatibility — kept so DashboardHome doesn't break
 export interface EarlyBirdStatus {
   eligible: boolean;
   daysRemaining: number;
-  hoursRemaining: number; // total hours, use % 24 for display
+  hoursRemaining: number;
 }
 
-/**
- * Determine if a listing's owner qualifies for the early-bird setup discount.
- * The window is 7 days from the listing's created_at timestamp.
- */
-export function getEarlyBirdStatus(createdAt: string | null | undefined): EarlyBirdStatus {
-  if (!createdAt) return { eligible: false, daysRemaining: 0, hoursRemaining: 0 };
-
-  const deadline = new Date(createdAt).getTime() + EARLY_BIRD_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-  const msRemaining = deadline - Date.now();
-
-  if (msRemaining <= 0) return { eligible: false, daysRemaining: 0, hoursRemaining: 0 };
-
-  return {
-    eligible: true,
-    daysRemaining: Math.floor(msRemaining / (24 * 60 * 60 * 1000)),
-    hoursRemaining: Math.floor(msRemaining / (60 * 60 * 1000)),
-  };
-}
-
-/**
- * Calculate discounted setup fee.
- * March promo is a fixed dollar amount; Bitcoin is a percentage applied after.
- * Monthly fee is never discounted.
- */
-export function calcSetupPrice(
-  baseSetup: number,
-  earlyBird: boolean,
-  bitcoin: boolean,
-  marchPromoSavings: number = 0,
-): { final: number; savings: number; totalPct: number } {
-  // Fixed dollar off first (March promo)
-  let afterFixed = baseSetup - marchPromoSavings;
-
-  // Percentage discounts applied to remaining balance
-  let pct = 0;
-  if (earlyBird) pct += EARLY_BIRD_DISCOUNT_PCT;
-  if (bitcoin) pct += BITCOIN_DISCOUNT_PCT;
-
-  const pctSavings = Math.round(afterFixed * pct);
-  const totalSavings = marchPromoSavings + pctSavings;
-  const final = Math.max(0, baseSetup - totalSavings);
-  const totalPct = baseSetup > 0 ? totalSavings / baseSetup : 0;
-
-  return { final, savings: totalSavings, totalPct };
+export function getEarlyBirdStatus(_createdAt: string | null | undefined): EarlyBirdStatus {
+  return { eligible: false, daysRemaining: 0, hoursRemaining: 0 };
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Star, Crown, Loader2, ArrowRight, User, Building2, Globe, Sparkles, Mail } from "lucide-react";
+import { CheckCircle, Star, Crown, Loader2, ArrowRight, User, Building2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useCreateCheckoutSession } from "@/hooks/useStripe";
@@ -102,56 +102,6 @@ const PRICING = {
   },
 } as const;
 
-// ─── Website bundles ──────────────────────────────────────────────────────────
-
-const WEBSITE_BUNDLES = [
-  {
-    name: "Essentials",
-    price: 597,
-    kamaaina: 497,
-    features: [
-      "3–4 page site (Home, About, Services, Contact)",
-      "Mobile-responsive design",
-      "Contact form",
-      "Linked to your Hawaiʻi Wellness directory profile",
-      "Includes 6 months Premium subscription ($294 value)",
-    ],
-    mailto: "mailto:aloha@hawaiiwellness.net?subject=Website%20Bundle%20—%20Essentials",
-    popular: false,
-  },
-  {
-    name: "Standard",
-    price: 997,
-    kamaaina: 897,
-    features: [
-      "5-page site",
-      "Booking integration (Calendly / Acuity embed)",
-      "Google Business Profile setup",
-      "Basic SEO optimization (meta tags, local schema, Google indexing)",
-      "2 rounds of revisions",
-      "Includes 12 months Premium subscription ($588 value)",
-    ],
-    mailto: "mailto:aloha@hawaiiwellness.net?subject=Website%20Bundle%20—%20Standard",
-    popular: true,
-  },
-  {
-    name: "Pro",
-    price: 1497,
-    kamaaina: 1397,
-    features: [
-      "Everything in Standard, plus:",
-      "Blog page",
-      "Advanced SEO (keyword research, internal linking, image optimization, sitemap)",
-      "AI search optimization (FAQ schema, service schema, LocalBusiness structured data)",
-      "Social media header graphics",
-      "3 rounds of revisions",
-      "Includes 12 months Premium subscription ($588 value)",
-    ],
-    mailto: "mailto:aloha@hawaiiwellness.net?subject=Website%20Bundle%20—%20Pro",
-    popular: false,
-  },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ListYourPractice() {
@@ -209,18 +159,19 @@ export default function ListYourPractice() {
 
       {/* Kama'aina Rate banner */}
       <div className="mx-auto max-w-3xl mb-10">
-        <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            <h2 className="font-display text-xl font-bold text-amber-900">Kamaʻāina Rate</h2>
-            <Sparkles className="h-5 w-5 text-amber-500" />
+        <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-8 py-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <Sparkles className="h-6 w-6 text-amber-500" />
+            <h2 className="font-display text-2xl font-bold text-amber-900 md:text-3xl">Kamaʻāina Rate</h2>
+            <Sparkles className="h-6 w-6 text-amber-500" />
           </div>
-          <p className="text-sm text-amber-800 max-w-lg mx-auto">
-            Our earliest supporters get special pricing — for life.
+          <p className="text-base text-amber-800 max-w-lg mx-auto leading-relaxed">
+            Our earliest supporters get special pricing — <strong>for life</strong>.
+            <br className="hidden sm:block" />
             Lock in your rate before spots fill up.
           </p>
-          <p className="text-xs text-amber-600 mt-2">
-            Your Kamaʻāina Rate is locked in for life — your price never goes up as long as your subscription stays active.
+          <p className="text-sm text-amber-700 mt-3">
+            Your price never goes up as long as your subscription stays active.
           </p>
         </div>
       </div>
@@ -367,10 +318,6 @@ export default function ListYourPractice() {
               ))}
             </ul>
 
-            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 text-center">
-              Only {prices.featured.spots} featured spots available per island
-            </p>
-
             <Button
               className="w-full mt-auto bg-amber-500 hover:bg-amber-600 text-white"
               onClick={() => handlePaidPlan(prices.featured.priceId)}
@@ -392,88 +339,6 @@ export default function ListYourPractice() {
         Payments are processed securely by Stripe.
       </p>
 
-      {/* ════════════════════ Website Bundles ════════════════════ */}
-      <div className="mx-auto max-w-5xl mt-16 pt-16 border-t border-border">
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Globe className="h-6 w-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold md:text-3xl">Done-for-You Websites</h2>
-          </div>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            A professional website + your directory listing, built by the team that knows Hawaiʻi wellness.
-          </p>
-          <div className="mt-4">
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-              <Sparkles className="h-3 w-3" />
-              Kamaʻāina Rate — first 10 websites
-            </span>
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {WEBSITE_BUNDLES.map((bundle) => (
-            <Card
-              key={bundle.name}
-              className={`flex flex-col ${bundle.popular ? "ring-2 ring-primary relative" : ""}`}
-            >
-              {bundle.popular && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              <CardContent className={`flex flex-col flex-1 p-6 gap-5 ${bundle.popular ? "pt-7" : ""}`}>
-                <div>
-                  <p className={`text-sm font-medium uppercase tracking-wider mb-1 ${bundle.popular ? "text-primary" : "text-muted-foreground"}`}>
-                    {bundle.name}
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-display text-4xl font-bold">${bundle.kamaaina.toLocaleString()}</span>
-                    <span className="text-muted-foreground text-lg line-through">${bundle.price.toLocaleString()}</span>
-                  </div>
-                  <div className="mt-2">
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                      <Sparkles className="h-3 w-3" />
-                      Kamaʻāina Rate
-                    </span>
-                  </div>
-                </div>
-
-                <ul className="space-y-2.5 flex-1">
-                  {bundle.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <CheckCircle className={`h-4 w-4 shrink-0 mt-0.5 ${bundle.popular ? "text-primary" : "text-sage"}`} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  className={`w-full mt-auto gap-2 ${bundle.popular ? "" : ""}`}
-                  variant={bundle.popular ? "default" : "outline"}
-                  asChild
-                >
-                  <a href={bundle.mailto}>
-                    <Mail className="h-4 w-4" />
-                    Get Started
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Website bundles footer notes */}
-        <div className="mt-8 space-y-1.5 text-center">
-          <p className="text-xs text-muted-foreground">
-            After the included subscription period, your Premium subscription continues at $49/mo (or your Kamaʻāina Rate if applicable). Cancel anytime.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Need changes after your included revisions? Additional major revisions are $149 each.
-          </p>
-        </div>
-      </div>
     </main>
   );
 }
