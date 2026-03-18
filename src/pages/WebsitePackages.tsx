@@ -158,13 +158,13 @@ export default function WebsitePackages() {
 
         {/* What's included with every website */}
         <div className="rounded-xl border border-border bg-secondary/30 p-6 mb-8">
-          <p className="text-sm font-semibold text-foreground mb-4 text-center">What&apos;s included with every website</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+          <h3 className="text-base font-bold text-foreground mb-5 text-center">What&apos;s included with every website</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3.5">
             {EVERY_WEBSITE_INCLUDES.map((text, i) => {
               const Icon = BASE_FEATURE_ICONS[i] ?? CheckCircle;
               return (
-                <div key={text} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                  <Icon className="h-4 w-4 shrink-0 text-primary" />
+                <div key={text} className="flex items-center gap-2.5 text-sm text-foreground">
+                  <Icon className="h-4.5 w-4.5 shrink-0 text-primary" />
                   {text}
                 </div>
               );
