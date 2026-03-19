@@ -51,7 +51,7 @@ const BOOKING_LABELS = [
 ];
 
 const RESPONSE_TIME_OPTIONS = [
-  { value: '',                label: 'Not set'              },
+  { value: 'not_set',          label: 'Not set'              },
   { value: 'within_hours',    label: 'Within a few hours'   },
   { value: 'within_day',      label: 'Within 24 hours'      },
   { value: 'within_2_3_days', label: 'Within 2–3 days'      },
@@ -613,8 +613,8 @@ export default function DashboardProfile() {
           <div className="space-y-1.5">
             <Label>Typical response time</Label>
             <Select
-              value={form.response_time}
-              onValueChange={v => setForm(p => ({ ...p, response_time: v }))}
+              value={form.response_time || undefined}
+              onValueChange={v => setForm(p => ({ ...p, response_time: v === 'not_set' ? '' : v }))}
             >
               <SelectTrigger className="w-full sm:w-64">
                 <SelectValue placeholder="Not set" />
