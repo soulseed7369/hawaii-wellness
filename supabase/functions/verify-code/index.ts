@@ -17,7 +17,7 @@ const supabase = createClient(
 );
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://hawaiiwellness.net',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };

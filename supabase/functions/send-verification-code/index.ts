@@ -35,7 +35,7 @@ const TWILIO_TOKEN  = Deno.env.get('TWILIO_AUTH_TOKEN') ?? '';
 const TWILIO_FROM   = Deno.env.get('TWILIO_FROM_NUMBER') ?? '';
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://hawaiiwellness.net',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
