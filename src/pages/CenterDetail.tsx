@@ -28,6 +28,7 @@ import { ContactReveal } from "@/components/ContactReveal";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
+import { generateCenterBreadcrumb, breadcrumbSchema } from "@/hooks/useProfileBreadcrumb";
 import type { CenterLocationRow } from "@/types/database";
 import type { CenterEventRow } from "@/hooks/useCenterEvents";
 
@@ -314,6 +315,17 @@ export default function CenterDetail() {
 
   const centerUrl = `${SITE_URL}/center/${id}`;
 
+  // ── Breadcrumb navigation and schema ──────────────────────────────────────
+  const breadcrumbItems = c
+    ? generateCenterBreadcrumb({
+        id: c.id,
+        name: c.name,
+        island: c.island,
+        center_type: c.centerType,
+      })
+    : [];
+  const bcSchema = c ? breadcrumbSchema(breadcrumbItems, SITE_URL) : null;
+
   const localBusinessSchema = c
     ? {
         '@context': 'https://schema.org',
@@ -329,18 +341,6 @@ export default function CenterDetail() {
         hasMap: c.lat && c.lng
           ? `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`
           : undefined,
-      }
-    : null;
-
-  const breadcrumbSchema = c
-    ? {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home',      item: `${SITE_URL}/` },
-          { '@type': 'ListItem', position: 2, name: 'Directory', item: `${SITE_URL}/directory` },
-          { '@type': 'ListItem', position: 3, name: c.name,      item: centerUrl },
-        ],
       }
     : null;
 
@@ -428,7 +428,7 @@ export default function CenterDetail() {
   return (
     <main>
       {localBusinessSchema && <JsonLd id="center-localbusiness" data={localBusinessSchema} />}
-      {breadcrumbSchema    && <JsonLd id="center-breadcrumb"    data={breadcrumbSchema} />}
+      {bcSchema    && <JsonLd id="center-breadcrumb"    data={bcSchema} />}
       {serviceCatalogSchema && <JsonLd id="center-services" data={serviceCatalogSchema} />}
       {faqSchema && <JsonLd id="center-faq" data={faqSchema} />}
 

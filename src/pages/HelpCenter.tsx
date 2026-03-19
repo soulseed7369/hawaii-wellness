@@ -1,16 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Mail } from 'lucide-react';
-
-interface FAQItem {
-  question: string;
-  answer: React.ReactNode;
-}
-
-interface FAQSection {
-  title: string;
-  items: FAQItem[];
-}
+import { generateFAQSchema, type FAQItem, type FAQSection } from '@/lib/faqSchema';
+import { JsonLd } from '@/components/JsonLd';
 
 function Accordion({ question, answer }: FAQItem) {
   const [open, setOpen] = useState(false);
@@ -380,8 +372,11 @@ const sections: FAQSection[] = [
 ];
 
 export default function HelpCenter() {
+  const faqSchema = generateFAQSchema(sections);
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
+      <JsonLd id="faq-schema" data={faqSchema} />
       {/* Header */}
       <div className="mb-12 text-center">
         <h1 className="mb-3 font-display text-4xl font-bold">Help Center</h1>

@@ -32,6 +32,7 @@ import { ContactReveal } from "@/components/ContactReveal";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/siteConfig";
+import { generateProfileBreadcrumb, breadcrumbSchema } from "@/hooks/useProfileBreadcrumb";
 import {
   Dialog,
   DialogContent,
@@ -341,6 +342,15 @@ const ProfileDetail = () => {
   // ── Structured data ──────────────────────────────────────────────────────
   const profileUrl = `${SITE_URL}/profile/${p.id}`;
 
+  // ── Breadcrumb navigation and schema ──────────────────────────────────────
+  const breadcrumbItems = generateProfileBreadcrumb({
+    id: p.id,
+    name: p.name,
+    island: p.island,
+    modalities: p.modalities,
+  });
+  const bcSchema = breadcrumbSchema(breadcrumbItems, SITE_URL);
+
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -453,7 +463,7 @@ const ProfileDetail = () => {
   return (
     <main>
       <JsonLd id="profile-localbusiness" data={localBusinessSchema} />
-      <JsonLd id="profile-breadcrumb" data={breadcrumbSchema} />
+      <JsonLd id="profile-breadcrumb" data={bcSchema} />
       {reviewSchema && <JsonLd id="profile-reviews" data={reviewSchema} />}
       {faqSchema && <JsonLd id="profile-faq" data={faqSchema} />}
       {serviceCatalogSchema && <JsonLd id="profile-services" data={serviceCatalogSchema} />}
