@@ -47,7 +47,7 @@ const sections: FAQSection[] = [
             Hawaiʻi Wellness is a curated online directory of holistic health and wellness
             providers across the Hawaiian Islands — including Maui, Oahu, the Big Island,
             and Kauai. We connect people seeking healing, balance, and well-being with local
-            practitioners, wellness centers, and retreat experiences.
+            practitioners and wellness centers.
           </p>
         ),
       },
@@ -58,8 +58,7 @@ const sections: FAQSection[] = [
             Our directory includes acupuncturists, massage therapists, yoga instructors,
             naturopathic doctors, energy healers, sound bath practitioners, life coaches,
             nutritionists, meditation teachers, Lomilomi practitioners, and many more. We
-            also feature wellness centers, spas, retreat centers, and multi-day retreat
-            programs.
+            also feature wellness centers and spas.
           </p>
         ),
       },
@@ -92,7 +91,7 @@ const sections: FAQSection[] = [
         question: 'Do I need an account to browse the directory?',
         answer: (
           <p>
-            No. The directory, retreat listings, and articles are completely free to browse
+            No. The directory and articles are completely free to browse
             without creating an account. You only need an account if you are a provider
             listing your own practice.
           </p>
@@ -212,7 +211,7 @@ const sections: FAQSection[] = [
               </li>
               <li>
                 <strong>Premium — $39/month</strong> — Everything in Free, plus the ability
-                to post retreat listings, add social media links, display your working hours,
+                to add social media links, display your working hours,
                 and add client testimonials to your profile.
               </li>
               <li>
@@ -302,7 +301,7 @@ const sections: FAQSection[] = [
           <p>
             If a payment fails, Stripe will automatically retry over several days. If the
             payment still cannot be collected, your account will be downgraded to the Free
-            tier and your paid features (retreat listings, social links, Featured placement)
+            tier and your paid features (social links, Featured placement)
             will be removed until billing is resolved. Your basic listing remains visible.
           </p>
         ),

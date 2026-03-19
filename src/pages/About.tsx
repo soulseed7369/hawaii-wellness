@@ -18,7 +18,7 @@ const About = () => {
             About Hawaiʻi Wellness
           </h1>
           <p className="text-lg text-muted-foreground md:text-xl">
-            Connecting visitors and residents with Hawaiʻi's finest holistic health practitioners, wellness centers, and retreat experiences.
+            Connecting visitors and residents with Hawaiʻi's finest holistic health practitioners and wellness centers.
           </p>
         </div>
       </section>

@@ -12,7 +12,7 @@ import { supabase } from "@/lib/supabase";
 const ISLANDS = ["Big Island", "Maui", "Oahu", "Kauai", "Not sure yet"];
 
 const Concierge = () => {
-  usePageMeta("Wellness Concierge", "Personalized wellness curation for discerning visitors to Hawaiʻi. Let us connect you with the perfect practitioner or retreat.");
+  usePageMeta("Wellness Concierge", "Personalized wellness curation for discerning visitors to Hawaiʻi. Let us connect you with the perfect practitioner.");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -56,7 +56,7 @@ const Concierge = () => {
             Black Label Concierge
           </h1>
           <p className="mx-auto max-w-xl text-lg text-white/70">
-            Exclusive wellness curation for discerning visitors to Hawaiʻi. Tell us what you're seeking — we'll find the perfect practitioner or retreat.
+            Exclusive wellness curation for discerning visitors to Hawaiʻi. Tell us what you're seeking — we'll find the perfect practitioner.
           </p>
         </div>
       </section>
@@ -79,7 +79,7 @@ const Concierge = () => {
               {
                 icon: <Sparkles className="h-6 w-6 text-amber-500" />,
                 title: "Exclusive Access",
-                desc: "Access to retreat spaces, private sessions, and premium practitioners not available in the public directory.",
+                desc: "Access to private sessions, and premium practitioners not available in the public directory.",
               },
             ].map((item) => (
               <div key={item.title} className="flex gap-4">

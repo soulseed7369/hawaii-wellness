@@ -1046,7 +1046,7 @@ const AdminPanel = () => {
     try {
       const { data, error } = await supabase
         .from('claim_requests')
-        .select('*, practitioners(name)')
+        .select('*, practitioners(name), centers(name)')
         .eq('status', status)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -2049,7 +2049,7 @@ const AdminPanel = () => {
                     <div className="flex items-start justify-between gap-4 flex-wrap">
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold truncate">
-                          {claim.practitioners?.name ?? claim.practitioner_id}
+                          {claim.practitioners?.name ?? claim.centers?.name ?? claim.practitioner_id ?? claim.center_id}
                         </p>
                         <p className="text-sm text-muted-foreground mt-0.5">
                           Submitted by <span className="font-medium">{claim.user_email}</span>

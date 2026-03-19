@@ -268,7 +268,7 @@ Deno.serve(async (req) => {
     if (channel === 'phone') {
       await sendSms(
         destination,
-        `Your Aloha Health Hub verification code is: ${code}. It expires in 10 minutes.`,
+        `Your Hawaii Wellness verification code is: ${code}. It expires in 10 minutes.`,
       );
     } else {
       await sendEmailViaSupabase(destination, code, listingName);

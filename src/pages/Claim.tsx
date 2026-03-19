@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase, hasSupabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ export default function Claim() {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
 
   const [listing, setListing] = useState<Listing | null>(null);
@@ -102,6 +104,8 @@ export default function Claim() {
       setError("Your email doesn't match this listing. Contact support if you believe this is yours.");
       return;
     }
+    // Invalidate cached listing so the "Claim this listing" button disappears immediately
+    queryClient.invalidateQueries({ queryKey: ['practitioner', id] });
     setStep('success');
   };
 

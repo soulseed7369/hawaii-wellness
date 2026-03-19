@@ -32,7 +32,7 @@ from src.supabase_client import client
 REQUEST_TIMEOUT = 12
 CRAWL_DELAY     = 0.3
 HEADERS = {
-    "User-Agent": "AlohaHealthBot/1.0 (+https://hawaiiwellness.net)",
+    "User-Agent": "HawaiiWellnessBot/1.0 (+https://hawaiiwellness.net)",
     "Accept": "text/html,application/xhtml+xml",
 }
 

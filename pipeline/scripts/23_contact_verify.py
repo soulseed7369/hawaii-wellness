@@ -64,7 +64,7 @@ REQUEST_TIMEOUT  = 8
 CRAWL_DELAY      = 0.4
 
 HEADERS = {
-    "User-Agent": "AlohaHealthBot/1.0 (+https://hawaiiwellness.net)",
+    "User-Agent": "HawaiiWellnessBot/1.0 (+https://hawaiiwellness.net)",
     "Accept": "text/html,application/xhtml+xml",
 }
 

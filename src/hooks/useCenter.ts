@@ -34,6 +34,8 @@ export interface CenterProfile {
   ownerId: string | null;
   sessionType: string | null;
   verified: boolean;
+  showPhone: boolean;
+  showEmail: boolean;
   testimonials: Array<{ author: string; text: string; date: string }>;
   workingHours: CenterRow['working_hours'] | null;
   socialLinks: {
@@ -73,6 +75,8 @@ function rowToProfile(row: CenterRow): CenterProfile {
     ownerId: row.owner_id,
     sessionType: row.session_type ?? null,
     verified: !!(row.email_verified_at || row.phone_verified_at),
+    showPhone: row.show_phone ?? true,
+    showEmail: row.show_email ?? true,
     testimonials: row.testimonials ?? [],
     workingHours: row.working_hours ?? null,
     socialLinks: row.social_links ?? null,
@@ -107,9 +111,7 @@ export function useCenter(id: string | undefined) {
       if (!id || !supabase) return null;
 
       const { data, error } = await supabase
-        .from('centers')
-        .select('*')
-        .eq('id', id)
+        .rpc('get_center_public', { p_id: id })
         .single();
 
       if (error) {

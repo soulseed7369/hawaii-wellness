@@ -6,17 +6,16 @@
  * mock data to real Supabase data.
  */
 
-import { differenceInDays, parseISO, format } from 'date-fns';
-import type { PractitionerRow, CenterRow, RetreatRow, ArticleRow } from '@/types/database';
-import type { Provider, Center, RetreatEvent, Article } from '@/data/mockData';
+import { parseISO, format } from 'date-fns';
+import type { PractitionerRow, CenterRow, ArticleRow } from '@/types/database';
+import type { Provider, Center, Article } from '@/data/mockData';
 
 // ─── Placeholder images (used when no image is stored in DB) ─────────────────
 
 // Empty string → cards use their AvatarFallback (initials) instead of a stock photo
 const PLACEHOLDER_PRACTITIONER = '';
 const PLACEHOLDER_CENTER       = '';
-// Retreats and articles use a real cover image slot, keep stock fallback for those
-const PLACEHOLDER_RETREAT      = '/no%20image%20stock.jpg';
+// Articles use a real cover image slot, keep stock fallback
 const PLACEHOLDER_ARTICLE      = '/no%20image%20stock.jpg';
 
 // ─── Center type display labels ───────────────────────────────────────────────
@@ -127,47 +126,6 @@ export function centerRowToProvider(row: CenterRow): Provider {
     rating: 5.0,
     lat: row.lat ?? 0,
     lng: row.lng ?? 0,
-  };
-}
-
-// ─── retreatRowToRetreatEvent ─────────────────────────────────────────────────
-
-/**
- * Convert a retreats DB row to the RetreatEvent shape used by RetreatEventCard
- * and the Retreats page filter logic.
- */
-export function retreatRowToRetreatEvent(row: RetreatRow): RetreatEvent {
-  const startDate = row.start_date; // already "YYYY-MM-DD"
-  const endDate = row.end_date;
-
-  let durationDays = 1;
-  try {
-    durationDays = Math.max(1, differenceInDays(parseISO(endDate), parseISO(startDate)) + 1);
-  } catch {
-    // leave default
-  }
-
-  let priceLabel: string | undefined;
-  if (row.starting_price != null) {
-    priceLabel = `$${row.starting_price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-  }
-
-  return {
-    id: row.id,
-    title: row.title,
-    image: row.cover_image_url || PLACEHOLDER_RETREAT,
-    location: row.venue_name
-      ? `${row.venue_name}${row.city ? `, ${row.city}` : ''}`
-      : row.city || row.region || "Hawai'i Island",
-    area: row.region || row.city || "Hawai'i Island",
-    type: 'Retreat',
-    startDate,
-    endDate,
-    durationDays,
-    feature: row.description
-      ? row.description.split('.')[0].trim().slice(0, 60)
-      : 'Transformative wellness experience',
-    price: priceLabel,
   };
 }
 

@@ -16,7 +16,7 @@ export const SITE_URL = (
 export const SITE_NAME = 'Hawaiʻi Wellness';
 
 export const SITE_DESCRIPTION =
-  "Hawaiʻi's holistic health directory — find certified practitioners, wellness centers, and retreats across all islands.";
+  "Hawaiʻi's holistic health directory — find certified practitioners and wellness centers across all islands.";
 
 export const SITE_EMAIL = 'aloha@hawaiiwellness.net';
 

@@ -112,6 +112,18 @@ Deno.serve(async (req) => {
         });
 
         await syncTierToListings(userId, tier);
+
+        // Record billing event
+        await supabase.from('billing_events').insert({
+          user_id: userId,
+          event_type: 'subscription_updated',
+          new_tier: tier,
+          new_status: sub.status,
+          stripe_event_id: event.id,
+          stripe_object_id: sub.id,
+          metadata: { price_id: priceId },
+        }).select();
+
         break;
       }
 
@@ -133,11 +145,61 @@ Deno.serve(async (req) => {
 
         await syncTierToListings(userId, 'free');
 
-        // Remove any featured slots for this user
+        // Enter 90-day grace period instead of immediate deletion
+        const graceUntil = new Date();
+        graceUntil.setDate(graceUntil.getDate() + 90);
         await supabase
           .from('featured_slots')
-          .delete()
-          .eq('owner_id', userId);
+          .update({ grace_until: graceUntil.toISOString() })
+          .eq('owner_id', userId)
+          .is('grace_until', null); // only update slots not already in grace
+
+        // Record billing event
+        await supabase.from('billing_events').insert({
+          user_id: userId,
+          event_type: 'subscription_canceled',
+          new_tier: 'free',
+          new_status: 'canceled',
+          stripe_event_id: event.id,
+          stripe_object_id: sub.id,
+          metadata: { reason: 'subscription_deleted' },
+        }).select();
+
+        // Send downgrade notification email via Resend
+        const resendKey = Deno.env.get('RESEND_API_KEY');
+        if (resendKey) {
+          // Get user email
+          const { data: userData } = await supabase.auth.admin.getUserById(userId);
+          const userEmail = userData?.user?.email;
+
+          if (userEmail) {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${resendKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: "Hawaiʻi Wellness <billing@hawaiiwellness.net>",
+                to: [userEmail],
+                subject: "Your Hawaiʻi Wellness subscription has been cancelled",
+                html: `
+                  <p>Hi there,</p>
+                  <p>Your subscription has been cancelled and your listing has been moved to the Free plan.</p>
+                  <p><strong>What this means:</strong></p>
+                  <ul>
+                    <li>Your profile remains in the directory at no charge</li>
+                    <li>Premium features (social links, working hours, testimonials) are hidden but preserved — they'll return if you resubscribe</li>
+                    <li>Your featured listing slot has entered a 90-day grace period. If you resubscribe to Featured within 90 days, your slot priority will be restored</li>
+                  </ul>
+                  <p>To reactivate your premium listing, visit your <a href="https://hawaiiwellness.net/dashboard/billing">billing dashboard</a>.</p>
+                  <p>Questions? Reply to this email or contact <a href="mailto:aloha@hawaiiwellness.net">aloha@hawaiiwellness.net</a>.</p>
+                  <p>Mahalo,<br>The Hawaiʻi Wellness Team</p>
+                `,
+              }),
+            }).catch(err => console.error('Failed to send downgrade email:', err));
+          }
+        }
         break;
       }
     }
@@ -202,11 +264,14 @@ async function syncTierToListings(userId: string, tier: string) {
       if (error) console.error('Error upserting featured_slots:', error);
     }
   } else {
-    // Remove any featured slots when downgrading from featured
+    // Enter 90-day grace period when downgrading from featured instead of immediate deletion
+    const graceUntil = new Date();
+    graceUntil.setDate(graceUntil.getDate() + 90);
     const { error } = await supabase
       .from('featured_slots')
-      .delete()
-      .eq('owner_id', userId);
-    if (error) console.error('Error removing featured_slots:', error);
+      .update({ grace_until: graceUntil.toISOString() })
+      .eq('owner_id', userId)
+      .is('grace_until', null); // only update slots not already in grace
+    if (error) console.error('Error updating featured_slots grace period:', error);
   }
 }

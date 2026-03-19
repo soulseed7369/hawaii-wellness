@@ -303,14 +303,6 @@ export default function WebsitePackages() {
           </div>
         </div>
 
-        {/* Kama'aina Rate badge */}
-        <div className="flex justify-center mb-8">
-          <span className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-1.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-            <Sparkles className="h-3.5 w-3.5" />
-            Kamaʻāina Rate &mdash; first {KAMAAINA_WEBSITE_SPOTS} websites
-          </span>
-        </div>
-
         <div className="grid gap-6 md:grid-cols-3">
           {PACKAGES.map((pkg) => (
             <Card

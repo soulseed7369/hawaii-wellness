@@ -1,6 +1,6 @@
 -- =============================================================
 -- Migration: 20260304000000_practitioner_first
--- Project:   Aloha Health Hub
+-- Project:   Hawaii Wellness
 -- Sprint:    2 — Practitioner-First Data Model
 -- Generated: 2026-03-04
 -- Apply via: Supabase Dashboard → SQL Editor

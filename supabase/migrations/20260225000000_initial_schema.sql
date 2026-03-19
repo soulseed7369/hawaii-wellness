@@ -1,6 +1,6 @@
 -- =============================================================
 -- Migration: 20260225000000_initial_schema
--- Project:   Aloha Health Hub
+-- Project:   Hawaii Wellness
 -- Sprint:    1 — Database Schema + RLS
 -- Generated: 2026-02-25
 -- Reviewed:  Sonnet (Overseer) — verified columns, constraints,

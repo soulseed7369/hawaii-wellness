@@ -28,7 +28,7 @@ const Concierge         = lazy(() => import("./pages/Concierge"));
 const NotFound          = lazy(() => import("./pages/NotFound"));
 const Auth              = lazy(() => import("./pages/Auth"));
 const AuthCallback      = lazy(() => import("./pages/AuthCallback"));
-const Claim             = lazy(() => import("./pages/Claim"));
+const ClaimListing      = lazy(() => import("./pages/ClaimListing"));
 const BigIsland         = lazy(() => import("./pages/BigIsland"));
 const MauiHome          = lazy(() => import("./pages/MauiHome"));
 const OahuHome          = lazy(() => import("./pages/OahuHome"));
@@ -44,7 +44,6 @@ const AdminPanel        = lazy(() => import("./pages/admin/AdminPanel"));
 const DashboardHome     = lazy(() => import("./pages/dashboard/DashboardHome"));
 const DashboardProfile  = lazy(() => import("./pages/dashboard/DashboardProfile"));
 const DashboardCenters  = lazy(() => import("./pages/dashboard/DashboardCenters"));
-const DashboardRetreats     = lazy(() => import("./pages/dashboard/DashboardRetreats"));
 const DashboardOfferings    = lazy(() => import("./pages/dashboard/DashboardOfferings"));
 const DashboardClasses      = lazy(() => import("./pages/dashboard/DashboardClasses"));
 const DashboardTestimonials = lazy(() => import("./pages/dashboard/DashboardTestimonials"));
@@ -119,7 +118,7 @@ const App = () => (
               <Route path="/auth/callback" element={<AuthCallback />} />
 
               {/* Claim listing — full screen, no nav */}
-              <Route path="/claim/:id" element={<Claim />} />
+              <Route path="/claim/:id" element={<ClaimListing />} />
 
               {/* Dashboard — protected; ProtectedRoute renders Outlet */}
               <Route path="/dashboard" element={<ProtectedRoute />}>
@@ -127,7 +126,6 @@ const App = () => (
                   <Route index element={<DashboardHome />} />
                   <Route path="profile"  element={<DashboardProfile />} />
                   <Route path="centers"  element={<DashboardCenters />} />
-                  <Route path="retreats"     element={<DashboardRetreats />} />
                   <Route path="offerings"   element={<DashboardOfferings />} />
                   <Route path="classes"     element={<DashboardClasses />} />
                   <Route path="testimonials" element={<DashboardTestimonials />} />

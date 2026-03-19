@@ -399,7 +399,7 @@ def compute_top_issues(practitioners_data: dict, centers_data: dict, limit: int 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Weekly enrichment validation report for Aloha Health Hub."
+        description="Weekly enrichment validation report for Hawaii Wellness."
     )
     parser.add_argument(
         "--island",

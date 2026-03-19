@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -34,6 +35,7 @@ import {
   type CenterFormData,
   type LocationFormData,
 } from "@/hooks/useMyCenters";
+import { useMyBillingProfile } from "@/hooks/useStripe";
 import type { CenterRow, CenterLocationRow } from "@/types/database";
 import { CenterEventsAndAmenities } from "./DashboardCenterEvents";
 
@@ -65,6 +67,8 @@ const emptyForm: CenterFormData = {
   email: "",
   website_url: "",
   external_website_url: "",
+  show_phone: true,
+  show_email: true,
 };
 
 // ─── LocationForm ─────────────────────────────────────────────────────────────
@@ -415,6 +419,7 @@ function LocationsPanel({ centerId, tier = 'free' }: { centerId: string; tier?: 
 
 export default function DashboardCenters() {
   const { data: centers = [], isLoading } = useMyCenters();
+  const { data: billingProfile } = useMyBillingProfile();
   const addMutation    = useAddCenter();
   const deleteMutation = useDeleteCenter();
 
@@ -423,7 +428,10 @@ export default function DashboardCenters() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const handleChange = (field: keyof CenterFormData, value: string) =>
+  const userTier = billingProfile?.tier ?? 'free';
+  const isPremiumOrFeatured = userTier === 'premium' || userTier === 'featured';
+
+  const handleChange = (field: keyof CenterFormData, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
@@ -644,6 +652,48 @@ export default function DashboardCenters() {
                     value={form.email}
                     onChange={(e) => handleChange("email", e.target.value)}
                   />
+                </div>
+              </div>
+
+              {/* Contact Privacy — Premium Feature */}
+              <div className={`rounded-lg border p-3 ${isPremiumOrFeatured ? 'border-border' : 'border-amber-200 bg-amber-50'}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <p className="text-sm font-medium">Contact Privacy</p>
+                      {!isPremiumOrFeatured && (
+                        <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5">
+                          <Lock className="h-3 w-3 text-amber-700" />
+                          <span className="text-xs font-medium text-amber-700">Premium</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">Hide your contact info from public listings to reduce spam. Visitors can still reach you through your booking link.</p>
+
+                    {isPremiumOrFeatured && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between rounded border border-border bg-background p-2">
+                          <label htmlFor="show-phone" className="text-sm font-medium cursor-pointer">Show phone number</label>
+                          <Switch
+                            id="show-phone"
+                            checked={form.show_phone ?? true}
+                            onCheckedChange={v => handleChange("show_phone", v)}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between rounded border border-border bg-background p-2">
+                          <label htmlFor="show-email" className="text-sm font-medium cursor-pointer">Show email address</label>
+                          <Switch
+                            id="show-email"
+                            checked={form.show_email ?? true}
+                            onCheckedChange={v => handleChange("show_email", v)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {!isPremiumOrFeatured && (
+                      <p className="text-xs text-amber-700">Upgrade to Premium to hide your contact information and reduce spam.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 

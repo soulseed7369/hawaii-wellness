@@ -38,6 +38,8 @@ export type CenterFormData = {
   email: string;
   website_url: string;
   external_website_url: string;
+  show_phone?: boolean;
+  show_email?: boolean;
 };
 
 export function useAddCenter() {
@@ -61,6 +63,8 @@ export function useAddCenter() {
         external_website_url: formData.external_website_url.trim() || null,
         island: 'big_island',
         status: 'draft',
+        show_phone: formData.show_phone ?? true,
+        show_email: formData.show_email ?? true,
       });
       if (error) throw error;
     },

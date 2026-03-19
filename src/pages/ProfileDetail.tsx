@@ -671,11 +671,15 @@ const ProfileDetail = () => {
                       </Button>
                     )}
                     {!p.externalBookingUrl && (
-                      <RequestInfoModal
-                        practitionerName={p.name}
-                        practitionerEmail={p.email}
-                        practitionerWebsite={p.website}
-                      />
+                      p.showEmail ? (
+                        <RequestInfoModal
+                          practitionerName={p.name}
+                          practitionerEmail={p.email}
+                          practitionerWebsite={p.website}
+                        />
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">Contact info hidden by provider</p>
+                      )
                     )}
                   </div>
 
@@ -1037,13 +1041,17 @@ const ProfileDetail = () => {
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>
-          ) : (
+          ) : p.showEmail ? (
             <RequestInfoModal
               practitionerName={p.name}
               practitionerEmail={p.email}
               practitionerWebsite={p.website}
               fullWidth
             />
+          ) : (
+            <Button disabled className="w-full" size="lg">
+              Contact info hidden by provider
+            </Button>
           )}
 
           <Card>
@@ -1223,13 +1231,17 @@ const ProfileDetail = () => {
               <ExternalLink className="h-4 w-4" />
             </a>
           </Button>
-        ) : (
+        ) : p.showEmail ? (
           <RequestInfoModal
             practitionerName={p.name}
             practitionerEmail={p.email}
             practitionerWebsite={p.website}
             fullWidth
           />
+        ) : (
+          <Button disabled className="w-full" size="lg">
+            Contact info hidden by provider
+          </Button>
         )}
       </div>
     </main>

@@ -1,4 +1,4 @@
-# Aloha Health Hub — Project Knowledge Base
+# Hawaiʻi Wellness — Project Knowledge Base
 
 This file is read automatically at the start of every session. It captures hard-won knowledge about this codebase so I don't have to re-explore it each time.
 
@@ -6,7 +6,7 @@ This file is read automatically at the start of every session. It captures hard-
 
 ## Project Overview
 
-**Aloha Health Hub** — Hawaiian wellness directory at hawaiiwellness.net
+**Hawaiʻi Wellness** — Hawaiian wellness directory at hawaiiwellness.net
 **Operator:** Hawaii Wellness LLC
 **Contact:** aloha@hawaiiwellness.net
 **Stack:** React + TypeScript + Vite · Tailwind CSS + shadcn/ui · Supabase (Postgres + Auth + Storage) · Stripe (subscriptions) · Vercel (hosting)

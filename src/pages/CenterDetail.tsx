@@ -731,13 +731,13 @@ export default function CenterDetail() {
                 )}
 
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  {contactPhone && (
+                  {contactPhone && c.showPhone && (
                     <a href={`tel:${contactPhone}`} onClick={() => trackClick('phone')}
                       className="flex items-center gap-2 hover:text-foreground">
                       <Phone className="h-4 w-4" /> {contactPhone}
                     </a>
                   )}
-                  {contactEmail && (
+                  {contactEmail && c.showEmail && (
                     <a href={`mailto:${contactEmail}`} onClick={() => trackClick('email')}
                       className="flex items-center gap-2 hover:text-foreground">
                       <Mail className="h-4 w-4" /> {contactEmail}

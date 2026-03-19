@@ -187,6 +187,8 @@ export interface CenterRow {
   updated_at: string;
   session_type: 'in_person' | 'online' | 'both';
   is_featured: boolean;
+  show_phone: boolean;
+  show_email: boolean;
   social_links: {
     instagram?: string;
     facebook?: string;
@@ -210,29 +212,6 @@ export interface CenterRow {
   };
 }
 
-export interface RetreatRow {
-  id: string;
-  owner_id: string | null;
-  title: string;
-  venue_name: string | null;
-  island: string;
-  region: string | null;
-  city: string | null;
-  address: string | null;
-  lat: number | null;
-  lng: number | null;
-  start_date: string; // ISO date "YYYY-MM-DD"
-  end_date: string;   // ISO date "YYYY-MM-DD"
-  starting_price: number | null;
-  description: string | null;
-  cover_image_url: string | null;
-  registration_url: string | null;
-  status: 'draft' | 'published' | 'archived';
-  tier: 'free' | 'premium' | 'featured';
-  created_at: string;
-  updated_at: string;
-}
-
 export interface ArticleRow {
   id: string;
   slug: string;
@@ -254,6 +233,7 @@ export interface ArticleRow {
 
 export type PractitionerInsert = Omit<PractitionerRow, 'id' | 'created_at' | 'updated_at'>;
 export type CenterInsert = Omit<CenterRow, 'id' | 'created_at' | 'updated_at'>;
+export type ArticleInsert = Omit<ArticleRow, 'id' | 'created_at' | 'updated_at'>;
 
 // ─── CenterLocation ───────────────────────────────────────────────────────────
 
@@ -286,9 +266,6 @@ export interface CenterLocationRow {
 }
 
 export type CenterLocationInsert = Omit<CenterLocationRow, 'id' | 'created_at' | 'updated_at'>;
-
-export type RetreatInsert = Omit<RetreatRow, 'id' | 'created_at' | 'updated_at'>;
-export type ArticleInsert = Omit<ArticleRow, 'id' | 'created_at' | 'updated_at'>;
 
 // ─── User profiles (billing tier + subscription + account type) ─────────────
 
@@ -326,11 +303,6 @@ export interface Database {
         Row: CenterRow;
         Insert: CenterInsert;
         Update: Partial<CenterInsert>;
-      };
-      retreats: {
-        Row: RetreatRow;
-        Insert: RetreatInsert;
-        Update: Partial<RetreatInsert>;
       };
       articles: {
         Row: ArticleRow;
