@@ -15,7 +15,10 @@ export function useMyPractitioner() {
         .select('*')
         .eq('owner_id', user.id)
         .maybeSingle();
-      if (error) throw error;
+      if (error) {
+        console.error('Failed to fetch practitioner profile:', error);
+        return null;
+      }
       return data ?? null;
     },
     staleTime: 1000 * 30,

@@ -107,14 +107,24 @@ export function useMyBillingProfile() {
         .eq('id', user.id)
         .single();
 
+      const FREE_DEFAULT = { tier: 'free', subscription_status: null, subscription_period_end: null, stripe_customer_id: null } as const;
+
       if (error) {
-        // PGRST116 = no row found (new user with no billing record yet)
-        // Any other error: log and gracefully degrade to free tier rather than
-        // throwing, which would crash the entire dashboard layout via ErrorBoundary
-        if (error.code !== 'PGRST116') {
+        if (error.code === 'PGRST116') {
+          // No row exists — create one so future queries/admin overrides have a target
+          await supabase
+            .from('user_profiles')
+            .insert({ id: user.id, tier: 'free' })
+            .then(({ error: insertErr }) => {
+              // 23505 = unique violation (race condition, row already created)
+              if (insertErr && insertErr.code !== '23505') {
+                console.error('Failed to create user profile:', insertErr);
+              }
+            });
+        } else {
           console.error('Failed to fetch billing profile:', error);
         }
-        return { tier: 'free', subscription_status: null, subscription_period_end: null, stripe_customer_id: null };
+        return FREE_DEFAULT;
       }
       return data as BillingProfile;
     },

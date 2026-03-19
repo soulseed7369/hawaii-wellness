@@ -749,6 +749,13 @@ export const useSetListingTier = () => {
         .eq('id', listingId);
       if (updateError) throw updateError;
 
+      // Also sync tier to user_profiles so the provider's dashboard reflects the change
+      if (ownerId) {
+        await supabase
+          .from('user_profiles')
+          .upsert({ id: ownerId, tier, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+      }
+
       // If promoting to featured → create featured_slot
       if (tier === 'featured') {
         const { error: slotError } = await supabase
@@ -777,6 +784,7 @@ export const useSetListingTier = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-featured-slots'] });
       queryClient.invalidateQueries({ queryKey: ['practitioners'] });
       queryClient.invalidateQueries({ queryKey: ['centers'] });
+      queryClient.invalidateQueries({ queryKey: ['my-billing-profile'] });
     },
   });
 };
