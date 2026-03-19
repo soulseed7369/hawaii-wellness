@@ -108,8 +108,13 @@ export function useMyBillingProfile() {
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') return { tier: 'free', subscription_status: null, subscription_period_end: null, stripe_customer_id: null };
-        throw error;
+        // PGRST116 = no row found (new user with no billing record yet)
+        // Any other error: log and gracefully degrade to free tier rather than
+        // throwing, which would crash the entire dashboard layout via ErrorBoundary
+        if (error.code !== 'PGRST116') {
+          console.error('Failed to fetch billing profile:', error);
+        }
+        return { tier: 'free', subscription_status: null, subscription_period_end: null, stripe_customer_id: null };
       }
       return data as BillingProfile;
     },
