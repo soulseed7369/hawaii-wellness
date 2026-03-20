@@ -25,7 +25,7 @@ import {
 import {
   CheckCircle, MapPin, Phone, Mail, Globe, ExternalLink, ArrowLeft,
   Store, Instagram, Facebook, Linkedin, Link2, Check, Clock,
-  CalendarClock, Lock, Flag, Share2, Building2,
+  CalendarClock, Lock, Flag, Share2, Building2, ArrowRight,
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { RequestInfoModal } from "@/components/RequestInfoModal";
@@ -1065,13 +1065,27 @@ const ProfileDetail = () => {
             </div>
           )}
 
-          {/* Related articles */}
+          {/* Related articles — compact reading list */}
           {relatedArticles.length > 0 && (
-            <div>
-              <h2 className="mb-4 font-display text-xl font-bold">Wellness resources</h2>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {relatedArticles.map(a => (
-                  <ArticleCard key={a.id} article={a} />
+            <div className="border-t border-border/50 pt-5">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Related reading
+              </p>
+              <div className="space-y-2">
+                {relatedArticles.slice(0, 3).map(a => (
+                  <Link
+                    key={a.id}
+                    to={`/articles/${a.slug}`}
+                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-muted/50 transition-colors group"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-1">
+                        {a.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{a.category}</p>
+                    </div>
+                    <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                  </Link>
                 ))}
               </div>
             </div>

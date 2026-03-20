@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprint 1 — SEO Implementation Plan</title>
+<style>
+  :root {
+    --teal:#0d9488; --teal-light:#ccfbf1; --teal-dark:#0f766e;
+    --red:#dc2626; --red-light:#fee2e2; --amber:#d97706; --amber-light:#fef3c7;
+    --green:#16a34a; --green-light:#dcfce7; --blue:#2563eb; --blue-light:#dbeafe;
+    --purple:#7c3aed; --purple-light:#ede9fe;
+    --g50:#f9fafb; --g100:#f3f4f6; --g200:#e5e7eb; --g300:#d1d5db;
+    --g400:#9ca3af; --g500:#6b7280; --g600:#4b5563; --g700:#374151; --g800:#1f2937; --g900:#111827;
+    --white:#fff; --r:10px;
+    --sh:0 1px 3px rgba(0,0,0,.1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--g50);color:var(--g800);line-height:1.6;font-size:14px;}
+
+  /* Nav */
+  nav{background:var(--white);border-bottom:1px solid var(--g200);padding:0 24px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;height:50px;box-shadow:var(--sh);}
+  nav .brand{font-weight:700;font-size:15px;color:var(--teal-dark);white-space:nowrap;}
+  nav .brand span{color:var(--g400);font-weight:400;}
+  nav .pills{display:flex;gap:3px;flex:1;overflow-x:auto;scrollbar-width:none;}
+  nav .pills::-webkit-scrollbar{display:none;}
+  nav .pill{padding:5px 12px;border-radius:6px;text-decoration:none;color:var(--g600);font-size:12.5px;white-space:nowrap;transition:all .15s;cursor:pointer;border:none;background:none;font-family:inherit;}
+  nav .pill:hover{background:var(--g100);color:var(--g900);}
+  nav .pill.on{background:var(--teal-light);color:var(--teal-dark);font-weight:600;}
+
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .sec{display:none;padding:28px 0 60px;}
+  .sec.vis{display:block;}
+
+  /* Hero */
+  .hero{background:linear-gradient(135deg,#0f766e,#14b8a6);color:var(--white);padding:28px 24px 24px;}
+  .hero h1{font-size:20px;font-weight:800;}
+  .hero p{font-size:13px;opacity:.8;margin-top:4px;max-width:640px;}
+  .hero .stats{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;}
+  .hero .stat{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 16px;text-align:center;min-width:80px;}
+  .hero .stat .n{font-size:22px;font-weight:800;}
+  .hero .stat .l{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;}
+
+  /* Ticket */
+  .ticket{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);margin-bottom:14px;box-shadow:var(--sh);overflow:hidden;}
+  .ticket.p-critical{border-left:4px solid var(--red);}
+  .ticket.p-high{border-left:4px solid var(--amber);}
+  .ticket.p-med{border-left:4px solid var(--blue);}
+  .ticket.p-low{border-left:4px solid var(--g300);}
+  .ticket.p-privacy{border-left:4px solid var(--purple);}
+
+  .t-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;}
+  .t-head:hover{background:var(--g50);}
+  .t-num{font-size:12px;font-weight:700;color:var(--white);background:var(--teal);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .ticket.p-privacy .t-num{background:var(--purple);}
+  .t-meta{flex:1;min-width:0;}
+  .t-title{font-size:14px;font-weight:600;color:var(--g900);margin-bottom:2px;}
+  .t-sub{font-size:12px;color:var(--g500);line-height:1.4;}
+  .t-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+  .tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:10.5px;font-weight:600;letter-spacing:.02em;}
+  .tag-r{background:var(--red-light);color:var(--red);}
+  .tag-a{background:var(--amber-light);color:var(--amber);}
+  .tag-g{background:var(--green-light);color:var(--green);}
+  .tag-b{background:var(--blue-light);color:var(--blue);}
+  .tag-p{background:var(--purple-light);color:var(--purple);}
+  .tag-f{background:var(--g900);color:#86efac;padding:2px 7px;border-radius:5px;font-family:monospace;font-size:11px;font-weight:400;}
+  .t-exp{color:var(--g400);font-size:16px;flex-shrink:0;transition:transform .2s;margin-top:2px;}
+  .ticket.open .t-exp{transform:rotate(180deg);}
+
+  .t-body{display:none;padding:0 16px 16px;border-top:1px solid var(--g100);}
+  .ticket.open .t-body{display:block;}
+  .t-body h4{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;margin-top:14px;margin-bottom:6px;}
+  .t-body p,.t-body li{font-size:13px;color:var(--g700);line-height:1.6;}
+  .t-body ul{padding-left:16px;}
+  .t-body li{margin-bottom:3px;}
+
+  .code{background:var(--g900);color:#e5e7eb;border-radius:8px;padding:14px 16px;font-family:'Menlo','Monaco','Courier New',monospace;font-size:12px;line-height:1.6;overflow-x:auto;margin-top:8px;white-space:pre;}
+  .code .c{color:#6b7280;} .code .k{color:#93c5fd;} .code .v{color:#86efac;} .code .s{color:#fcd34d;} .code .r{color:#fca5a5;}
+
+  .ac{background:var(--green-light);border:1px solid #86efac;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:12px;color:#14532d;}
+  .ac strong{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;}
+
+  /* Section headers */
+  .sh{font-size:17px;font-weight:700;color:var(--g900);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+  .sh .icon{font-size:20px;}
+  .ss{font-size:13px;color:var(--g500);margin-bottom:18px;}
+
+  /* Callout */
+  .call{border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;line-height:1.5;}
+  .call-g{background:var(--green-light);border:1px solid #86efac;color:#14532d;}
+  .call-b{background:var(--blue-light);border:1px solid #93c5fd;color:#1e3a8a;}
+  .call-p{background:var(--purple-light);border:1px solid #c4b5fd;color:#4c1d95;}
+  .call-a{background:var(--amber-light);border:1px solid #fcd34d;color:#78350f;}
+  .call i{font-size:17px;flex-shrink:0;}
+
+  /* Timeline */
+  .tl{position:relative;padding-left:28px;margin-top:16px;}
+  .tl::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--g200);}
+  .tl-item{position:relative;margin-bottom:20px;}
+  .tl-dot{position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 2px var(--g200);}
+  .tl-d1{background:var(--red);}
+  .tl-d2{background:var(--amber);}
+  .tl-d3{background:var(--teal);}
+  .tl-day{font-weight:700;font-size:13px;color:var(--g900);}
+  .tl-tasks{font-size:12px;color:var(--g600);margin-top:3px;line-height:1.7;}
+
+  @media(max-width:600px){.hero .stats{flex-direction:column;}.t-tags{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">🌺 Sprint 1 <span>SEO Plan</span></div>
+  <div class="pills">
+    <button class="pill on" onclick="go('overview',this)">Overview</button>
+    <button class="pill" onclick="go('day1',this)">Day 1-2: Quick Wins</button>
+    <button class="pill" onclick="go('day3',this)">Day 3-5: Privacy</button>
+    <button class="pill" onclick="go('day6',this)">Day 6-10: Crawlability</button>
+    <button class="pill" onclick="go('day11',this)">Day 11-14: Sitemaps</button>
+    <button class="pill" onclick="go('schedule',this)">📅 Schedule</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="container">
+    <h1>Sprint 1 — SEO Foundation (Days 1–14)</h1>
+    <p>All quick wins + click-to-reveal privacy layer + SSR API for AI crawlers + dynamic sitemaps. Full code specs with exact file paths, insertion points, and acceptance criteria.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">14</div><div class="l">Tickets</div></div>
+      <div class="stat"><div class="n">~10</div><div class="l">Dev Days</div></div>
+      <div class="stat"><div class="n">22</div><div class="l">Files Changed</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">New Files</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<section id="overview" class="sec vis">
+<div class="container">
+  <div class="sh"><span class="icon">📋</span>Sprint 1 Overview</div>
+  <div class="ss">14 tickets across 4 workstreams. Ship in priority order — each workstream builds on the previous one.</div>
+
+  <div class="call call-g"><i>✅</i><div><strong>Status check:</strong> <code>loading="lazy"</code> is already on ProviderCard images. <code>HealthAndBeautyBusiness</code> schema already used on CenterDetail. BigIsland page already has good title/description. These are wins — less work than expected.</div></div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+    <div style="background:var(--red-light);border:1px solid #fca5a5;border-radius:10px;padding:12px 14px;">
+      <div style="font-weight:700;font-size:12px;color:var(--red);margin-bottom:6px;">🎯 Day 1-2</div>
+      <div style="font-size:12px;color:#7f1d1d;font-weight:600;">Quick Wins</div>
+      <div style="font-size:11px;color:#991b1b;margin-top:2px;">5 tickets · ~6 hours</div>
+    </div>
+    <div style="background:var(--purple-light);border:1px solid #c4b5fd;border-radius:10px;padding:12px 14px;">
+      <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:6px;">🔒 Day 3-5</div>
+      <div style="font-size:12px;color:#4c1d95;font-weight:600;">Privacy Layer</div>
+      <div style="font-size:11px;color:#5b21b6;margin-top:2px;">3 tickets · ~8 hours</div>
+    </div>
+    <div style="background:var(--amber-light);border:1px solid #fcd34d;border-radius:10px;padding:12px 14px;">
+      <div style="font-weight:700;font-size:12px;color:var(--amber);margin-bottom:6px;">⚙️ Day 6-10</div>
+      <div style="font-size:12px;color:#78350f;font-weight:600;">SSR API Layer</div>
+      <div style="font-size:11px;color:#92400e;margin-top:2px;">3 tickets · ~4 days</div>
+    </div>
+    <div style="background:var(--blue-light);border:1px solid #93c5fd;border-radius:10px;padding:12px 14px;">
+      <div style="font-weight:700;font-size:12px;color:var(--blue);margin-bottom:6px;">🗺️ Day 11-14</div>
+      <div style="font-size:12px;color:#1e3a8a;font-weight:600;">Dynamic Sitemaps</div>
+      <div style="font-size:11px;color:#1e40af;margin-top:2px;">3 tickets · ~1.5 days</div>
+    </div>
+  </div>
+
+  <div class="call call-a"><i>⚠️</i><div><strong>Dependency chain:</strong> Privacy layer (Day 3-5) must ship <em>before</em> the SSR API layer (Day 6-10). The SSR layer will serve HTML to crawlers, and we need the click-to-reveal architecture in place first so the SSR layer doesn't accidentally expose provider contact info.</div></div>
+</div>
+</section>
+
+<!-- ═══════════ DAY 1-2: QUICK WINS ═══════════ -->
+<section id="day1" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">🎯</span>Day 1-2: Quick Wins (5 Tickets)</div>
+  <div class="ss">Pure infrastructure — no architectural changes, no dependencies. Ship all 5 in one day if you're fast.</div>
+
+  <!-- T1: og:image -->
+  <div class="ticket p-critical open">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">1</span>
+      <div class="t-meta">
+        <div class="t-title">Add og:image + twitter:image to index.html</div>
+        <div class="t-sub">Create a 1200×630px branded image. Add Open Graph and Twitter Card image tags to the static &lt;head&gt;.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-g">2 hours</span><span class="tag tag-f">index.html</span><span class="tag tag-f">public/og-image.jpg</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Step 1: Create the image</h4>
+      <p>1200×630px JPG. Include: "Hawaiʻi Wellness" logo text, tropical gradient background, tagline "Holistic Health Directory — All Islands". Compress to &lt;200KB. Save as <code>public/og-image.jpg</code>.</p>
+      <h4>Step 2: Add to index.html</h4>
+      <p>Insert after the existing <code>&lt;meta name="twitter:description"&gt;</code> tag (line ~24):</p>
+      <div class="code"><span class="c">&lt;!-- OG Image --&gt;</span>
+&lt;meta property=<span class="s">"og:image"</span> content=<span class="s">"https://hawaiiwellness.net/og-image.jpg"</span> /&gt;
+&lt;meta property=<span class="s">"og:image:width"</span> content=<span class="s">"1200"</span> /&gt;
+&lt;meta property=<span class="s">"og:image:height"</span> content=<span class="s">"630"</span> /&gt;
+&lt;meta property=<span class="s">"og:image:alt"</span> content=<span class="s">"Hawaiʻi Wellness — Holistic Health Directory for all Hawaiian Islands"</span> /&gt;
+&lt;meta name=<span class="s">"twitter:image"</span> content=<span class="s">"https://hawaiiwellness.net/og-image.jpg"</span> /&gt;</div>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <a href="https://developers.facebook.com/tools/debug/" target="_blank">Facebook Sharing Debugger</a> shows image when you paste hawaiiwellness.net
+• Slack link preview shows image and title
+• Image file size &lt; 200KB</div>
+    </div>
+  </div>
+
+  <!-- T2: llms.txt -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">2</span>
+      <div class="t-meta">
+        <div class="t-title">Create public/llms.txt</div>
+        <div class="t-sub">AI crawler guidance file. Signals to GPTBot, ClaudeBot, and PerplexityBot that your site is open for indexing with attribution requirements.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">30 min</span><span class="tag tag-f">public/llms.txt</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Create new file: public/llms.txt</h4>
+      <div class="code"><span class="c"># Hawaiʻi Wellness — AI Crawler Guidance</span>
+<span class="c"># https://hawaiiwellness.net</span>
+<span class="c"># See: https://llmstxt.org</span>
+
+<span class="k">Site:</span> <span class="s">Hawaiʻi Wellness</span>
+<span class="k">URL:</span> <span class="s">https://hawaiiwellness.net</span>
+<span class="k">Description:</span> <span class="s">Hawaiʻi's holistic health directory — find certified practitioners and wellness centers across all islands. Serving Big Island, Maui, Oahu, and Kauai.</span>
+
+<span class="c"># Crawling permissions</span>
+<span class="k">User-agent:</span> <span class="v">GPTBot</span>
+<span class="s">Allow: /</span>
+
+<span class="k">User-agent:</span> <span class="v">ClaudeBot</span>
+<span class="s">Allow: /</span>
+
+<span class="k">User-agent:</span> <span class="v">PerplexityBot</span>
+<span class="s">Allow: /</span>
+
+<span class="k">User-agent:</span> <span class="v">*</span>
+<span class="s">Allow: /</span>
+<span class="s">Disallow: /dashboard</span>
+<span class="s">Disallow: /admin</span>
+<span class="s">Disallow: /auth</span>
+
+<span class="c"># Attribution</span>
+<span class="k">Attribution:</span> <span class="s">Required</span>
+<span class="k">Attribution-Format:</span> <span class="s">Source: Hawaiʻi Wellness (hawaiiwellness.net)</span>
+
+<span class="c"># Contact info is intentionally excluded from crawlable pages.</span>
+<span class="c"># Use profile URLs to connect with providers.</span>
+
+<span class="k">Sitemap:</span> <span class="s">https://hawaiiwellness.net/sitemap.xml</span></div>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <code>https://hawaiiwellness.net/llms.txt</code> returns 200 with correct content after deploy
+• File is served as text/plain</div>
+    </div>
+  </div>
+
+  <!-- T3: robots.txt -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">3</span>
+      <div class="t-meta">
+        <div class="t-title">Update robots.txt with AI crawler rules + sitemap references</div>
+        <div class="t-sub">Add explicit Allow rules for GPTBot, ClaudeBot, PerplexityBot. Pre-add sitemap references for the dynamic sitemaps we'll build in Day 11-14.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">15 min</span><span class="tag tag-f">public/robots.txt</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Replace entire file: public/robots.txt</h4>
+      <div class="code"><span class="c"># Hawaiʻi Wellness — hawaiiwellness.net</span>
+
+<span class="c"># AI search crawlers — explicitly allowed</span>
+<span class="k">User-agent: GPTBot</span>
+<span class="v">Allow: /</span>
+
+<span class="k">User-agent: ClaudeBot</span>
+<span class="v">Allow: /</span>
+
+<span class="k">User-agent: PerplexityBot</span>
+<span class="v">Allow: /</span>
+
+<span class="c"># All other crawlers</span>
+<span class="k">User-agent: *</span>
+<span class="v">Allow: /</span>
+<span class="v">Disallow: /dashboard</span>
+<span class="v">Disallow: /admin</span>
+<span class="v">Disallow: /auth</span>
+<span class="v">Disallow: /api/contact/</span>
+
+<span class="c"># Sitemaps</span>
+<span class="k">Sitemap: https://hawaiiwellness.net/sitemap.xml</span>
+<span class="k">Sitemap: https://hawaiiwellness.net/api/sitemap-practitioners.xml</span>
+<span class="k">Sitemap: https://hawaiiwellness.net/api/sitemap-centers.xml</span>
+<span class="k">Sitemap: https://hawaiiwellness.net/api/sitemap-articles.xml</span></div>
+      <p style="margin-top:8px;font-size:12px;color:var(--g500);">Note: <code>/api/contact/</code> is disallowed to prevent crawlers from hitting the reveal endpoint. The 3 new sitemaps won't exist until Day 11-14 — that's fine, crawlers will retry.</p>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <code>curl https://hawaiiwellness.net/robots.txt</code> shows updated content
+• Google Search Console "robots.txt Tester" shows no errors</div>
+    </div>
+  </div>
+
+  <!-- T4: Static schemas in index.html -->
+  <div class="ticket p-critical">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">4</span>
+      <div class="t-meta">
+        <div class="t-title">Add Organization + WebSite schemas to static index.html &lt;head&gt;</div>
+        <div class="t-sub">Move the Organization schema from JS-injected (App.tsx) to static &lt;head&gt; so all crawlers see it. Add new WebSite schema with sitelinks search box.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-g">1 hour</span><span class="tag tag-f">index.html</span><span class="tag tag-f">src/App.tsx</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Step 1: Add schemas to index.html</h4>
+      <p>Insert before <code>&lt;/head&gt;</code> (after the favicon line, before line 32):</p>
+      <div class="code"><span class="c">&lt;!-- Organization schema (visible to ALL crawlers including AI bots) --&gt;</span>
+&lt;script type=<span class="s">"application/ld+json"</span>&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Hawaiʻi Wellness",
+  "url": "https://hawaiiwellness.net",
+  "logo": "https://hawaiiwellness.net/hawaii-wellness-logo.png",
+  "description": "Hawaiʻi's holistic health directory — find certified practitioners and wellness centers across all islands.",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "aloha@hawaiiwellness.net",
+    "contactType": "customer support"
+  },
+  "areaServed": {
+    "@type": "State",
+    "name": "Hawaii",
+    "sameAs": "https://en.wikipedia.org/wiki/Hawaii"
+  }
+}
+&lt;/script&gt;
+
+<span class="c">&lt;!-- WebSite schema with sitelinks search box --&gt;</span>
+&lt;script type=<span class="s">"application/ld+json"</span>&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "https://hawaiiwellness.net",
+  "name": "Hawaiʻi Wellness",
+  "description": "Hawaiʻi's holistic health directory",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://hawaiiwellness.net/directory?query={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+&lt;/script&gt;</div>
+      <h4>Step 2: Remove duplicate from App.tsx</h4>
+      <p>In <code>src/App.tsx</code>, remove the <code>orgSchema</code> object and the <code>&lt;JsonLd id="org-schema" data={orgSchema} /&gt;</code> line from PublicLayout. This avoids duplicate Organization schema in the DOM after React hydrates.</p>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <a href="https://search.google.com/test/rich-results" target="_blank">Rich Results Test</a> shows Organization + WebSite schemas on homepage
+• <code>curl hawaiiwellness.net | grep "application/ld+json"</code> returns both schemas without JS execution
+• No duplicate Organization schema after React loads (check DevTools → Elements → search for "Organization")</div>
+    </div>
+  </div>
+
+  <!-- T5: Island page titles + descriptions -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">5</span>
+      <div class="t-meta">
+        <div class="t-title">Update island page titles + meta descriptions (Maui, Oahu, Kauai)</div>
+        <div class="t-sub">Big Island already has a good title. The other 3 islands need unique, keyword-rich titles and descriptions that include the island name.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">1 hour</span><span class="tag tag-f">src/pages/MauiHome.tsx</span><span class="tag tag-f">src/pages/OahuHome.tsx</span><span class="tag tag-f">src/pages/KauaiHome.tsx</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Update each island config object</h4>
+      <p>Each island page follows the BigIsland.tsx pattern — a config object passed to <code>&lt;IslandHome /&gt;</code>. Update the <code>pageTitle</code> and <code>pageDescription</code> fields:</p>
+      <div class="code"><span class="c">// src/pages/MauiHome.tsx</span>
+pageTitle: <span class="s">"Maui Wellness Practitioners & Holistic Health | Hawaiʻi Wellness"</span>,
+pageDescription: <span class="s">"Find massage therapists, yoga instructors, acupuncturists & holistic healers in Lahaina, Kihei, Wailea, Makawao & across Maui. Browse Maui's growing wellness directory."</span>,
+
+<span class="c">// src/pages/OahuHome.tsx</span>
+pageTitle: <span class="s">"Oʻahu Wellness Directory — Honolulu, Kailua & More | Hawaiʻi Wellness"</span>,
+pageDescription: <span class="s">"Discover holistic health practitioners and wellness centers across Oʻahu. Serving Honolulu, Waikiki, Kailua, Kaneohe & the North Shore."</span>,
+
+<span class="c">// src/pages/KauaiHome.tsx</span>
+pageTitle: <span class="s">"Kauaʻi Holistic Health Practitioners & Centers | Hawaiʻi Wellness"</span>,
+pageDescription: <span class="s">"Browse wellness practitioners and holistic healers on the Garden Isle. Serving Lihue, Kapaa, Hanalei, Princeville, Poipu & Koloa."</span>,</div>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Each island page shows its island name in the browser tab title
+• <code>document.title</code> includes island name on each page
+• Meta description includes 2-3 city names specific to that island</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════ DAY 3-5: PRIVACY ═══════════ -->
+<section id="day3" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">🔒</span>Day 3-5: Privacy Layer (3 Tickets)</div>
+  <div class="ss">Click-to-reveal architecture + contact-reveal Edge Function. Must ship BEFORE the SSR API layer.</div>
+
+  <div class="call call-p"><i>🔒</i><div><strong>Why first?</strong> The SSR API layer (Day 6-10) will serve HTML to crawlers. If we build that first, provider phone/email would be in the HTML response. By shipping click-to-reveal first, we ensure the SSR layer can safely select only non-PII fields from the start.</div></div>
+
+  <!-- T6: contact-reveal Edge Function -->
+  <div class="ticket p-privacy open">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">6</span>
+      <div class="t-meta">
+        <div class="t-title">Build contact-reveal Supabase Edge Function + DB migration</div>
+        <div class="t-sub">Rate-limited endpoint that returns phone or email for a published listing. Logs every reveal for analytics. 10 reveals/hour per IP.</div>
+        <div class="t-tags"><span class="tag tag-p">🔒 Privacy</span><span class="tag tag-r">🔴 Critical</span><span class="tag tag-a">4 hours</span><span class="tag tag-f">supabase/functions/contact-reveal/index.ts</span><span class="tag tag-f">supabase/migrations/</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Step 1: Create migration for contact_reveals table</h4>
+      <p>File: <code>supabase/migrations/20260320000000_contact_reveals.sql</code></p>
+      <div class="code"><span class="c">-- Track contact info reveals for analytics + rate limiting</span>
+<span class="k">CREATE TABLE</span> contact_reveals (
+  id          uuid <span class="k">DEFAULT</span> gen_random_uuid() <span class="k">PRIMARY KEY</span>,
+  listing_id  uuid <span class="k">NOT NULL</span>,
+  listing_type text <span class="k">NOT NULL CHECK</span> (listing_type <span class="k">IN</span> (<span class="s">'practitioner'</span>, <span class="s">'center'</span>)),
+  reveal_type text <span class="k">NOT NULL CHECK</span> (reveal_type <span class="k">IN</span> (<span class="s">'phone'</span>, <span class="s">'email'</span>)),
+  ip_hash     text <span class="k">NOT NULL</span>,
+  created_at  timestamptz <span class="k">DEFAULT</span> now()
+);
+
+<span class="k">CREATE INDEX</span> idx_reveals_listing <span class="k">ON</span> contact_reveals (listing_id);
+<span class="k">CREATE INDEX</span> idx_reveals_rate <span class="k">ON</span> contact_reveals (ip_hash, created_at);
+
+<span class="c">-- Enable RLS</span>
+<span class="k">ALTER TABLE</span> contact_reveals <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="c">-- Only service role can insert (Edge Function uses service role)</span>
+<span class="k">CREATE POLICY</span> <span class="s">"service_insert"</span> <span class="k">ON</span> contact_reveals
+  <span class="k">FOR INSERT WITH CHECK</span> (auth.role() = <span class="s">'service_role'</span>);</div>
+
+      <h4>Step 2: Create Edge Function</h4>
+      <p>File: <code>supabase/functions/contact-reveal/index.ts</code></p>
+      <div class="code"><span class="k">import</span> { serve } <span class="k">from</span> <span class="s">'https://deno.land/std@0.177.0/http/server.ts'</span>;
+<span class="k">import</span> { createClient } <span class="k">from</span> <span class="s">'https://esm.sh/@supabase/supabase-js@2'</span>;
+
+<span class="k">const</span> CORS = {
+  <span class="s">'Access-Control-Allow-Origin'</span>: <span class="s">'https://hawaiiwellness.net'</span>,
+  <span class="s">'Access-Control-Allow-Methods'</span>: <span class="s">'GET, OPTIONS'</span>,
+  <span class="s">'Access-Control-Allow-Headers'</span>: <span class="s">'Content-Type'</span>,
+};
+
+<span class="c">// Simple IP hash (no raw IPs stored)</span>
+<span class="k">async function</span> hashIp(ip: string): Promise&lt;string&gt; {
+  <span class="k">const</span> data = <span class="k">new</span> TextEncoder().encode(ip + Deno.env.get(<span class="s">'RATE_LIMIT_SALT'</span>) ?? <span class="s">'hw-salt'</span>);
+  <span class="k">const</span> hash = <span class="k">await</span> crypto.subtle.digest(<span class="s">'SHA-256'</span>, data);
+  <span class="k">return</span> [...<span class="k">new</span> Uint8Array(hash)].map(b =&gt; b.toString(16).padStart(2, <span class="s">'0'</span>)).join(<span class="s">''</span>).slice(0, 16);
+}
+
+serve(<span class="k">async</span> (req) =&gt; {
+  <span class="c">// CORS preflight</span>
+  <span class="k">if</span> (req.method === <span class="s">'OPTIONS'</span>) <span class="k">return new</span> Response(null, { headers: CORS });
+
+  <span class="k">const</span> url = <span class="k">new</span> URL(req.url);
+  <span class="k">const</span> id = url.searchParams.get(<span class="s">'id'</span>);
+  <span class="k">const</span> type = url.searchParams.get(<span class="s">'type'</span>);
+  <span class="k">const</span> listingType = url.searchParams.get(<span class="s">'listing_type'</span>) ?? <span class="s">'practitioner'</span>;
+
+  <span class="c">// Validate</span>
+  <span class="k">if</span> (!id || !type || ![<span class="s">'phone'</span>, <span class="s">'email'</span>].includes(type)
+      || ![<span class="s">'practitioner'</span>, <span class="s">'center'</span>].includes(listingType)) {
+    <span class="k">return new</span> Response(JSON.stringify({ error: <span class="s">'Bad request'</span> }), {
+      status: 400, headers: { ...CORS, <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> }
+    });
+  }
+
+  <span class="k">const</span> supabase = createClient(
+    Deno.env.get(<span class="s">'SUPABASE_URL'</span>)!,
+    Deno.env.get(<span class="s">'SUPABASE_SERVICE_ROLE_KEY'</span>)!
+  );
+
+  <span class="c">// Rate limit: 10 reveals per IP per hour</span>
+  <span class="k">const</span> ip = req.headers.get(<span class="s">'x-forwarded-for'</span>)?.split(<span class="s">','</span>)[0]?.trim() ?? <span class="s">'unknown'</span>;
+  <span class="k">const</span> ipHash = <span class="k">await</span> hashIp(ip);
+  <span class="k">const</span> oneHourAgo = <span class="k">new</span> Date(Date.now() - 3600000).toISOString();
+
+  <span class="k">const</span> { count } = <span class="k">await</span> supabase
+    .from(<span class="s">'contact_reveals'</span>)
+    .select(<span class="s">'*'</span>, { count: <span class="s">'exact'</span>, head: <span class="k">true</span> })
+    .eq(<span class="s">'ip_hash'</span>, ipHash)
+    .gte(<span class="s">'created_at'</span>, oneHourAgo);
+
+  <span class="k">if</span> ((count ?? 0) &gt;= 10) {
+    <span class="k">return new</span> Response(JSON.stringify({ error: <span class="s">'Rate limit — try again later'</span> }), {
+      status: 429, headers: { ...CORS, <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> }
+    });
+  }
+
+  <span class="c">// Fetch the contact field (only from published listings)</span>
+  <span class="k">const</span> table = listingType === <span class="s">'center'</span> ? <span class="s">'centers'</span> : <span class="s">'practitioners'</span>;
+  <span class="k">const</span> field = type === <span class="s">'phone'</span> ? <span class="s">'phone'</span> : <span class="s">'email'</span>;
+
+  <span class="k">const</span> { data, error } = <span class="k">await</span> supabase
+    .from(table)
+    .select(field)
+    .eq(<span class="s">'id'</span>, id)
+    .eq(<span class="s">'status'</span>, <span class="s">'published'</span>)
+    .single();
+
+  <span class="k">if</span> (error || !data) {
+    <span class="k">return new</span> Response(JSON.stringify({ error: <span class="s">'Not found'</span> }), {
+      status: 404, headers: { ...CORS, <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span> }
+    });
+  }
+
+  <span class="c">// Log the reveal</span>
+  <span class="k">await</span> supabase.from(<span class="s">'contact_reveals'</span>).insert({
+    listing_id: id, listing_type: listingType, reveal_type: type,
+    ip_hash: ipHash,
+  });
+
+  <span class="k">return new</span> Response(JSON.stringify({ value: data[field] }), {
+    headers: { ...CORS, <span class="s">'Content-Type'</span>: <span class="s">'application/json'</span>, <span class="s">'Cache-Control'</span>: <span class="s">'no-store'</span> }
+  });
+});</div>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <code>supabase functions serve contact-reveal</code> runs locally without errors
+• Returns phone for a published practitioner: <code>curl "…/contact-reveal?id=X&type=phone&listing_type=practitioner"</code>
+• Returns 429 after 10 rapid requests from the same IP
+• Returns 404 for draft listings
+• contact_reveals table has a row logged for each successful reveal
+• CORS allows only hawaiiwellness.net origin</div>
+    </div>
+  </div>
+
+  <!-- T7: ContactReveal component -->
+  <div class="ticket p-privacy">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">7</span>
+      <div class="t-meta">
+        <div class="t-title">Create ContactReveal component + wire into ProfileDetail and CenterDetail</div>
+        <div class="t-sub">Replace raw phone/email &lt;a&gt; tags with click-to-reveal buttons that call the Edge Function on demand. Contact info never in the initial DOM.</div>
+        <div class="t-tags"><span class="tag tag-p">🔒 Privacy</span><span class="tag tag-r">🔴 Critical</span><span class="tag tag-a">3 hours</span><span class="tag tag-f">src/components/ContactReveal.tsx</span><span class="tag tag-f">src/pages/ProfileDetail.tsx</span><span class="tag tag-f">src/pages/CenterDetail.tsx</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Step 1: Create src/components/ContactReveal.tsx</h4>
+      <div class="code"><span class="k">import</span> { useState } <span class="k">from</span> <span class="s">'react'</span>;
+<span class="k">import</span> { Phone, Mail, Loader2 } <span class="k">from</span> <span class="s">'lucide-react'</span>;
+<span class="k">import</span> { Button } <span class="k">from</span> <span class="s">'@/components/ui/button'</span>;
+<span class="k">import</span> { useTrackClick } <span class="k">from</span> <span class="s">'@/hooks/useTrackEvent'</span>;
+
+<span class="k">const</span> REVEAL_URL = <span class="s">`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contact-reveal`</span>;
+
+<span class="k">interface</span> Props {
+  listingId: string;
+  listingType: <span class="s">'practitioner'</span> | <span class="s">'center'</span>;
+  type: <span class="s">'phone'</span> | <span class="s">'email'</span>;
+  className?: string;
+}
+
+<span class="k">export function</span> ContactReveal({ listingId, listingType, type, className }: Props) {
+  <span class="k">const</span> [value, setValue] = useState&lt;string | null&gt;(null);
+  <span class="k">const</span> [loading, setLoading] = useState(false);
+  <span class="k">const</span> [error, setError] = useState(false);
+  <span class="k">const</span> trackClick = useTrackClick();
+
+  <span class="k">const</span> reveal = <span class="k">async</span> () =&gt; {
+    setLoading(<span class="k">true</span>);
+    setError(<span class="k">false</span>);
+    <span class="k">try</span> {
+      <span class="k">const</span> res = <span class="k">await</span> fetch(
+        <span class="s">`${REVEAL_URL}?id=${listingId}&type=${type}&listing_type=${listingType}`</span>
+      );
+      <span class="k">if</span> (!res.ok) <span class="k">throw new</span> Error(res.statusText);
+      <span class="k">const</span> data = <span class="k">await</span> res.json();
+      setValue(data.value);
+      trackClick(type); <span class="c">// existing analytics event</span>
+    } <span class="k">catch</span> {
+      setError(<span class="k">true</span>);
+    } <span class="k">finally</span> {
+      setLoading(<span class="k">false</span>);
+    }
+  };
+
+  <span class="k">if</span> (value) {
+    <span class="k">const</span> href = type === <span class="s">'phone'</span> ? <span class="s">`tel:${value}`</span> : <span class="s">`mailto:${value}`</span>;
+    <span class="k">const</span> Icon = type === <span class="s">'phone'</span> ? Phone : Mail;
+    <span class="k">return</span> (
+      &lt;a href={href} className={<span class="s">`flex items-center gap-2 font-medium text-primary hover:text-primary/80 transition-colors ${className ?? ''}`</span>}&gt;
+        &lt;Icon className=<span class="s">"h-4 w-4 flex-shrink-0"</span> /&gt; {value}
+      &lt;/a&gt;
+    );
+  }
+
+  <span class="k">const</span> Icon = type === <span class="s">'phone'</span> ? Phone : Mail;
+  <span class="k">const</span> label = type === <span class="s">'phone'</span> ? <span class="s">'Show Phone'</span> : <span class="s">'Show Email'</span>;
+
+  <span class="k">return</span> (
+    &lt;Button variant=<span class="s">"ghost"</span> size=<span class="s">"sm"</span> onClick={reveal} disabled={loading}
+      className={<span class="s">`gap-2 text-primary ${className ?? ''}`</span>}&gt;
+      {loading ? &lt;Loader2 className=<span class="s">"h-4 w-4 animate-spin"</span> /&gt; : &lt;Icon className=<span class="s">"h-4 w-4"</span> /&gt;}
+      {error ? <span class="s">'Try again'</span> : label}
+    &lt;/Button&gt;
+  );
+}</div>
+
+      <h4>Step 2: Update ProfileDetail.tsx (~lines 1080-1089)</h4>
+      <p>Replace the current phone/email links:</p>
+      <div class="code"><span class="c">// BEFORE (remove these lines ~1080-1089):</span>
+<span class="r">{p.phone && p.showPhone && (
+  &lt;a href={`tel:${p.phone}`} ...&gt;&lt;Phone /&gt; {p.phone}&lt;/a&gt;
+)}
+{p.email && p.showEmail && (
+  &lt;a href={`mailto:${p.email}`} ...&gt;&lt;Mail /&gt; {p.email}&lt;/a&gt;
+)}</span>
+
+<span class="c">// AFTER (replace with):</span>
+<span class="v">{p.phone && p.showPhone && (
+  &lt;ContactReveal listingId={p.id} listingType="practitioner" type="phone" /&gt;
+)}
+{p.email && p.showEmail && (
+  &lt;ContactReveal listingId={p.id} listingType="practitioner" type="email" /&gt;
+)}</span></div>
+      <p>Add import at top: <code>import { ContactReveal } from '@/components/ContactReveal';</code></p>
+
+      <h4>Step 3: Update CenterDetail.tsx (~lines 246-254 and 734-744)</h4>
+      <p>Same pattern — replace both phone/email display locations with <code>&lt;ContactReveal&gt;</code>:</p>
+      <div class="code"><span class="c">// Replace all center phone/email links (2 locations):</span>
+<span class="v">{c.phone && &lt;ContactReveal listingId={c.id} listingType="center" type="phone" /&gt;}
+{c.email && &lt;ContactReveal listingId={c.id} listingType="center" type="email" /&gt;}</span></div>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Profile page loads — no phone/email visible in DOM (check Elements tab)
+• Click "Show Phone" → spinner → phone number appears as clickable tel: link
+• Click "Show Email" → spinner → email appears as clickable mailto: link
+• View Page Source — no phone number or email anywhere in HTML
+• Works for both practitioners and centers
+• Error state: shows "Try again" if network fails</div>
+    </div>
+  </div>
+
+  <!-- T8: Strip PII from schema -->
+  <div class="ticket p-privacy">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">8</span>
+      <div class="t-meta">
+        <div class="t-title">Strip telephone + email from all JSON-LD schema markup</div>
+        <div class="t-sub">Remove phone and email from the practitionerSchema in ProfileDetail.tsx (~line 350) and the localBusinessSchema in CenterDetail.tsx (~line 322).</div>
+        <div class="t-tags"><span class="tag tag-p">🔒 Privacy</span><span class="tag tag-a">🟡 High</span><span class="tag tag-g">30 min</span><span class="tag tag-f">src/pages/ProfileDetail.tsx</span><span class="tag tag-f">src/pages/CenterDetail.tsx</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>ProfileDetail.tsx — Remove lines ~350-351</h4>
+      <div class="code"><span class="c">// In the localBusinessSchema object (~line 343-358), DELETE these two lines:</span>
+<span class="r">telephone: p.phone ?? undefined,</span>
+<span class="r">email: p.email ?? undefined,</span>
+
+<span class="c">// The rest of the schema stays exactly the same.</span>
+<span class="c">// name, description, url, image, address, geo — all safe to keep.</span></div>
+
+      <h4>CenterDetail.tsx — Remove lines ~324-325</h4>
+      <div class="code"><span class="c">// In the localBusinessSchema object (~line 316-333), DELETE these two lines:</span>
+<span class="r">telephone: c.phone ?? undefined,</span>
+<span class="r">email: c.email ?? undefined,</span></div>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Search page source for "telephone" — zero matches in JSON-LD scripts
+• <a href="https://validator.schema.org" target="_blank">Schema.org Validator</a> still passes (telephone/email are optional fields)
+• Profile/center pages still show correct name, address, geo, image in schema</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════ DAY 6-10: CRAWLABILITY ═══════════ -->
+<section id="day6" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">⚙️</span>Day 6-10: SSR API Layer (3 Tickets)</div>
+  <div class="ss">Make practitioner/center profiles crawlable by AI bots via Vercel serverless functions that return full HTML with schema markup — but no PII.</div>
+
+  <div class="call call-b"><i>💡</i><div><strong>Architecture:</strong> Vercel serverless functions at <code>/api/profile/[id]</code> and <code>/api/center/[id]</code> fetch data from Supabase, render minimal HTML with schema markup, and return it. The React SPA continues to work normally for users. Add a rewrite rule so when a crawler requests <code>/profile/123</code>, Vercel routes it to the API function instead of the SPA.</div></div>
+
+  <!-- T9: Profile SSR -->
+  <div class="ticket p-critical open">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">9</span>
+      <div class="t-meta">
+        <div class="t-title">Build /api/profile/[id] SSR endpoint for practitioner profiles</div>
+        <div class="t-sub">Vercel serverless function that renders practitioner HTML with proper &lt;title&gt;, meta description, og:tags, and MedicalBusiness schema — but no phone/email. AI crawlers get full content.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-a">1.5 days</span><span class="tag tag-f">api/profile/[id].ts</span><span class="tag tag-f">vercel.json</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Step 1: Create api/profile/[id].ts</h4>
+      <div class="code"><span class="k">import</span> type { VercelRequest, VercelResponse } <span class="k">from</span> <span class="s">'@vercel/node'</span>;
+<span class="k">import</span> { createClient } <span class="k">from</span> <span class="s">'@supabase/supabase-js'</span>;
+
+<span class="k">const</span> supabase = createClient(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+<span class="k">const</span> SITE = <span class="s">'https://hawaiiwellness.net'</span>;
+<span class="k">const</span> ISLAND_LABEL: Record&lt;string, string&gt; = {
+  big_island: <span class="s">'Big Island'</span>, maui: <span class="s">'Maui'</span>, oahu: <span class="s">'Oʻahu'</span>, kauai: <span class="s">'Kauaʻi'</span>,
+};
+
+<span class="k">export default async function</span> handler(req: VercelRequest, res: VercelResponse) {
+  <span class="k">const</span> { id } = req.query;
+  <span class="k">if</span> (!id || <span class="k">typeof</span> id !== <span class="s">'string'</span>) <span class="k">return</span> res.status(400).send(<span class="s">'Missing id'</span>);
+
+  <span class="c">// Select ONLY non-PII fields</span>
+  <span class="k">const</span> { data: p, error } = <span class="k">await</span> supabase
+    .from(<span class="s">'practitioners'</span>)
+    .select(<span class="s">`
+      id, name, bio, modalities, city, island, address,
+      website_url, external_booking_url,
+      lat, lng, photo_url, tier, session_type,
+      accepts_new_clients
+    `</span>)
+    .eq(<span class="s">'id'</span>, id)
+    .eq(<span class="s">'status'</span>, <span class="s">'published'</span>)
+    .single();
+
+  <span class="k">if</span> (error || !p) <span class="k">return</span> res.status(404).send(<span class="s">'Not found'</span>);
+
+  <span class="k">const</span> profileUrl = <span class="s">`${SITE}/profile/${p.id}`</span>;
+  <span class="k">const</span> islandName = ISLAND_LABEL[p.island] ?? <span class="s">'Hawaiʻi'</span>;
+  <span class="k">const</span> topModality = p.modalities?.[0] ?? <span class="s">'Wellness'</span>;
+  <span class="k">const</span> title = <span class="s">`${p.name} — ${topModality} in ${p.city ?? islandName} | Hawaiʻi Wellness`</span>;
+  <span class="k">const</span> desc = (p.bio ?? <span class="s">''</span>).substring(0, 155);
+
+  <span class="c">// MedicalBusiness schema (no telephone, no email)</span>
+  <span class="k">const</span> schema = {
+    <span class="s">'@context'</span>: <span class="s">'https://schema.org'</span>,
+    <span class="s">'@type'</span>: [<span class="s">'MedicalBusiness'</span>, <span class="s">'LocalBusiness'</span>],
+    name: p.name,
+    description: p.bio ?? <span class="k">undefined</span>,
+    url: profileUrl,
+    image: p.photo_url ?? <span class="k">undefined</span>,
+    address: p.address ? {
+      <span class="s">'@type'</span>: <span class="s">'PostalAddress'</span>,
+      streetAddress: p.address,
+      addressLocality: p.city,
+      addressRegion: <span class="s">'HI'</span>,
+      addressCountry: <span class="s">'US'</span>,
+    } : <span class="k">undefined</span>,
+    geo: p.lat && p.lng ? {
+      <span class="s">'@type'</span>: <span class="s">'GeoCoordinates'</span>,
+      latitude: p.lat, longitude: p.lng,
+    } : <span class="k">undefined</span>,
+    areaServed: <span class="s">`${p.city ?? ''}, ${islandName}, Hawaii`</span>,
+    knowsAbout: p.modalities ?? [],
+  };
+
+  <span class="k">const</span> html = <span class="s">`&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;${title}&lt;/title&gt;
+  &lt;meta name="description" content="${desc}"&gt;
+  &lt;meta name="robots" content="index, follow"&gt;
+  &lt;link rel="canonical" href="${profileUrl}"&gt;
+  &lt;meta property="og:title" content="${title}"&gt;
+  &lt;meta property="og:description" content="${desc}"&gt;
+  &lt;meta property="og:url" content="${profileUrl}"&gt;
+  &lt;meta property="og:type" content="profile"&gt;
+  ${p.photo_url ? \`&lt;meta property="og:image" content="${p.photo_url}"&gt;\` : ''}
+  &lt;meta name="geo.region" content="US-HI"&gt;
+  &lt;script type="application/ld+json"&gt;${JSON.stringify(schema)}&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;${p.name}&lt;/h1&gt;
+  &lt;p&gt;${topModality} practitioner in ${p.city ?? islandName}, Hawaiʻi&lt;/p&gt;
+  ${p.bio ? \`&lt;p&gt;${p.bio}&lt;/p&gt;\` : ''}
+  ${p.modalities?.length ? \`&lt;p&gt;Specialties: ${p.modalities.join(', ')}&lt;/p&gt;\` : ''}
+  ${p.city ? \`&lt;p&gt;Location: ${p.city}, ${islandName}&lt;/p&gt;\` : ''}
+  ${p.session_type ? \`&lt;p&gt;Sessions: ${p.session_type.replace('_', ' ')}&lt;/p&gt;\` : ''}
+  ${p.website_url ? \`&lt;p&gt;&lt;a href="${p.website_url}"&gt;Visit website&lt;/a&gt;&lt;/p&gt;\` : ''}
+  ${p.external_booking_url ? \`&lt;p&gt;&lt;a href="${p.external_booking_url}"&gt;Book a session&lt;/a&gt;&lt;/p&gt;\` : ''}
+  &lt;p&gt;&lt;a href="${SITE}/directory"&gt;Browse all practitioners&lt;/a&gt;&lt;/p&gt;
+  &lt;p&gt;© Hawaiʻi Wellness — &lt;a href="${SITE}"&gt;hawaiiwellness.net&lt;/a&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;`</span>;
+
+  res.setHeader(<span class="s">'Content-Type'</span>, <span class="s">'text/html; charset=utf-8'</span>);
+  res.setHeader(<span class="s">'Cache-Control'</span>, <span class="s">'public, s-maxage=86400, stale-while-revalidate=43200'</span>);
+  res.send(html);
+}</div>
+
+      <h4>Step 2: Add Vercel rewrite (vercel.json)</h4>
+      <p>Route AI crawler requests to the API function. Real users still get the SPA.</p>
+      <div class="code"><span class="c">// vercel.json — create or update</span>
+{
+  <span class="s">"rewrites"</span>: [
+    {
+      <span class="s">"source"</span>: <span class="s">"/api/profile/:id"</span>,
+      <span class="s">"destination"</span>: <span class="s">"/api/profile/[id]"</span>
+    },
+    {
+      <span class="s">"source"</span>: <span class="s">"/api/center/:id"</span>,
+      <span class="s">"destination"</span>: <span class="s">"/api/center/[id]"</span>
+    }
+  ]
+}</div>
+      <p style="margin-top:8px;font-size:12px;color:var(--g500);">
+        <strong>Note on routing:</strong> For now, the SSR pages live at <code>/api/profile/[id]</code> — separate from the SPA route <code>/profile/[id]</code>. Crawlers following sitemap links will hit the API version. Real users navigating the SPA will hit the React route. In Sprint 2 (Next.js migration), these merge into a single SSR route.
+      </p>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <code>curl -H "User-Agent: GPTBot" https://hawaiiwellness.net/api/profile/[real-id]</code> returns full HTML with &lt;title&gt;, meta, schema
+• Response does NOT contain any phone number or email address
+• Schema validates at schema.org validator
+• og:title and og:description are populated correctly
+• Response is cached for 24 hours (check Cache-Control header)
+• Returns 404 for non-existent or draft profiles</div>
+    </div>
+  </div>
+
+  <!-- T10: Center SSR -->
+  <div class="ticket p-critical">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">10</span>
+      <div class="t-meta">
+        <div class="t-title">Build /api/center/[id] SSR endpoint for wellness centers</div>
+        <div class="t-sub">Same pattern as T9 but for the centers table. Uses HealthAndBeautyBusiness schema. Omits phone/email.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-a">3 hours</span><span class="tag tag-f">api/center/[id].ts</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <p>Clone T9, change <code>practitioners</code> → <code>centers</code>, schema type to <code>HealthAndBeautyBusiness</code>, add <code>center_type</code> and <code>working_hours</code> to the select, and update the HTML template to include center-specific fields (description, center_type). Same field exclusion rules — no phone, no email.</p>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Same as T9 but for center URLs
+• Schema uses HealthAndBeautyBusiness type
+• center_type is displayed (e.g., "Wellness Center", "Spa", "Retreat Center")</div>
+    </div>
+  </div>
+
+  <!-- T11: Test crawlability -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">11</span>
+      <div class="t-meta">
+        <div class="t-title">Verify crawlability — test with all major bot user agents</div>
+        <div class="t-sub">Verify GPTBot, ClaudeBot, PerplexityBot, and Googlebot all receive proper HTML content with correct schema from the SSR endpoints.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">2 hours</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Test Commands (run after T9 + T10 are deployed)</h4>
+      <div class="code"><span class="c"># Pick a real published practitioner ID from Supabase</span>
+ID=<span class="s">"your-practitioner-uuid-here"</span>
+
+<span class="c"># GPTBot</span>
+curl -s -H <span class="s">"User-Agent: Mozilla/5.0 (compatible; GPTBot/1.0; +https://openai.com/gptbot)"</span> \
+  https://hawaiiwellness.net/api/profile/$ID | grep -E <span class="s">"&lt;title&gt;|telephone|email|MedicalBusiness"</span>
+
+<span class="c"># ClaudeBot</span>
+curl -s -H <span class="s">"User-Agent: ClaudeBot/1.0"</span> \
+  https://hawaiiwellness.net/api/profile/$ID | head -30
+
+<span class="c"># PerplexityBot</span>
+curl -s -H <span class="s">"User-Agent: PerplexityBot/1.0"</span> \
+  https://hawaiiwellness.net/api/profile/$ID | head -30
+
+<span class="c"># Verify NO phone/email in response</span>
+curl -s https://hawaiiwellness.net/api/profile/$ID | grep -iE <span class="s">"808-|@.*\.com|telephone|mailto:"</span>
+<span class="c"># ↑ This should return NOTHING</span>
+
+<span class="c"># Validate schema</span>
+curl -s https://hawaiiwellness.net/api/profile/$ID | \
+  grep -oP <span class="s">'(?&lt;=application/ld\+json&gt;).*?(?=&lt;/script&gt;)'</span> | python3 -m json.tool</div>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• All 3 bots receive identical, complete HTML
+• No phone/email in any response (grep returns empty)
+• Schema is valid JSON with MedicalBusiness type
+• &lt;title&gt; includes practitioner name and island
+• Response time &lt;2 seconds</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════ DAY 11-14: SITEMAPS ═══════════ -->
+<section id="day11" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">🗺️</span>Day 11-14: Dynamic Sitemaps (3 Tickets)</div>
+  <div class="ss">Generate sitemaps from Supabase data — only published listings with updated timestamps. This is how Google and AI crawlers discover all your content.</div>
+
+  <!-- T12: Practitioner sitemap -->
+  <div class="ticket p-critical open">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">12</span>
+      <div class="t-meta">
+        <div class="t-title">Build /api/sitemap-practitioners.xml endpoint</div>
+        <div class="t-sub">Queries all published practitioners from Supabase. Returns XML sitemap with lastmod timestamps. Points to the SSR API URLs. Cached for 24 hours.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-a">3 hours</span><span class="tag tag-f">api/sitemap-practitioners.xml.ts</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Create api/sitemap-practitioners.xml.ts</h4>
+      <div class="code"><span class="k">import</span> type { VercelRequest, VercelResponse } <span class="k">from</span> <span class="s">'@vercel/node'</span>;
+<span class="k">import</span> { createClient } <span class="k">from</span> <span class="s">'@supabase/supabase-js'</span>;
+
+<span class="k">const</span> supabase = createClient(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+<span class="k">export default async function</span> handler(_req: VercelRequest, res: VercelResponse) {
+  <span class="k">const</span> { data, error } = <span class="k">await</span> supabase
+    .from(<span class="s">'practitioners'</span>)
+    .select(<span class="s">'id, updated_at'</span>)
+    .eq(<span class="s">'status'</span>, <span class="s">'published'</span>)
+    .order(<span class="s">'updated_at'</span>, { ascending: <span class="k">false</span> });
+
+  <span class="k">if</span> (error || !data) {
+    res.status(500).send(<span class="s">'Error generating sitemap'</span>);
+    <span class="k">return</span>;
+  }
+
+  <span class="k">const</span> urls = data.map(p =&gt; <span class="s">`
+  &lt;url&gt;
+    &lt;loc&gt;https://hawaiiwellness.net/api/profile/${p.id}&lt;/loc&gt;
+    &lt;lastmod&gt;${p.updated_at?.substring(0, 10) ?? '2026-03-01'}&lt;/lastmod&gt;
+    &lt;changefreq&gt;weekly&lt;/changefreq&gt;
+    &lt;priority&gt;0.8&lt;/priority&gt;
+  &lt;/url&gt;`</span>).join(<span class="s">''</span>);
+
+  <span class="k">const</span> xml = <span class="s">`&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"&gt;${urls}
+&lt;/urlset&gt;`</span>;
+
+  res.setHeader(<span class="s">'Content-Type'</span>, <span class="s">'application/xml; charset=utf-8'</span>);
+  res.setHeader(<span class="s">'Cache-Control'</span>, <span class="s">'public, s-maxage=86400, stale-while-revalidate=43200'</span>);
+  res.send(xml);
+}</div>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <code>curl https://hawaiiwellness.net/api/sitemap-practitioners.xml</code> returns valid XML
+• Contains ONLY published listings (no drafts)
+• Each &lt;loc&gt; points to /api/profile/ URLs (the SSR versions)
+• Validates at <a href="https://www.xml-sitemaps.com/validate-xml-sitemap.html" target="_blank">XML Sitemap Validator</a>
+• Count matches Supabase: <code>SELECT count(*) FROM practitioners WHERE status='published'</code></div>
+    </div>
+  </div>
+
+  <!-- T13: Centers + articles sitemaps -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">13</span>
+      <div class="t-meta">
+        <div class="t-title">Build /api/sitemap-centers.xml + /api/sitemap-articles.xml</div>
+        <div class="t-sub">Same pattern as T12 for centers and articles tables.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-a">2 hours</span><span class="tag tag-f">api/sitemap-centers.xml.ts</span><span class="tag tag-f">api/sitemap-articles.xml.ts</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <p>Clone T12 for both. Centers: query <code>centers</code> table, point to <code>/api/center/[id]</code>. Articles: query <code>articles</code> table where <code>published = true</code>, point to <code>/articles/[slug]</code> (SPA routes, since article SSR is Sprint 2 work).</p>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Both endpoints return valid XML sitemaps
+• Only published content included
+• Article URLs use /articles/[slug] format</div>
+    </div>
+  </div>
+
+  <!-- T14: GSC submission -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">14</span>
+      <div class="t-meta">
+        <div class="t-title">Register Google Search Console + submit all sitemaps</div>
+        <div class="t-sub">Add the site to GSC, verify ownership via DNS TXT record or meta tag, submit all 4 sitemaps, and request indexing for the homepage.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-g">1 hour</span><span class="tag tag-f">index.html</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Steps</h4>
+      <ul>
+        <li>Go to <a href="https://search.google.com/search-console" target="_blank">Google Search Console</a></li>
+        <li>Add property: <code>https://hawaiiwellness.net</code></li>
+        <li>Verify via HTML meta tag (add to index.html): <code>&lt;meta name="google-site-verification" content="YOUR_CODE" /&gt;</code></li>
+        <li>Submit sitemaps: <code>sitemap.xml</code>, <code>api/sitemap-practitioners.xml</code>, <code>api/sitemap-centers.xml</code>, <code>api/sitemap-articles.xml</code></li>
+        <li>Request indexing for: <code>/</code>, <code>/big-island</code>, <code>/directory</code></li>
+        <li>Also register at <a href="https://www.bing.com/webmasters" target="_blank">Bing Webmaster Tools</a> (covers Bing + ChatGPT search)</li>
+      </ul>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• GSC shows "Property verified" ✓
+• All 4 sitemaps show "Success" status in GSC
+• Bing Webmaster Tools verified and sitemaps submitted
+• Coverage report starts populating within 48 hours</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════ SCHEDULE ═══════════ -->
+<section id="schedule" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">📅</span>Daily Schedule</div>
+  <div class="ss">Recommended day-by-day execution order with dependencies.</div>
+
+  <div class="call call-g"><i>✅</i><div><strong>Total: ~10 dev days across 14 calendar days.</strong> Quick wins (T1-T5) can ship day 1-2 without waiting for anything. Privacy layer (T6-T8) must complete before SSR (T9-T11). Sitemaps (T12-T14) depend on SSR being deployed.</div></div>
+
+  <div class="tl">
+    <div class="tl-item"><div class="tl-dot tl-d1"></div><div class="tl-day">Day 1 (Wednesday)</div><div class="tl-tasks">T1: og:image · T2: llms.txt · T3: robots.txt<br><em>Ship all 3 — deploy to Vercel same day.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d1"></div><div class="tl-day">Day 2 (Thursday)</div><div class="tl-tasks">T4: Static schemas in index.html · T5: Island page titles/descriptions<br><em>Deploy. Run Rich Results Test and Facebook Debugger to verify T1 + T4.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d2"></div><div class="tl-day">Day 3 (Friday)</div><div class="tl-tasks">T6: contact_reveals migration → apply in Supabase SQL editor<br>T6: contact-reveal Edge Function → deploy via <code>supabase functions deploy contact-reveal</code></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d2"></div><div class="tl-day">Day 4-5 (Mon-Tue)</div><div class="tl-tasks">T7: ContactReveal component → wire into ProfileDetail + CenterDetail<br>T8: Strip phone/email from JSON-LD schemas<br><em>Test locally: View Source should contain zero phone numbers or emails.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d3"></div><div class="tl-day">Day 6-8 (Wed-Fri)</div><div class="tl-tasks">T9: /api/profile/[id] SSR endpoint<br>T10: /api/center/[id] SSR endpoint<br><em>Build + test locally with <code>vercel dev</code>. Deploy to preview branch.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d3"></div><div class="tl-day">Day 9 (Mon)</div><div class="tl-tasks">T11: Verify crawlability — run all curl tests<br><em>Fix any issues. Merge to main and deploy.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d3"></div><div class="tl-day">Day 10-11 (Tue-Wed)</div><div class="tl-tasks">T12: sitemap-practitioners.xml · T13: sitemap-centers.xml + sitemap-articles.xml<br><em>Deploy. Verify XML validates.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d3"></div><div class="tl-day">Day 12 (Thu)</div><div class="tl-tasks">T14: Google Search Console + Bing Webmaster Tools<br><em>Submit all sitemaps. Request indexing for homepage + key pages.</em></div></div>
+
+    <div class="tl-item"><div class="tl-dot tl-d3"></div><div class="tl-day">Day 13-14 (Fri + buffer)</div><div class="tl-tasks">🧹 Bug fixes, cleanup, edge cases<br>📝 Update CLAUDE.md with SEO architecture notes<br>🎉 Sprint 1 complete — start Sprint 2 planning</div></div>
+  </div>
+
+  <div style="margin-top:24px;background:var(--white);border:1px solid var(--g200);border-radius:10px;padding:16px;box-shadow:var(--sh);">
+    <div style="font-weight:700;font-size:14px;color:var(--g900);margin-bottom:10px;">📊 Sprint 1 Definition of Done</div>
+    <div style="font-size:13px;color:var(--g700);line-height:1.8;">
+      ☐ <code>curl hawaiiwellness.net | grep "ld+json"</code> returns Organization + WebSite schemas<br>
+      ☐ <code>curl hawaiiwellness.net/llms.txt</code> returns 200<br>
+      ☐ Facebook Sharing Debugger shows og:image for homepage<br>
+      ☐ Profile page View Source has zero phone numbers or emails<br>
+      ☐ "Show Phone" click → reveals phone number → logged in contact_reveals table<br>
+      ☐ <code>curl -H "User-Agent: GPTBot" hawaiiwellness.net/api/profile/[id]</code> returns full HTML with schema<br>
+      ☐ Same curl returns NO phone/email in response body<br>
+      ☐ <code>curl hawaiiwellness.net/api/sitemap-practitioners.xml</code> returns valid XML with 100+ URLs<br>
+      ☐ Google Search Console shows "Success" for all 4 submitted sitemaps<br>
+      ☐ All island pages have unique &lt;title&gt; tags with island names
+    </div>
+  </div>
+</div>
+</section>
+
+<script>
+function go(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('vis'));
+  document.getElementById(id).classList.add('vis');
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  if(el)el.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function tog(h){h.closest('.ticket').classList.toggle('open');}
+</script>
+</body>
+</html>

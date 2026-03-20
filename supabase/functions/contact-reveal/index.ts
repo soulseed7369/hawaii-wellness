@@ -1,11 +1,39 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const CORS = {
-  'Access-Control-Allow-Origin': 'https://hawaiiwellness.net',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+// Allowed origins: production, www subdomain, and Vercel preview deployments
+const ALLOWED_ORIGINS = [
+  'https://hawaiiwellness.net',
+  'https://www.hawaiiwellness.net',
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  // If origin is from an allowed domain or a vercel preview, allow it
+  if (origin) {
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      };
+    }
+    // Allow vercel.app preview deployments
+    if (origin.endsWith('.vercel.app')) {
+      return {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      };
+    }
+  }
+
+  // Fallback to production origin
+  return {
+    'Access-Control-Allow-Origin': 'https://hawaiiwellness.net',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+}
 
 // Simple IP hash (no raw IPs stored)
 async function hashIp(ip: string): Promise<string> {
@@ -15,8 +43,11 @@ async function hashIp(ip: string): Promise<string> {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const cors = getCorsHeaders(origin);
+
   // CORS preflight
-  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
 
   const url = new URL(req.url);
   const id = url.searchParams.get('id');
@@ -27,7 +58,7 @@ serve(async (req) => {
   if (!id || !type || !['phone', 'email'].includes(type)
       || !['practitioner', 'center'].includes(listingType)) {
     return new Response(JSON.stringify({ error: 'Bad request' }), {
-      status: 400, headers: { ...CORS, 'Content-Type': 'application/json' }
+      status: 400, headers: { ...cors, 'Content-Type': 'application/json' }
     });
   }
 
@@ -49,7 +80,7 @@ serve(async (req) => {
 
   if ((count ?? 0) >= 10) {
     return new Response(JSON.stringify({ error: 'Rate limit — try again later' }), {
-      status: 429, headers: { ...CORS, 'Content-Type': 'application/json' }
+      status: 429, headers: { ...cors, 'Content-Type': 'application/json' }
     });
   }
 
@@ -66,17 +97,22 @@ serve(async (req) => {
 
   if (error || !data) {
     return new Response(JSON.stringify({ error: 'Not found' }), {
-      status: 404, headers: { ...CORS, 'Content-Type': 'application/json' }
+      status: 404, headers: { ...cors, 'Content-Type': 'application/json' }
     });
   }
 
-  // Log the reveal
-  await supabase.from('contact_reveals').insert({
-    listing_id: id, listing_type: listingType, reveal_type: type,
-    ip_hash: ipHash,
-  });
+  // Log the reveal with error handling
+  try {
+    await supabase.from('contact_reveals').insert({
+      listing_id: id, listing_type: listingType, reveal_type: type,
+      ip_hash: ipHash,
+    });
+  } catch (insertError) {
+    console.error('Failed to log contact reveal:', insertError);
+    // Continue anyway — logging failure shouldn't block the reveal
+  }
 
   return new Response(JSON.stringify({ value: (data as any)[field] }), {
-    headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+    headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
   });
 });

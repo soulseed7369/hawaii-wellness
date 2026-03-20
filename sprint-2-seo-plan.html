@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprint 2 — SEO Content & Structured Data Plan</title>
+<style>
+  :root {
+    --teal:#0d9488; --teal-light:#ccfbf1; --teal-dark:#0f766e;
+    --red:#dc2626; --red-light:#fee2e2; --amber:#d97706; --amber-light:#fef3c7;
+    --green:#16a34a; --green-light:#dcfce7; --blue:#2563eb; --blue-light:#dbeafe;
+    --purple:#7c3aed; --purple-light:#ede9fe;
+    --g50:#f9fafb; --g100:#f3f4f6; --g200:#e5e7eb; --g300:#d1d5db;
+    --g400:#9ca3af; --g500:#6b7280; --g600:#4b5563; --g700:#374151; --g800:#1f2937; --g900:#111827;
+    --white:#fff; --r:10px;
+    --sh:0 1px 3px rgba(0,0,0,.1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--g50);color:var(--g800);line-height:1.6;font-size:14px;}
+
+  /* Nav */
+  nav{background:var(--white);border-bottom:1px solid var(--g200);padding:0 24px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;height:50px;box-shadow:var(--sh);}
+  nav .brand{font-weight:700;font-size:15px;color:var(--teal-dark);white-space:nowrap;}
+  nav .brand span{color:var(--g400);font-weight:400;}
+  nav .pills{display:flex;gap:3px;flex:1;overflow-x:auto;scrollbar-width:none;}
+  nav .pills::-webkit-scrollbar{display:none;}
+  nav .pill{padding:5px 12px;border-radius:6px;text-decoration:none;color:var(--g600);font-size:12.5px;white-space:nowrap;transition:all .15s;cursor:pointer;border:none;background:none;font-family:inherit;}
+  nav .pill:hover{background:var(--g100);color:var(--g900);}
+  nav .pill.on{background:var(--teal-light);color:var(--teal-dark);font-weight:600;}
+
+  .container{max-width:960px;margin:0 auto;padding:0 24px;}
+  .sec{display:none;padding:28px 0 60px;}
+  .sec.vis{display:block;}
+
+  /* Hero */
+  .hero{background:linear-gradient(135deg,#0f766e,#14b8a6);color:var(--white);padding:28px 24px 24px;}
+  .hero h1{font-size:20px;font-weight:800;}
+  .hero p{font-size:13px;opacity:.8;margin-top:4px;max-width:640px;}
+  .hero .stats{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;}
+  .hero .stat{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 16px;text-align:center;min-width:80px;}
+  .hero .stat .n{font-size:22px;font-weight:800;}
+  .hero .stat .l{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.05em;}
+
+  /* Ticket */
+  .ticket{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);margin-bottom:14px;box-shadow:var(--sh);overflow:hidden;}
+  .ticket.p-critical{border-left:4px solid var(--red);}
+  .ticket.p-high{border-left:4px solid var(--amber);}
+  .ticket.p-med{border-left:4px solid var(--blue);}
+  .ticket.p-low{border-left:4px solid var(--g300);}
+
+  .t-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;}
+  .t-head:hover{background:var(--g50);}
+  .t-num{font-size:12px;font-weight:700;color:var(--white);background:var(--teal);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .t-meta{flex:1;min-width:0;}
+  .t-title{font-size:14px;font-weight:600;color:var(--g900);margin-bottom:2px;}
+  .t-sub{font-size:12px;color:var(--g500);line-height:1.4;}
+  .t-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+  .tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:10.5px;font-weight:600;letter-spacing:.02em;}
+  .tag-r{background:var(--red-light);color:var(--red);}
+  .tag-a{background:var(--amber-light);color:var(--amber);}
+  .tag-g{background:var(--green-light);color:var(--green);}
+  .tag-b{background:var(--blue-light);color:var(--blue);}
+  .tag-f{background:var(--g900);color:#86efac;padding:2px 7px;border-radius:5px;font-family:monospace;font-size:11px;font-weight:400;}
+  .t-exp{color:var(--g400);font-size:16px;flex-shrink:0;transition:transform .2s;margin-top:2px;}
+  .ticket.open .t-exp{transform:rotate(180deg);}
+
+  .t-body{display:none;padding:0 16px 16px;border-top:1px solid var(--g100);}
+  .ticket.open .t-body{display:block;}
+  .t-body h4{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;margin-top:14px;margin-bottom:6px;}
+  .t-body p,.t-body li{font-size:13px;color:var(--g700);line-height:1.6;}
+  .t-body ul{padding-left:16px;}
+  .t-body li{margin-bottom:3px;}
+
+  .code{background:var(--g900);color:#e5e7eb;border-radius:8px;padding:14px 16px;font-family:'Menlo','Monaco','Courier New',monospace;font-size:12px;line-height:1.6;overflow-x:auto;margin-top:8px;white-space:pre;}
+  .code .c{color:#6b7280;} .code .k{color:#93c5fd;} .code .v{color:#86efac;} .code .s{color:#fcd34d;} .code .r{color:#fca5a5;}
+
+  .ac{background:var(--green-light);border:1px solid #86efac;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:12px;color:#14532d;}
+  .ac strong{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;}
+
+  /* Section headers */
+  .sh{font-size:17px;font-weight:700;color:var(--g900);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+  .sh .icon{font-size:20px;}
+  .ss{font-size:13px;color:var(--g500);margin-bottom:18px;}
+
+  /* Callout */
+  .call{border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px;line-height:1.5;}
+  .call-g{background:var(--green-light);border:1px solid #86efac;color:#14532d;}
+  .call-b{background:var(--blue-light);border:1px solid #93c5fd;color:#1e3a8a;}
+  .call-p{background:var(--purple-light);border:1px solid #c4b5fd;color:#4c1d95;}
+  .call-a{background:var(--amber-light);border:1px solid #fcd34d;color:#78350f;}
+  .call i{font-size:17px;flex-shrink:0;}
+
+  /* Grid */
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .grid-item{background:var(--white);border:1px solid var(--g200);border-radius:10px;padding:12px 14px;}
+  @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:600px){.grid-4{grid-template-columns:1fr;}.hero .stats{flex-direction:column;}.t-tags{flex-direction:column;align-items:flex-start;}}
+
+  /* Definition of Done */
+  .dod{background:var(--white);border:1px solid var(--g200);border-radius:10px;padding:16px;box-shadow:var(--sh);margin-top:24px;}
+  .dod-title{font-weight:700;font-size:14px;color:var(--g900);margin-bottom:10px;}
+  .dod-list{font-size:13px;color:var(--g700);line-height:1.8;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">🌺 Sprint 2 <span>SEO Plan</span></div>
+  <div class="pills">
+    <button class="pill on" onclick="go('overview',this)">Overview</button>
+    <button class="pill" onclick="go('track-a',this)">Track A: SSR</button>
+    <button class="pill" onclick="go('track-b',this)">Track B: Schema</button>
+    <button class="pill" onclick="go('track-cd',this)">Track C+D: Quality</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="container">
+    <h1>Sprint 2 — Crawlable Content & Structured Data (Weeks 3-4)</h1>
+    <p>Ship article SSR endpoints + BreadcrumbList + FAQPage schema + profile completeness enforcement. Position for organic long-tail keyword capture across all 4 islands.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">9</div><div class="l">Tickets</div></div>
+      <div class="stat"><div class="n">~10</div><div class="l">Dev Days</div></div>
+      <div class="stat"><div class="n">10</div><div class="l">Files New/Modified</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Weeks</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<section id="overview" class="sec vis">
+<div class="container">
+  <div class="sh"><span class="icon">📋</span>Sprint 2 Overview</div>
+  <div class="ss">9 tickets across 4 tracks. Four parallel workstreams, each with clear dependencies.</div>
+
+  <div class="call call-g"><i>✅</i><div><strong>From Sprint 1:</strong> We have click-to-reveal privacy, SSR profile endpoints, and dynamic sitemaps. Sprint 2 builds on this foundation to make articles crawlable, add rich schema, and enforce listing quality.</div></div>
+
+  <div class="grid-4">
+    <div class="grid-item">
+      <div style="font-weight:700;font-size:12px;color:var(--red);margin-bottom:6px;">⚙️ Track A</div>
+      <div style="font-size:12px;color:var(--g900);font-weight:600;">SSR Endpoints</div>
+      <div style="font-size:11px;color:var(--g600);margin-top:2px;">A1, A2, A3: Articles + Islands (4 dev days)</div>
+    </div>
+    <div class="grid-item">
+      <div style="font-weight:700;font-size:12px;color:var(--amber);margin-bottom:6px;">📊 Track B</div>
+      <div style="font-size:12px;color:var(--g900);font-weight:600;">Structured Data</div>
+      <div style="font-size:11px;color:var(--g600);margin-top:2px;">B1, B2: Breadcrumbs + FAQ (2 dev days)</div>
+    </div>
+    <div class="grid-item">
+      <div style="font-weight:700;font-size:12px;color:var(--blue);margin-bottom:6px;">🎯 Track C</div>
+      <div style="font-size:12px;color:var(--g900);font-weight:600;">Quality Gates</div>
+      <div style="font-size:11px;color:var(--g600);margin-top:2px;">C1, C2: Completeness + Crosslinks (2 dev days)</div>
+    </div>
+    <div class="grid-item">
+      <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:6px;">✔️ Track D</div>
+      <div style="font-size:12px;color:var(--g900);font-weight:600;">Testing</div>
+      <div style="font-size:11px;color:var(--g600);margin-top:2px;">D1, D2: Crawl + Schema validation (2 dev days)</div>
+    </div>
+  </div>
+
+  <div class="call call-a"><i>⚡</i><div><strong>Execution strategy:</strong> Tracks A, B, C can run in parallel. Track D (testing) happens in the final 2 days after A ships. No hard blockers between A, B, C — all are independent.</div></div>
+
+  <div class="dod">
+    <div class="dod-title">📌 Sprint 2 Definition of Done</div>
+    <div class="dod-list">
+      ☐ Article SSR endpoint returns full HTML with NewsArticle + BreadcrumbList schema<br>
+      ☐ Profile and center pages show visible breadcrumb nav + validate in Rich Results Tester<br>
+      ☐ HelpCenter FAQPage schema validates with all 25 Q&A pairs present<br>
+      ☐ Profiles &lt;60% complete return noindex meta tag from SSR endpoints<br>
+      ☐ Public directory filters out incomplete listings<br>
+      ☐ Google Search Console shows articles eligible for "Article" rich results<br>
+      ☐ All 4 schema types (Profile BreadcrumbList, Article BreadcrumbList + NewsArticle, FAQPage) pass Google Rich Results Tester<br>
+      ☐ Zero new TypeScript errors; build passes<br>
+      ☐ Zero PII in any SSR endpoint response<br>
+      ☐ All curl tests pass for article and island endpoints
+    </div>
+  </div>
+
+  <h4 style="margin-top:28px;font-size:13px;font-weight:700;color:var(--g700);text-transform:uppercase;letter-spacing:.06em;">Sprint Goal</h4>
+  <p style="font-size:13px;color:var(--g700);line-height:1.6;margin-top:8px;">Ship crawlable article SSR endpoints + BreadcrumbList schema (profiles + articles) + FAQPage schema (HelpCenter) + profile completeness enforcement gates. Position Hawaii Wellness to capture long-tail organic keywords for wellness practitioners across all 4 islands: "best acupuncturist big island", "yoga kauai", "massage maui near me", etc.</p>
+
+</div>
+</section>
+
+<!-- ═══════════ TRACK A: SSR ENDPOINTS ═══════════ -->
+<section id="track-a" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">⚙️</span>Track A: SSR Endpoints (3 Tickets)</div>
+  <div class="ss">Build article and island SSR endpoints. Articles are the #1 content SEO lever — currently SPA-only and invisible to crawlers.</div>
+
+  <!-- A1: Article SSR -->
+  <div class="ticket p-critical">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">A1</span>
+      <div class="t-meta">
+        <div class="t-title">Build /api/articles/[slug].ts — Article SSR endpoint</div>
+        <div class="t-sub">Returns full HTML with NewsArticle + BreadcrumbList schema. Sanitizes article body HTML. No phone/email in response.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-g">2 days</span><span class="tag tag-f">api/articles/[slug].ts</span><span class="tag tag-f">vercel.json</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Why This Matters</h4>
+      <p>Articles are the primary SEO content lever. Currently the /articles/[slug] route is SPA-only — Googlebot sees an empty div. This endpoint returns full HTML with schema, making articles indexable and eligible for "Article" rich results in Google SERPs.</p>
+
+      <h4>Create api/articles/[slug].ts</h4>
+      <div class="code"><span class="k">import type</span> { VercelRequest, VercelResponse } <span class="k">from</span> <span class="s">'@vercel/node'</span>;
+<span class="k">import</span> { createClient } <span class="k">from</span> <span class="s">'@supabase/supabase-js'</span>;
+<span class="k">import</span> DOMPurify <span class="k">from</span> <span class="s">'isomorphic-dompurify'</span>;
+
+<span class="k">const</span> supabase = createClient(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+<span class="k">const</span> SITE = <span class="s">'https://hawaiiwellness.net'</span>;
+
+<span class="k">function</span> escapeHtml(str: <span class="k">string</span> | <span class="k">null</span> | <span class="k">undefined</span>): <span class="k">string</span> {
+  <span class="k">if</span> (!str) <span class="k">return</span> <span class="s">''</span>;
+  <span class="k">return</span> str
+    .replace(<span class="s">/&/g</span>, <span class="s">'&amp;'</span>)
+    .replace(<span class="s">/</span>&lt;<span class="s">/g</span>, <span class="s">'&lt;'</span>)
+    .replace(<span class="s">/>/g</span>, <span class="s">'&gt;'</span>)
+    .replace(<span class="s">/"/g</span>, <span class="s">'&quot;'</span>)
+    .replace(<span class="s">/'/g</span>, <span class="s">'&#039;'</span>);
+}
+
+<span class="k">function</span> sanitizeHtml(html: <span class="k">string</span>): <span class="k">string</span> {
+  <span class="k">return</span> DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [<span class="s">'p'</span>,<span class="s">'br'</span>,<span class="s">'strong'</span>,<span class="s">'em'</span>,<span class="s">'b'</span>,<span class="s">'i'</span>,<span class="s">'a'</span>,<span class="s">'ul'</span>,<span class="s">'ol'</span>,<span class="s">'li'</span>,<span class="s">'h2'</span>,<span class="s">'h3'</span>,<span class="s">'blockquote'</span>,<span class="s">'code'</span>,<span class="s">'pre'</span>],
+    ALLOWED_ATTR: [<span class="s">'href'</span>,<span class="s">'title'</span>,<span class="s">'target'</span>,<span class="s">'rel'</span>],
+  });
+}
+
+<span class="k">export default async function</span> handler(req: VercelRequest, res: VercelResponse) {
+  <span class="k">const</span> { slug } = req.query;
+  <span class="k">if</span> (!slug || <span class="k">typeof</span> slug !== <span class="s">'string'</span>) <span class="k">return</span> res.status(400).send(<span class="s">'Missing slug'</span>);
+
+  <span class="k">const</span> { data: article, error } = <span class="k">await</span> supabase
+    .from(<span class="s">'articles'</span>)
+    .select(<span class="s">'id, slug, title, body, published_at, status, author'</span>)
+    .eq(<span class="s">'slug'</span>, slug)
+    .eq(<span class="s">'status'</span>, <span class="s">'published'</span>)
+    .single();
+
+  <span class="k">if</span> (error || !article) <span class="k">return</span> res.status(404).send(<span class="s">'Article not found'</span>);
+
+  <span class="k">const</span> articleUrl = <span class="s">`${SITE}/articles/${article.slug}`</span>;
+  <span class="k">const</span> pubDate = article.published_at ? <span class="k">new</span> Date(article.published_at).toISOString() : <span class="k">null</span>;
+  <span class="k">const</span> description = escapeHtml(
+    sanitizeHtml(article.body).replace(<span class="s">/<[^>]*>/g</span>, <span class="s">''</span>).substring(0, 155)
+  );
+
+  <span class="k">const</span> schema = {
+    <span class="s">'@context'</span>: <span class="s">'https://schema.org'</span>,
+    <span class="s">'@type'</span>: <span class="s">'NewsArticle'</span>,
+    headline: article.title,
+    description,
+    url: articleUrl,
+    datePublished: pubDate,
+    author: { <span class="s">'@type'</span>: <span class="s">'Person'</span>, name: article.author || <span class="s">'Hawaiʻi Wellness'</span> },
+    publisher: {
+      <span class="s">'@type'</span>: <span class="s">'Organization'</span>,
+      name: <span class="s">'Hawaiʻi Wellness'</span>,
+      logo: { <span class="s">'@type'</span>: <span class="s">'ImageObject'</span>, url: <span class="s">`${SITE}/og-image.png`</span>, width: 1200, height: 630 },
+    },
+    breadcrumb: {
+      <span class="s">'@type'</span>: <span class="s">'BreadcrumbList'</span>,
+      itemListElement: [
+        { <span class="s">'@type'</span>: <span class="s">'ListItem'</span>, position: 1, name: <span class="s">'Home'</span>, item: SITE },
+        { <span class="s">'@type'</span>: <span class="s">'ListItem'</span>, position: 2, name: <span class="s">'Articles'</span>, item: <span class="s">`${SITE}/articles`</span> },
+        { <span class="s">'@type'</span>: <span class="s">'ListItem'</span>, position: 3, name: article.title, item: articleUrl },
+      ],
+    },
+  };
+
+  <span class="k">const</span> sanitizedBody = sanitizeHtml(article.body);
+  <span class="k">const</span> html = <span class="s">`&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;${escapeHtml(article.title)}&lt;/title&gt;
+  &lt;meta name="description" content="${description}"&gt;
+  &lt;meta name="robots" content="index, follow"&gt;
+  &lt;link rel="canonical" href="${articleUrl}"&gt;
+  &lt;meta property="og:title" content="${escapeHtml(article.title)}"&gt;
+  &lt;meta property="og:description" content="${description}"&gt;
+  &lt;meta property="og:type" content="article"&gt;
+  &lt;meta property="og:url" content="${articleUrl}"&gt;
+  &lt;meta property="og:image" content="${SITE}/og-image.png"&gt;
+  &lt;meta property="article:published_time" content="${pubDate || ''}"&gt;
+  &lt;meta name="twitter:card" content="summary_large_image"&gt;
+  &lt;script type="application/ld+json"&gt;${JSON.stringify(schema)}&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;article&gt;
+    &lt;h1&gt;${escapeHtml(article.title)}&lt;/h1&gt;
+    &lt;p&gt;&lt;time&gt;${pubDate ? new Date(pubDate).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}) : ''}&lt;/time&gt;&lt;/p&gt;
+    &lt;div&gt;${sanitizedBody}&lt;/div&gt;
+  &lt;/article&gt;
+  &lt;p&gt;&lt;a href="${SITE}/articles"&gt;← All articles&lt;/a&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;`</span>;
+
+  res.setHeader(<span class="s">'Content-Type'</span>, <span class="s">'text/html; charset=utf-8'</span>);
+  res.setHeader(<span class="s">'Cache-Control'</span>, <span class="s">'public, max-age=3600, s-maxage=86400'</span>);
+  res.send(html);
+}</div>
+
+      <h4>Update vercel.json</h4>
+      <p>Add rewrite rule for article slugs:</p>
+      <div class="code"><span class="c">// In "rewrites" array of vercel.json:</span>
+{ <span class="s">"source"</span>: <span class="s">"/api/articles/:slug"</span>, <span class="s">"destination"</span>: <span class="s">"/api/articles/[slug]"</span> }</div>
+
+      <h4>Install isomorphic-dompurify</h4>
+      <div class="code">npm install isomorphic-dompurify</div>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• <code>curl https://hawaiiwellness.net/api/articles/test-slug</code> returns full HTML (200) for published articles
+• HTML contains NewsArticle schema with headline, description, datePublished
+• HTML contains BreadcrumbList schema with 3 items (Home → Articles → Title)
+• curl returns 404 for unpublished or missing articles
+• Article body HTML is sanitized (no XSS) — test with a link in article body
+• Response contains zero phone numbers or emails
+• Cache-Control headers are set correctly</div>
+    </div>
+  </div>
+
+  <!-- A2: isomorphic-dompurify -->
+  <div class="ticket p-critical">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">A2</span>
+      <div class="t-meta">
+        <div class="t-title">Install isomorphic-dompurify</div>
+        <div class="t-sub">Required for server-side HTML sanitization in Vercel serverless functions. Browser DOMPurify doesn't work in Node.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical (A1 dependency)</span><span class="tag tag-g">15 min</span><span class="tag tag-f">package.json</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Installation</h4>
+      <div class="code">npm install isomorphic-dompurify</div>
+      <p style="margin-top:8px;">This package works in both Node.js (serverless functions) and browsers. A1 uses it for sanitizing article HTML before serving to crawlers.</p>
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Package appears in package.json dependencies
+• <code>npm list isomorphic-dompurify</code> shows installed version
+• No build errors after install</div>
+    </div>
+  </div>
+
+  <!-- A3: Island SSR -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">A3</span>
+      <div class="t-meta">
+        <div class="t-title">Build /api/island/[island].ts — Island directory SSR (Optional, High Value)</div>
+        <div class="t-sub">Island homepages are major landing pages but SPA-only. Returns HTML with CollectionPage + ItemList schema listing top practitioners per island.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">1.5 days</span><span class="tag tag-f">api/island/[island].ts</span><span class="tag tag-f">vercel.json</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Why This Matters</h4>
+      <p>Island pages (/big-island, /maui, /oahu, /kauai) are major landing pages for users searching "wellness [island]". Currently SPA-only. This endpoint returns HTML with schema so island homepages are indexable for island-specific long-tail keywords.</p>
+
+      <h4>Create api/island/[island].ts</h4>
+      <div class="code"><span class="k">import type</span> { VercelRequest, VercelResponse } <span class="k">from</span> <span class="s">'@vercel/node'</span>;
+<span class="k">import</span> { createClient } <span class="k">from</span> <span class="s">'@supabase/supabase-js'</span>;
+
+<span class="k">const</span> supabase = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+<span class="k">const</span> SITE = <span class="s">'https://hawaiiwellness.net'</span>;
+
+<span class="k">const</span> ISLAND_META: Record&lt;<span class="k">string</span>, { label: <span class="k">string</span>; slug: <span class="k">string</span>; desc: <span class="k">string</span> }&gt; = {
+  big_island: { label: <span class="s">'Big Island'</span>, slug: <span class="s">'big-island'</span>, desc: <span class="s">'Explore wellness practitioners on the Big Island. Find acupuncturists, massage, yoga, energy healing across Kona, Hilo, Waimea, Pahoa.'</span> },
+  maui: { label: <span class="s">'Maui'</span>, slug: <span class="s">'maui'</span>, desc: <span class="s">'Discover holistic health on Maui. Meditation, Lomilomi, breathwork in Lahaina, Kihei, Makawao, Paia.'</span> },
+  oahu: { label: <span class="s">'Oʻahu'</span>, slug: <span class="s">'oahu'</span>, desc: <span class="s">'Find wellness services on Oʻahu. Practitioners in Honolulu, Waikiki, Kailua, Kaneohe.'</span> },
+  kauai: { label: <span class="s">'Kauaʻi'</span>, slug: <span class="s">'kauai'</span>, desc: <span class="s">'Explore wellness on Kauaʻi. Yoga, meditation, healing in Lihue, Kapaa, Hanalei, Poipu.'</span> },
+};
+
+<span class="k">export default async function</span> handler(req: VercelRequest, res: VercelResponse) {
+  <span class="k">const</span> { island } = req.query;
+  <span class="k">if</span> (!island || <span class="k">typeof</span> island !== <span class="s">'string'</span> || !ISLAND_META[island]) <span class="k">return</span> res.status(400).send(<span class="s">'Invalid island'</span>);
+
+  <span class="k">const</span> { data: practitioners } = <span class="k">await</span> supabase
+    .from(<span class="s">'practitioners'</span>).select(<span class="s">'id, name, modalities, city, tier'</span>)
+    .eq(<span class="s">'status'</span>, <span class="s">'published'</span>).eq(<span class="s">'island'</span>, island)
+    .order(<span class="s">'tier'</span>, { ascending: <span class="k">false</span> }).order(<span class="s">'name'</span>, { ascending: <span class="k">true</span> }).limit(15);
+
+  <span class="k">const</span> meta = ISLAND_META[island];
+  <span class="k">const</span> url = <span class="s">`${SITE}/${meta.slug}`</span>;
+  <span class="k">const</span> title = <span class="s">`${meta.label} Wellness Practitioners | Hawaiʻi Wellness`</span>;
+
+  <span class="k">const</span> schema = {
+    <span class="s">'@context'</span>: <span class="s">'https://schema.org'</span>, <span class="s">'@type'</span>: <span class="s">'CollectionPage'</span>,
+    name: title, description: meta.desc, url,
+    itemListElement: (practitioners || []).slice(0, 10).map((p, i) =&gt; ({
+      <span class="s">'@type'</span>: <span class="s">'ListItem'</span>, position: i + 1,
+      item: { <span class="s">'@type'</span>: <span class="s">'LocalBusiness'</span>, name: p.name, url: <span class="s">`${SITE}/profile/${p.id}`</span> },
+    })),
+  };
+
+  <span class="k">const</span> html = <span class="s">`&lt;!DOCTYPE html&gt;&lt;html lang="en"&gt;&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;&lt;title&gt;${title}&lt;/title&gt;
+  &lt;meta name="description" content="${meta.desc}"&gt;
+  &lt;meta name="robots" content="index, follow"&gt;
+  &lt;link rel="canonical" href="${url}"&gt;
+  &lt;script type="application/ld+json"&gt;${JSON.stringify(schema)}&lt;/script&gt;
+&lt;/head&gt;&lt;body&gt;
+  &lt;h1&gt;${meta.label} Wellness Directory&lt;/h1&gt;&lt;p&gt;${meta.desc}&lt;/p&gt;
+  &lt;ul&gt;${(practitioners||[]).map(p=&gt;\`&lt;li&gt;&lt;a href="/profile/${p.id}"&gt;${p.name}&lt;/a&gt; — ${p.modalities?.[0]||'Wellness'}, ${p.city||''}&lt;/li&gt;\`).join('')}&lt;/ul&gt;
+  &lt;p&gt;&lt;a href="${SITE}/directory"&gt;Browse full directory&lt;/a&gt;&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;`</span>;
+
+  res.setHeader(<span class="s">'Content-Type'</span>, <span class="s">'text/html; charset=utf-8'</span>);
+  res.setHeader(<span class="s">'Cache-Control'</span>, <span class="s">'public, max-age=3600, s-maxage=86400'</span>);
+  res.send(html);
+}</div>
+
+      <h4>Update vercel.json</h4>
+      <div class="code">{ <span class="s">"source"</span>: <span class="s">"/api/island/:island"</span>, <span class="s">"destination"</span>: <span class="s">"/api/island/[island]"</span> }</div>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• All 4 islands work: <code>curl /api/island/big_island</code>, <code>/api/island/maui</code>, etc. all return 200
+• Returns CollectionPage schema with top 10 practitioners
+• Returns 400 for invalid island names
+• Cache-Control headers set</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════ TRACK B: STRUCTURED DATA ═══════════ -->
+<section id="track-b" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">📊</span>Track B: Structured Data (2 Tickets)</div>
+  <div class="ss">Add BreadcrumbList schema to profiles + centers. Add FAQPage schema to HelpCenter. Rich snippets → 10-15% CTR lift in SERPs.</div>
+
+  <!-- B1: Profile Breadcrumbs -->
+  <div class="ticket p-critical">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">B1</span>
+      <div class="t-meta">
+        <div class="t-title">Add BreadcrumbList schema to ProfileDetail + CenterDetail</div>
+        <div class="t-sub">Generate breadcrumb schema + visible nav. Profiles currently have zero breadcrumbs — missed CTR. Add visible breadcrumb nav above profile hero.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-g">1 day</span><span class="tag tag-f">src/hooks/useProfileBreadcrumb.ts</span><span class="tag tag-f">src/pages/ProfileDetail.tsx</span><span class="tag tag-f">src/pages/CenterDetail.tsx</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Create src/hooks/useProfileBreadcrumb.ts</h4>
+      <div class="code"><span class="k">const</span> ISLAND_LABEL: Record&lt;<span class="k">string</span>, <span class="k">string</span>&gt; = {
+  big_island: <span class="s">'Big Island'</span>, maui: <span class="s">'Maui'</span>, oahu: <span class="s">'Oʻahu'</span>, kauai: <span class="s">'Kauaʻi'</span>,
+};
+<span class="k">const</span> ISLAND_SLUG: Record&lt;<span class="k">string</span>, <span class="k">string</span>&gt; = {
+  big_island: <span class="s">'big-island'</span>, maui: <span class="s">'maui'</span>, oahu: <span class="s">'oahu'</span>, kauai: <span class="s">'kauai'</span>,
+};
+
+<span class="k">export function</span> generateProfileBreadcrumb(p: { id: <span class="k">string</span>; name: <span class="k">string</span>; island: <span class="k">string</span>; modalities?: <span class="k">string</span>[] }) {
+  <span class="k">const</span> islandName = ISLAND_LABEL[p.island] ?? <span class="s">'Hawaiʻi'</span>;
+  <span class="k">const</span> islandSlug = ISLAND_SLUG[p.island] ?? p.island;
+  <span class="k">const</span> topModality = p.modalities?.[0] || <span class="s">'Wellness'</span>;
+  <span class="k">return</span> [
+    { name: <span class="s">'Home'</span>, url: <span class="s">'/'</span>, position: 1 },
+    { name: <span class="s">'Directory'</span>, url: <span class="s">'/directory'</span>, position: 2 },
+    { name: islandName, url: <span class="s">`/${islandSlug}`</span>, position: 3 },
+    { name: topModality, url: <span class="s">`/directory?modality=${encodeURIComponent(topModality)}&island=${p.island}`</span>, position: 4 },
+    { name: p.name, url: <span class="s">`/profile/${p.id}`</span>, position: 5 },
+  ];
+}
+
+<span class="k">export function</span> breadcrumbSchema(items: { name: <span class="k">string</span>; url: <span class="k">string</span>; position: <span class="k">number</span> }[]) {
+  <span class="k">return</span> {
+    <span class="s">'@context'</span>: <span class="s">'https://schema.org'</span>,
+    <span class="s">'@type'</span>: <span class="s">'BreadcrumbList'</span>,
+    itemListElement: items.map(item =&gt; ({
+      <span class="s">'@type'</span>: <span class="s">'ListItem'</span>,
+      position: item.position,
+      name: item.name,
+      item: <span class="s">`https://hawaiiwellness.net${item.url}`</span>,
+    })),
+  };
+}</div>
+
+      <h4>In ProfileDetail.tsx</h4>
+      <p>Import the hook, generate breadcrumb items, inject schema via JsonLd component, add visible breadcrumb nav:</p>
+      <div class="code"><span class="k">import</span> { generateProfileBreadcrumb, breadcrumbSchema } <span class="k">from</span> <span class="s">'@/hooks/useProfileBreadcrumb'</span>;
+<span class="k">import</span> JsonLd <span class="k">from</span> <span class="s">'@/components/JsonLd'</span>;
+
+<span class="c">// In component:</span>
+<span class="k">const</span> breadcrumbItems = generateProfileBreadcrumb(practitioner);
+<span class="k">const</span> breadcrumbSchemaData = breadcrumbSchema(breadcrumbItems);
+
+&lt;JsonLd <span class="s">data={breadcrumbSchemaData}</span> /&gt;
+
+<span class="c">// Visible breadcrumb nav above profile hero:</span>
+&lt;nav <span class="s">className="breadcrumb"</span>&gt;
+  {breadcrumbItems.map((item, i) =&gt; (
+    &lt;<span class="k">span</span> key={i}&gt;
+      {i &gt; 0 && &lt;<span class="k">span</span>&gt; / &lt;/<span class="k">span</span>&gt;}
+      &lt;<span class="k">a</span> <span class="s">href={item.url}</span>&gt;{item.name}&lt;/<span class="k">a</span>&gt;
+    &lt;/<span class="k">span</span>&gt;
+  ))}
+&lt;/<span class="k">nav</span>&gt;</div>
+
+      <h4>Apply same pattern to CenterDetail.tsx</h4>
+      <p>Use similar logic but with center_type instead of modalities as the 4th breadcrumb item.</p>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Breadcrumb nav visible above profile content on both pages
+• BreadcrumbList JSON-LD in &lt;head&gt; validates in Rich Results Tester
+• Links are correct: Home → Directory → Island → Modality/Type → Name
+• Applied to both ProfileDetail.tsx and CenterDetail.tsx</div>
+    </div>
+  </div>
+
+  <!-- B2: FAQPage Schema -->
+  <div class="ticket p-critical">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">B2</span>
+      <div class="t-meta">
+        <div class="t-title">Add FAQPage schema to HelpCenter</div>
+        <div class="t-sub">HelpCenter has 25 FAQ items. Adding FAQPage JSON-LD puts Hawaii Wellness in "People also ask" boxes for wellness-related queries.</div>
+        <div class="t-tags"><span class="tag tag-r">🔴 Critical</span><span class="tag tag-g">2 hours</span><span class="tag tag-f">src/lib/faqSchema.ts</span><span class="tag tag-f">src/pages/HelpCenter.tsx</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Create src/lib/faqSchema.ts</h4>
+      <div class="code"><span class="k">function</span> extractText(node: <span class="k">any</span>): <span class="k">string</span> {
+  <span class="k">if</span> (<span class="k">typeof</span> node === <span class="s">'string'</span>) <span class="k">return</span> node;
+  <span class="k">if</span> (<span class="k">typeof</span> node === <span class="s">'number'</span>) <span class="k">return</span> String(node);
+  <span class="k">if</span> (Array.isArray(node)) <span class="k">return</span> node.map(extractText).join(<span class="s">' '</span>);
+  <span class="k">if</span> (node?.props?.children) <span class="k">return</span> extractText(node.props.children);
+  <span class="k">return</span> <span class="s">''</span>;
+}
+
+<span class="k">export function</span> generateFAQSchema(sections: Array&lt;{ title: <span class="k">string</span>; items: Array&lt;{ question: <span class="k">string</span>; answer: <span class="k">any</span> }&gt; }&gt;) {
+  <span class="k">return</span> {
+    <span class="s">'@context'</span>: <span class="s">'https://schema.org'</span>,
+    <span class="s">'@type'</span>: <span class="s">'FAQPage'</span>,
+    mainEntity: sections.flatMap(s =&gt; s.items.map(item =&gt; ({
+      <span class="s">'@type'</span>: <span class="s">'Question'</span>,
+      name: item.question,
+      acceptedAnswer: {
+        <span class="s">'@type'</span>: <span class="s">'Answer'</span>,
+        text: <span class="k">typeof</span> item.answer === <span class="s">'string'</span> ? item.answer : extractText(item.answer),
+      },
+    }))),
+  };
+}</div>
+
+      <h4>In HelpCenter.tsx</h4>
+      <p>Import and inject the schema via JsonLd component:</p>
+      <div class="code"><span class="k">import</span> { generateFAQSchema } <span class="k">from</span> <span class="s">'@/lib/faqSchema'</span>;
+<span class="k">import</span> JsonLd <span class="k">from</span> <span class="s">'@/components/JsonLd'</span>;
+
+<span class="c">// In component:</span>
+<span class="k">const</span> faqSchema = generateFAQSchema(sections);
+
+&lt;JsonLd <span class="s">data={faqSchema}</span> /&gt;
+<span class="c">// or if JsonLd doesn't exist, use:</span>
+&lt;script <span class="s">type="application/ld+json"</span>&gt;{JSON.stringify(faqSchema)}&lt;/<span class="k">script</span>&gt;</div>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• FAQPage JSON-LD in &lt;head&gt; with all ~25 Q&A pairs
+• Validates in Google Rich Results Tester (zero errors)
+• Answer text is plain text (no HTML tags in JSON)
+• View page source shows the schema</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════ TRACK C & D: QUALITY + TESTING ═══════════ -->
+<section id="track-cd" class="sec">
+<div class="container">
+  <div class="sh"><span class="icon">🎯</span>Track C & D: Quality Gates + Testing (4 Tickets)</div>
+  <div class="ss">Enforce profile completeness, generate crosslinks, validate all schema implementations.</div>
+
+  <!-- C1: Profile Completeness -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">C1</span>
+      <div class="t-meta">
+        <div class="t-title">Profile completeness gates — noindex incomplete listings</div>
+        <div class="t-sub">Incomplete profiles (no photo, no bio, no modalities) hurt domain quality. Gate them with noindex in SSR endpoints. Filter from public directory.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">1.5 days</span><span class="tag tag-f">src/lib/profileCompleteness.ts</span><span class="tag tag-f">api/profile/[id].ts</span><span class="tag tag-f">api/center/[id].ts</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Create src/lib/profileCompleteness.ts</h4>
+      <div class="code"><span class="k">interface</span> Profile { name?: <span class="k">string</span>; bio?: <span class="k">string</span>; photo_url?: <span class="k">string</span>; modalities?: <span class="k">string</span>[]; city?: <span class="k">string</span>; island?: <span class="k">string</span>; session_type?: <span class="k">string</span>; website_url?: <span class="k">string</span>; }
+
+<span class="k">export function</span> calculateCompleteness(p: Profile): <span class="k">number</span> {
+  <span class="k">return</span> [
+    { weight: 15, pass: !!p.name },
+    { weight: 20, pass: !!p.bio && (p.bio?.trim().length ?? 0) &gt; 20 },
+    { weight: 15, pass: !!p.photo_url },
+    { weight: 15, pass: !!p.modalities && p.modalities.length &gt; 0 },
+    { weight: 10, pass: !!p.city },
+    { weight: 10, pass: !!p.session_type },
+    { weight: 10, pass: !!p.website_url },
+    { weight: 5,  pass: !!p.island },
+  ].reduce((sum, c) =&gt; sum + (c.pass ? c.weight : 0), 0);
+}
+
+<span class="k">export const</span> COMPLETENESS_THRESHOLD = 60;
+<span class="k">export const</span> isIndexable = (p: Profile) =&gt; calculateCompleteness(p) &gt;= COMPLETENESS_THRESHOLD;</div>
+
+      <h4>In api/profile/[id].ts and api/center/[id].ts</h4>
+      <p>After fetching listing, calculate completeness and gate:</p>
+      <div class="code"><span class="k">import</span> { calculateCompleteness, COMPLETENESS_THRESHOLD } <span class="k">from</span> <span class="s">'@/lib/profileCompleteness'</span>;
+
+<span class="c">// After fetching profile:</span>
+<span class="k">const</span> completeness = calculateCompleteness(profile);
+<span class="k">const</span> isIndexable = completeness &gt;= COMPLETENESS_THRESHOLD;
+
+<span class="c">// Set robots meta tag:</span>
+<span class="k">const</span> robotsContent = isIndexable ? <span class="s">'index, follow'</span> : <span class="s">'noindex, nofollow'</span>;
+<span class="c">// In HTML head: &lt;meta name="robots" content="${robotsContent}"&gt;</span></div>
+
+      <h4>Update usePractitioners.ts and useCenters.ts</h4>
+      <p>Add optional skipIncomplete flag to filter out <60% profiles client-side. Update Directory.tsx to use it.</p>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Profiles &lt;60% complete return noindex meta tag from SSR endpoints
+• Public directory only shows profiles ≥60%
+• Admin panel shows all listings regardless of completeness
+• calculateCompleteness is unit-testable</div>
+    </div>
+  </div>
+
+  <!-- C2: Modality Crosslinks -->
+  <div class="ticket p-med">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">C2</span>
+      <div class="t-meta">
+        <div class="t-title">Modality cross-link mapper script</div>
+        <div class="t-sub">Generates JSON mapping articles to 3-5 practitioners by matching modality keywords. Input for content team to add internal links.</div>
+        <div class="t-tags"><span class="tag tag-b">🔵 Medium</span><span class="tag tag-g">1 day</span><span class="tag tag-f">pipeline/scripts/33_generate_crosslinks.py</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Create pipeline/scripts/33_generate_crosslinks.py</h4>
+      <div class="code"><span class="c">#!/usr/bin/env python3</span>
+<span class="c"># Generate article → practitioner crosslinks by modality matching</span>
+
+<span class="k">import</span> json
+<span class="k">from</span> src.supabase_client <span class="k">import</span> client
+
+<span class="c"># Fetch articles + extract modality keywords from body</span>
+articles = client.table(<span class="s">'articles'</span>).select(<span class="s">'id,slug,title,body,status'</span>).eq(<span class="s">'status'</span>, <span class="s">'published'</span>).execute().data
+
+<span class="c"># Canonical modalities list (from DashboardProfile.tsx)</span>
+MODALITIES = [
+  <span class="s">'Acupuncture'</span>, <span class="s">'Massage'</span>, <span class="s">'Yoga'</span>, <span class="s">'Meditation'</span>,
+  <span class="s">'Reiki'</span>, <span class="s">'Energy Healing'</span>, <span class="s">'Naturopathic'</span>, <span class="s">'TCM'</span>,
+  <span class="s">'Breathwork'</span>, <span class="s">'Counseling'</span>, <span class="s">'Life Coaching'</span>,
+  <span class="c"># ... all 44 modalities</span>
+]
+
+<span class="k">def</span> extract_modalities_from_body(body: str):
+  found = []
+  body_lower = body.lower()
+  <span class="k">for</span> m <span class="k">in</span> MODALITIES:
+    <span class="k">if</span> m.lower() <span class="k">in</span> body_lower:
+      found.append(m)
+  <span class="k">return</span> found
+
+crosslinks = []
+<span class="k">for</span> article <span class="k">in</span> articles:
+  modalities = extract_modalities_from_body(article[<span class="s">'body'</span>])
+  <span class="k">if</span> <span class="k">not</span> modalities:
+    <span class="k">continue</span>
+
+  <span class="c"># Find practitioners matching modalities</span>
+  practitioners = client.table(<span class="s">'practitioners'</span>)
+    .select(<span class="s">'id,name,island,modalities'</span>)
+    .eq(<span class="s">'status'</span>, <span class="s">'published'</span>)
+    .execute().data
+
+  matches = []
+  <span class="k">for</span> p <span class="k">in</span> practitioners:
+    overlap = <span class="k">len</span>(set(p[<span class="s">'modalities'</span>] or []) & set(modalities))
+    <span class="k">if</span> overlap &gt; 0:
+      matches.append({<span class="s">'id'</span>: p[<span class="s">'id'</span>], <span class="s">'name'</span>: p[<span class="s">'name'</span>], <span class="s">'overlap'</span>: overlap})
+
+  <span class="c"># Top 5 by overlap score</span>
+  top = sorted(matches, key=<span class="k">lambda</span> x: x[<span class="s">'overlap'</span>], reverse=<span class="k">True</span>)[:5]
+
+  crosslinks.append({
+    <span class="s">'article_slug'</span>: article[<span class="s">'slug'</span>],
+    <span class="s">'article_title'</span>: article[<span class="s">'title'</span>],
+    <span class="s">'matched_modalities'</span>: modalities,
+    <span class="s">'practitioners'</span>: top,
+  })
+
+<span class="k">with</span> <span class="s">open</span>(<span class="s">'output/modality_crosslinks.jsonl'</span>, <span class="s">'w'</span>) <span class="k">as</span> f:
+  <span class="k">for</span> item <span class="k">in</span> crosslinks:
+    f.write(json.dumps(item) + <span class="s">'\n'</span>)
+
+<span class="k">print</span>(<span class="s">f"Generated crosslinks for {len(crosslinks)} articles"</span>)</div>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• Script runs without error from pipeline/ directory
+• Output JSON maps article slugs to 3-5 suggested practitioners
+• Content team can use it to manually add links</div>
+    </div>
+  </div>
+
+  <!-- D1: E2E Crawl Verification -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">D1</span>
+      <div class="t-meta">
+        <div class="t-title">E2E crawl verification</div>
+        <div class="t-sub">After A1 deploys, verify article endpoint works for all major bots. Test with curl, no PII, submit to GSC.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">0.5 days</span><span class="tag tag-f">none (testing)</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Test with curl</h4>
+      <p>After A1 deployed and a test article published:</p>
+      <div class="code"><span class="c"># All bots should receive identical HTML</span>
+curl -H <span class="s">"User-Agent: Mozilla/5.0 (compatible; Googlebot/2.1)"</span> \
+  https://hawaiiwellness.net/api/articles/test-seo-crawl | grep -E <span class="s">"&lt;title&gt;|NewsArticle|BreadcrumbList"</span>
+
+<span class="c"># Verify no PII leaks</span>
+curl https://hawaiiwellness.net/api/articles/test-seo-crawl | grep -iE <span class="s">"808-|@.*\.com|telephone|mailto:"</span>
+<span class="c"># Should return nothing</span></div>
+
+      <h4>Submit to Google Search Console</h4>
+      <p>In GSC, use URL inspection on a real published article URL and verify "Article" rich result eligible.</p>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• All 3 bots receive identical HTML
+• NewsArticle + BreadcrumbList schema valid
+• Zero PII in any response
+• GSC URL inspection shows "Article" rich result eligible</div>
+    </div>
+  </div>
+
+  <!-- D2: Schema Validation -->
+  <div class="ticket p-high">
+    <div class="t-head" onclick="tog(this)">
+      <span class="t-num">D2</span>
+      <div class="t-meta">
+        <div class="t-title">Schema validation suite</div>
+        <div class="t-sub">Validate all 4 schema types at Google Rich Results Tester: Profile BreadcrumbList, Center BreadcrumbList, Article NewsArticle+BreadcrumbList, HelpCenter FAQPage.</div>
+        <div class="t-tags"><span class="tag tag-a">🟡 High</span><span class="tag tag-g">0.5 days</span><span class="tag tag-f">none (testing)</span></div>
+      </div>
+      <span class="t-exp">▼</span>
+    </div>
+    <div class="t-body">
+      <h4>Test at https://search.google.com/test/rich-results</h4>
+      <ol style="margin-top:8px;padding-left:20px;">
+        <li><strong>Profile SSR:</strong> Test with a real /api/profile/[id] URL — should validate BreadcrumbList</li>
+        <li><strong>Center SSR:</strong> Test with a real /api/center/[id] URL — should validate BreadcrumbList</li>
+        <li><strong>Article SSR:</strong> Test with a real /api/articles/[slug] URL — should validate NewsArticle + BreadcrumbList</li>
+        <li><strong>HelpCenter:</strong> Test https://hawaiiwellness.net/help — should validate FAQPage</li>
+      </ol>
+
+      <div class="ac"><strong>✅ Acceptance Criteria</strong>
+• All 4 schemas pass Rich Results Tester with zero errors
+• Each schema shows correct structure in test output</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<script>
+function go(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('vis'));
+  document.getElementById(id).classList.add('vis');
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  if(el)el.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function tog(h){h.closest('.ticket').classList.toggle('open');}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SEO Audit — hawaiiwellness.net</title>
+<style>
+  :root {
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --teal-dark: #0f766e;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --white: #ffffff;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 52px;
+    box-shadow: var(--shadow);
+  }
+  nav .brand { font-weight: 700; font-size: 15px; color: var(--teal-dark); white-space: nowrap; }
+  nav .brand span { color: var(--gray-400); font-weight: 400; }
+  nav .nav-links { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+  nav .nav-links::-webkit-scrollbar { display: none; }
+  nav .nav-links a {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--gray-600);
+    font-size: 13px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  nav .nav-links a:hover { background: var(--gray-100); color: var(--gray-900); }
+  nav .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); font-weight: 600; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+  .page-section { display: none; padding: 28px 0 60px; }
+  .page-section.visible { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0f766e 0%, #0d9488 40%, #14b8a6 100%);
+    color: var(--white);
+    padding: 36px 24px 32px;
+    margin-bottom: 28px;
+  }
+  .hero .container { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+  .hero h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .hero p { font-size: 13px; opacity: 0.85; max-width: 600px; line-height: 1.5; }
+  .hero-date { font-size: 12px; opacity: 0.65; margin-top: 6px; }
+  .hero-scores { display: flex; gap: 16px; }
+  .score-card {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 12px;
+    padding: 12px 20px;
+    text-align: center;
+    min-width: 90px;
+    backdrop-filter: blur(4px);
+  }
+  .score-card .score-num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .score-card .score-label { font-size: 11px; opacity: 0.75; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .score-card.red .score-num { color: #fca5a5; }
+  .score-card.amber .score-num { color: #fcd34d; }
+  .score-card.green .score-num { color: #86efac; }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .icon { font-size: 20px; }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 20px;
+    margin-top: -12px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 14px; }
+
+  /* ── ISSUE CARDS ── */
+  .issue-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  .issue-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+  }
+  .issue-header:hover { background: var(--gray-50); }
+  .issue-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .issue-meta { flex: 1; min-width: 0; }
+  .issue-title { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 3px; }
+  .issue-desc { font-size: 12.5px; color: var(--gray-600); line-height: 1.4; }
+  .issue-badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-purple { background: var(--purple-light); color: var(--purple); }
+  .badge-gray { background: var(--gray-100); color: var(--gray-600); }
+
+  .issue-expand { color: var(--gray-400); font-size: 18px; transition: transform 0.2s; flex-shrink: 0; margin-top: 1px; }
+  .issue-card.open .issue-expand { transform: rotate(180deg); }
+
+  .issue-body {
+    display: none;
+    padding: 0 18px 18px;
+    border-top: 1px solid var(--gray-100);
+  }
+  .issue-card.open .issue-body { display: block; }
+  .issue-body h4 { font-size: 12px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 14px; margin-bottom: 6px; }
+  .issue-body p { font-size: 13px; color: var(--gray-700); line-height: 1.6; margin-bottom: 6px; }
+  .issue-body ul { padding-left: 18px; }
+  .issue-body li { font-size: 13px; color: var(--gray-700); line-height: 1.6; margin-bottom: 3px; }
+  .code-block {
+    background: var(--gray-900);
+    color: #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin-top: 8px;
+    white-space: pre;
+  }
+  .code-block .cm { color: #6b7280; }
+  .code-block .ck { color: #93c5fd; }
+  .code-block .cv { color: #86efac; }
+  .code-block .cs { color: #fcd34d; }
+
+  /* ── LEFT BORDER VARIANTS ── */
+  .issue-card.critical { border-left: 4px solid var(--red); }
+  .issue-card.warning { border-left: 4px solid var(--amber); }
+  .issue-card.info { border-left: 4px solid var(--blue); }
+  .issue-card.ok { border-left: 4px solid var(--green); }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 900px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .stat-card .stat-label { font-size: 11.5px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .stat-card .stat-value { font-size: 26px; font-weight: 800; line-height: 1; }
+  .stat-card .stat-note { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+  .stat-red .stat-value { color: var(--red); }
+  .stat-amber .stat-value { color: var(--amber); }
+  .stat-green .stat-value { color: var(--green); }
+  .stat-blue .stat-value { color: var(--blue); }
+  .stat-teal .stat-value { color: var(--teal); }
+
+  /* ── QUICK WINS TABLE ── */
+  .win-table { width: 100%; border-collapse: collapse; }
+  .win-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .win-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  .win-table tr:last-child td { border-bottom: none; }
+  .win-table tr:hover td { background: var(--gray-50); }
+  .win-table td:first-child { font-weight: 500; color: var(--gray-900); }
+  .win-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--teal); color: var(--white);
+    font-size: 11px; font-weight: 700; margin-right: 8px; flex-shrink: 0;
+  }
+  .win-task { display: flex; align-items: flex-start; }
+
+  /* ── ROADMAP ── */
+  .roadmap-phase {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--white);
+  }
+  .phase-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .phase-1 .phase-header { border-left: 4px solid var(--red); }
+  .phase-2 .phase-header { border-left: 4px solid var(--amber); }
+  .phase-3 .phase-header { border-left: 4px solid var(--green); }
+  .phase-1 .phase-badge { background: var(--red-light); color: var(--red); }
+  .phase-2 .phase-badge { background: var(--amber-light); color: var(--amber); }
+  .phase-3 .phase-badge { background: var(--green-light); color: var(--green); }
+  .phase-title { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+  .phase-subtitle { font-size: 12px; color: var(--gray-500); }
+  .phase-tasks { padding: 0 18px 16px; background: var(--white); }
+  .phase-task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+    color: var(--gray-700);
+  }
+  .phase-task:last-child { border-bottom: none; }
+  .task-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .phase-1 .task-dot { background: var(--red); }
+  .phase-2 .task-dot { background: var(--amber); }
+  .phase-3 .task-dot { background: var(--green); }
+
+  /* ── PRIORITY MATRIX ── */
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr;
+    grid-template-rows: 1fr 1fr 40px;
+    gap: 8px;
+    height: 420px;
+  }
+  .matrix-quadrant {
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .matrix-quadrant .q-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+  .matrix-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 500;
+    margin: 2px;
+    white-space: nowrap;
+  }
+  .q-do-first { background: #fef2f2; border: 1px solid #fecaca; }
+  .q-do-first .matrix-item { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .q-schedule { background: #fffbeb; border: 1px solid #fde68a; }
+  .q-schedule .matrix-item { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .q-delegate { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .q-delegate .matrix-item { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .q-skip { background: var(--gray-50); border: 1px solid var(--gray-200); }
+  .q-skip .matrix-item { background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-300); }
+  .axis-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);
+  }
+  .axis-label.vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
+  .axis-arrow { text-align: center; font-size: 11px; color: var(--gray-400); padding: 4px; }
+  .corner { grid-column: 1; grid-row: 3; }
+  .q-label-top { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+  .q-label-sub { font-size: 10px; opacity: 0.55; }
+
+  /* ── SCHEMA STATUS TABLE ── */
+  .schema-table { width: 100%; border-collapse: collapse; }
+  .schema-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    border-bottom: 2px solid var(--gray-200);
+    background: var(--gray-50);
+  }
+  .schema-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+  }
+  .schema-table tr:hover td { background: var(--gray-50); }
+  .status-icon { font-size: 16px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-row { margin-bottom: 14px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .progress-label span:first-child { color: var(--gray-700); font-weight: 500; }
+  .progress-label span:last-child { color: var(--gray-500); font-size: 12px; }
+  .progress-bar { height: 8px; background: var(--gray-200); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 1s ease; }
+
+  /* ── METRICS TABLE ── */
+  .metrics-table { width: 100%; border-collapse: collapse; }
+  .metrics-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    letter-spacing: 0.06em;
+    border-bottom: 2px solid var(--gray-200);
+    background: var(--gray-50);
+  }
+  .metrics-table td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+  .metrics-table tr:hover td { background: var(--gray-50); }
+  .current-val { color: var(--gray-500); }
+  .target-val { color: var(--green); font-weight: 600; }
+
+  /* ── COLLAPSIBLE DETAILS ── */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::marker, details > summary::-webkit-details-marker { display: none; }
+
+  /* ── FILE TAGS ── */
+  .file-tag {
+    display: inline-block;
+    background: var(--gray-900);
+    color: #86efac;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 11.5px;
+    margin: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--gray-200); margin: 24px 0; }
+
+  /* ── TABS within section ── */
+  .tab-nav { display: flex; gap: 2px; border-bottom: 2px solid var(--gray-200); margin-bottom: 20px; overflow-x: auto; }
+  .tab-btn {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--gray-900); }
+  .tab-btn.active { color: var(--teal-dark); border-bottom-color: var(--teal); font-weight: 600; }
+  .tab-panel { display: none; }
+  .tab-panel.visible { display: block; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.5;
+  }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-red { background: var(--red-light); border: 1px solid #fca5a5; color: #7f1d1d; }
+  .callout-amber { background: var(--amber-light); border: 1px solid #fcd34d; color: #78350f; }
+  .callout-blue { background: var(--blue-light); border: 1px solid #93c5fd; color: #1e3a8a; }
+  .callout-green { background: var(--green-light); border: 1px solid #86efac; color: #14532d; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .hero .container { flex-direction: column; align-items: flex-start; }
+    .hero-scores { flex-wrap: wrap; }
+    .matrix-grid { height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="brand">🌺 Hawaiʻi Wellness <span>SEO Audit</span></div>
+  <div class="nav-links">
+    <a href="#" class="active" onclick="showSection('overview',this)">Overview</a>
+    <a href="#" onclick="showSection('blockers',this)">🚨 Blockers</a>
+    <a href="#" onclick="showSection('google',this)">Google SEO</a>
+    <a href="#" onclick="showSection('ai',this)">AI / GEO</a>
+    <a href="#" onclick="showSection('quickwins',this)">⚡ Quick Wins</a>
+    <a href="#" onclick="showSection('roadmap',this)">Roadmap</a>
+    <a href="#" onclick="showSection('matrix',this)">Priority Matrix</a>
+    <a href="#" onclick="showSection('metrics',this)">Metrics</a>
+    <a href="#" onclick="showSection('privacy',this)">🔒 Privacy + SEO</a>
+    <a href="#" onclick="showSection('timing',this)">⏱ Timing</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <div>
+      <h1>SEO Audit — hawaiiwellness.net</h1>
+      <p>Comprehensive Google SEO + AI/GEO audit for the Hawaiʻi wellness practitioner directory. Assessed by Claude Opus on March 19, 2026.</p>
+      <div class="hero-date">Stack: React + Vite SPA · Supabase · Vercel · Tailwind CSS</div>
+    </div>
+    <div class="hero-scores">
+      <div class="score-card red">
+        <div class="score-num">6</div>
+        <div class="score-label">Critical Issues</div>
+      </div>
+      <div class="score-card amber">
+        <div class="score-num">11</div>
+        <div class="score-label">Warnings</div>
+      </div>
+      <div class="score-card green">
+        <div class="score-num">12</div>
+        <div class="score-label">Quick Wins</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     OVERVIEW
+══════════════════════════════════════════════════════════ -->
+<section id="overview" class="page-section visible">
+  <div class="container">
+    <div class="callout callout-green">
+      <span class="callout-icon">✅</span>
+      <div><strong>Safe to start SEO work now</strong> — even with unpublished drafts and data accuracy issues. Your sitemap and SSR layer will only expose <code>status = 'published'</code> listings. Draft listings stay invisible to Google. Technical infrastructure (schemas, sitemaps, llms.txt, click-to-reveal) can ship today with zero risk. See the <a href="#" onclick="showSection('timing', document.querySelectorAll('.nav-links a')[7]); return false;" style="color:var(--green-dark, #166534); font-weight:600;">Timing guide →</a></div>
+    </div>
+
+    <div class="callout callout-red">
+      <span class="callout-icon">🚨</span>
+      <div><strong>Critical:</strong> hawaiiwellness.net is a React SPA with pure client-side rendering. All AI crawlers (GPTBot, ClaudeBot, PerplexityBot) execute zero JavaScript and see only an empty <code>&lt;div id="root"&gt;&lt;/div&gt;</code>. This makes the site <strong>completely invisible to AI search</strong> and wastes Googlebot crawl budget. This is the #1 blocker and must be fixed before any other SEO work is meaningful.</div>
+    </div>
+
+    <div class="grid-4" style="margin-bottom:24px">
+      <div class="stat-card stat-red">
+        <div class="stat-label">Google Indexability</div>
+        <div class="stat-value">Poor</div>
+        <div class="stat-note">SPA rendering wastes crawl budget</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="stat-label">AI / GEO Visibility</div>
+        <div class="stat-value">0%</div>
+        <div class="stat-note">No JS = invisible to GPTBot, ClaudeBot</div>
+      </div>
+      <div class="stat-card stat-amber">
+        <div class="stat-label">Sitemap Coverage</div>
+        <div class="stat-value">~2%</div>
+        <div class="stat-note">11 URLs of ~500+ practitioner pages</div>
+      </div>
+      <div class="stat-card stat-amber">
+        <div class="stat-label">Schema Coverage</div>
+        <div class="stat-value">JS only</div>
+        <div class="stat-note">All schema invisible to AI crawlers</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- What's Working -->
+      <div class="card">
+        <div class="section-title" style="font-size:15px; margin-bottom:12px;">✅ What's Working</div>
+        <div class="issue-body" style="display:block; padding:0;">
+          <ul>
+            <li><strong>Strong content foundation</strong> — 500+ practitioner listings with modalities, bios, geo data</li>
+            <li><strong>Organization schema</strong> implemented globally in App.tsx</li>
+            <li><strong>LocalBusiness schema</strong> on profile pages (JS-injected)</li>
+            <li><strong>Article schema</strong> on article pages (JS-injected)</li>
+            <li><strong>BreadcrumbList</strong> on profile + article detail pages</li>
+            <li><strong>robots.txt</strong> correctly blocks /dashboard, /admin, /auth</li>
+            <li><strong>Sitemap</strong> exists and references key island URLs</li>
+            <li><strong>Canonical tags</strong> exist (static for home; dynamic via hook)</li>
+            <li><strong>Geo targeting meta tags</strong> (geo.region: US-HI) in static head</li>
+            <li><strong>44 modality taxonomy</strong> — strong topical authority foundation</li>
+            <li><strong>Island-specific pages</strong> for all 4 islands</li>
+            <li><strong>Lazy loading</strong> for all JS bundles via React.lazy()</li>
+            <li><strong>HTTPS</strong> via Vercel</li>
+            <li><strong>DOMPurify</strong> for article XSS safety</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Schema Coverage Table -->
+      <div class="card">
+        <div class="section-title" style="font-size:15px; margin-bottom:12px;">📋 Schema Markup Status</div>
+        <table class="schema-table">
+          <thead>
+            <tr><th>Schema Type</th><th>Pages</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Organization</td>
+              <td>All public</td>
+              <td><span class="status-icon">⚠️</span> JS-only</td>
+            </tr>
+            <tr>
+              <td>LocalBusiness</td>
+              <td>/profile/:id</td>
+              <td><span class="status-icon">⚠️</span> JS-only</td>
+            </tr>
+            <tr>
+              <td>Article</td>
+              <td>/articles/:slug</td>
+              <td><span class="status-icon">⚠️</span> JS-only</td>
+            </tr>
+            <tr>
+              <td>ItemList</td>
+              <td>Island pages</td>
+              <td><span class="status-icon">⚠️</span> JS-only</td>
+            </tr>
+            <tr>
+              <td>BreadcrumbList</td>
+              <td>Profile, Article</td>
+              <td><span class="status-icon">⚠️</span> JS-only</td>
+            </tr>
+            <tr>
+              <td>WebSite (Sitelinks)</td>
+              <td>Home</td>
+              <td><span class="status-icon">❌</span> Missing</td>
+            </tr>
+            <tr>
+              <td>FAQPage</td>
+              <td>/help</td>
+              <td><span class="status-icon">❌</span> Missing</td>
+            </tr>
+            <tr>
+              <td>MedicalBusiness</td>
+              <td>/profile/:id</td>
+              <td><span class="status-icon">❌</span> Missing</td>
+            </tr>
+            <tr>
+              <td>HealthAndBeautyBusiness</td>
+              <td>/center/:id</td>
+              <td><span class="status-icon">❌</span> Missing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEO Score Bars -->
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:16px;">📊 SEO Category Scores</div>
+      <div class="progress-row">
+        <div class="progress-label"><span>Technical SEO</span><span>25 / 100</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:25%;background:var(--red);"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label"><span>AI / GEO Readiness</span><span>5 / 100</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:5%;background:var(--red);"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label"><span>On-Page SEO</span><span>40 / 100</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--amber);"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label"><span>Schema / Structured Data</span><span>35 / 100</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:35%;background:var(--amber);"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label"><span>Content Depth</span><span>45 / 100</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:45%;background:var(--amber);"></div></div>
+      </div>
+      <div class="progress-row" style="margin-bottom:0;">
+        <div class="progress-label"><span>Link Authority</span><span>15 / 100</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:15%;background:var(--red);"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     BLOCKERS
+══════════════════════════════════════════════════════════ -->
+<section id="blockers" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">🚨</span>Critical Blockers</div>
+    <p class="section-subtitle">These issues must be resolved before other SEO work will have meaningful impact.</p>
+
+    <!-- Blocker 1 -->
+    <div class="issue-card critical open">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚙️</span>
+        <div class="issue-meta">
+          <div class="issue-title">SPA Client-Side Rendering — AI Crawlers See Empty HTML</div>
+          <div class="issue-desc">React Vite SPA with no SSR. GPTBot, ClaudeBot, PerplexityBot execute zero JavaScript — they receive an empty &lt;div id="root"&gt;&lt;/div&gt;. Googlebot renders JS but wastes crawl budget.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 Critical Impact</span>
+            <span class="badge badge-purple">Hard Effort</span>
+            <span class="badge badge-gray">src/App.tsx</span>
+            <span class="badge badge-gray">index.html</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Why It's Blocking Everything</h4>
+        <p>When GPTBot or PerplexityBot fetches <code>https://hawaiiwellness.net/profile/123</code>, they receive a near-empty HTML shell. No practitioner name, no modalities, no bio, no schema — nothing. As AI search grows (ChatGPT: 800M+ weekly users, Perplexity: 780M queries/month), this is costing you significant organic reach.</p>
+        <h4>Verify the Problem</h4>
+        <div class="code-block"><span class="cm"># Test what GPTBot sees — should return empty root div</span>
+curl -H <span class="cs">"User-Agent: Mozilla/5.0 (compatible; GPTBot/1.0; +https://openai.com/gptbot)"</span> \
+  https://hawaiiwellness.net/profile/[any-id]
+<span class="cm"># You'll see: &lt;div id="root"&gt;&lt;/div&gt;</span></div>
+
+        <h4>Fix Options (Choose One)</h4>
+        <ul>
+          <li><strong>Option A — Express API Layer (2-3 days):</strong> Build <code>/api/profile/:id</code> that fetches Supabase + renders React to static HTML using <code>ReactDOMServer.renderToStaticMarkup</code>. Add as Vercel serverless function.</li>
+          <li><strong>Option B — Next.js Migration (2-3 weeks):</strong> Migrate from Vite to Next.js with ISR. Gold standard. Re-renders profiles every 24h. Works natively on Vercel.</li>
+          <li><strong>Option C — Static Snapshots (2-3 days, hacky):</strong> Nightly cron generates static HTML for top 200 profiles. Serve via Vercel edge. Quick but brittle.</li>
+        </ul>
+        <p style="margin-top:8px; color: var(--teal-dark); font-weight:500;">→ Recommendation: Start with Option A (API layer) this sprint; plan Next.js migration for Sprint 2.</p>
+      </div>
+    </div>
+
+    <!-- Blocker 2 -->
+    <div class="issue-card critical">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🗺️</span>
+        <div class="issue-meta">
+          <div class="issue-title">Sitemap Only Contains 11 URLs — 500+ Practitioner Pages Not Indexed</div>
+          <div class="issue-desc">public/sitemap.xml is hardcoded with 11 static URLs. All /profile/:id, /center/:id, and /articles/:slug pages are invisible to search engines — they cannot discover or index your most valuable content.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 High Impact</span>
+            <span class="badge badge-blue">Easy Effort</span>
+            <span class="badge badge-gray">public/sitemap.xml</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Current Sitemap</h4>
+        <p>Only covers: /, /big-island, /maui, /oahu, /kauai, /directory, /retreats, /articles, /list-your-practice, /concierge, /help</p>
+        <h4>Fix: Dynamic Sitemaps via Vercel API Routes</h4>
+        <div class="code-block"><span class="cm">// src/pages/api/sitemap-practitioners.xml.ts (Vercel serverless)</span>
+<span class="ck">export default async function</span> handler(req, res) {
+  <span class="ck">const</span> { data } = <span class="ck">await</span> supabase
+    .from(<span class="cs">'practitioners'</span>)
+    .select(<span class="cs">'id, updated_at'</span>)
+    .eq(<span class="cs">'status'</span>, <span class="cs">'published'</span>);
+
+  <span class="ck">const</span> urls = data.map(p => <span class="cs">`
+    &lt;url&gt;
+      &lt;loc&gt;https://hawaiiwellness.net/profile/${p.id}&lt;/loc&gt;
+      &lt;lastmod&gt;${p.updated_at.substring(0, 10)}&lt;/lastmod&gt;
+      &lt;changefreq&gt;weekly&lt;/changefreq&gt;
+      &lt;priority&gt;0.8&lt;/priority&gt;
+    &lt;/url&gt;`</span>).join(<span class="cs">''</span>);
+
+  res.setHeader(<span class="cs">'Content-Type'</span>, <span class="cs">'application/xml'</span>);
+  res.setHeader(<span class="cs">'Cache-Control'</span>, <span class="cs">'public, max-age=86400'</span>); <span class="cm">// cache 24h</span>
+  res.send(<span class="cs">`&lt;?xml version="1.0"?&gt;&lt;urlset ...&gt;${urls}&lt;/urlset&gt;`</span>);
+}</div>
+        <p>Add links to dynamic sitemaps in <code>public/robots.txt</code> and main <code>public/sitemap.xml</code>.</p>
+      </div>
+    </div>
+
+    <!-- Blocker 3 -->
+    <div class="issue-card critical">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🖼️</span>
+        <div class="issue-meta">
+          <div class="issue-title">No og:image — Social Shares & AI Previews Broken</div>
+          <div class="issue-desc">No og:image or twitter:image is set anywhere. Social sharing on Facebook/Slack/iMessage shows a blank card. Perplexity prioritizes pages with images in its results — missing this hurts AI citation.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 High Impact</span>
+            <span class="badge badge-blue">Easy Effort</span>
+            <span class="badge badge-gray">index.html</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Fix</h4>
+        <p>Create a 1200×630px branded Open Graph image (<code>/public/og-image.jpg</code>), then add to <code>index.html</code>:</p>
+        <div class="code-block"><span class="ck">&lt;meta</span> property=<span class="cs">"og:image"</span> content=<span class="cs">"https://hawaiiwellness.net/og-image.jpg"</span> <span class="ck">/&gt;</span>
+<span class="ck">&lt;meta</span> property=<span class="cs">"og:image:width"</span> content=<span class="cs">"1200"</span> <span class="ck">/&gt;</span>
+<span class="ck">&lt;meta</span> property=<span class="cs">"og:image:height"</span> content=<span class="cs">"630"</span> <span class="ck">/&gt;</span>
+<span class="ck">&lt;meta</span> property=<span class="cs">"og:image:alt"</span> content=<span class="cs">"Hawaiʻi Wellness — Holistic Health Directory"</span> <span class="ck">/&gt;</span>
+<span class="ck">&lt;meta</span> name=<span class="cs">"twitter:card"</span> content=<span class="cs">"summary_large_image"</span> <span class="ck">/&gt;</span>
+<span class="ck">&lt;meta</span> name=<span class="cs">"twitter:image"</span> content=<span class="cs">"https://hawaiiwellness.net/og-image.jpg"</span> <span class="ck">/&gt;</span></div>
+        <p>For practitioner profiles, generate dynamic OG images (or use their photo) via <code>usePageMeta</code> hook.</p>
+      </div>
+    </div>
+
+    <!-- Blocker 4 -->
+    <div class="issue-card critical">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🤖</span>
+        <div class="issue-meta">
+          <div class="issue-title">No llms.txt File — No Explicit AI Crawler Guidance</div>
+          <div class="issue-desc">No llms.txt exists. AI crawlers default to robots.txt but lack specific attribution/permission guidance. Early adopters of llms.txt gain competitive advantage in AI citations.</div>
+          <div class="issue-badges">
+            <span class="badge badge-amber">🟡 Medium Impact</span>
+            <span class="badge badge-blue">Easy Effort</span>
+            <span class="badge badge-gray">public/llms.txt</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Create public/llms.txt</h4>
+        <div class="code-block"><span class="cm"># Hawaiʻi Wellness — llms.txt</span>
+<span class="cm"># See: https://llmstxt.org</span>
+
+<span class="ck">User-agent: GPTBot</span>
+<span class="cv">Allow: /</span>
+
+<span class="ck">User-agent: ClaudeBot</span>
+<span class="cv">Allow: /</span>
+
+<span class="ck">User-agent: PerplexityBot</span>
+<span class="cv">Allow: /</span>
+
+<span class="ck">User-agent: *</span>
+<span class="cv">Allow: /</span>
+<span class="cv">Disallow: /dashboard</span>
+<span class="cv">Disallow: /admin</span>
+<span class="cv">Disallow: /auth</span>
+
+<span class="cm"># Attribution required when citing content</span>
+<span class="ck">Attribution: Required</span>
+<span class="ck">Attribution-Format: Source: Hawaiʻi Wellness at hawaiiwellness.net</span>
+<span class="ck">Sitemap: https://hawaiiwellness.net/sitemap.xml</span></div>
+        <p>Also add AI-crawler rules to <code>public/robots.txt</code> for redundancy.</p>
+      </div>
+    </div>
+
+    <!-- Blocker 5 -->
+    <div class="issue-card critical">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🏷️</span>
+        <div class="issue-meta">
+          <div class="issue-title">All Schema Markup is JS-Injected — Invisible to AI Crawlers</div>
+          <div class="issue-desc">Organization, LocalBusiness, Article, ItemList schemas are all added via React useEffect hooks. AI crawlers execute zero JavaScript, so they never see any schema signals.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 High Impact</span>
+            <span class="badge badge-amber">Medium Effort</span>
+            <span class="badge badge-gray">src/components/JsonLd.tsx</span>
+            <span class="badge badge-gray">index.html</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Fix: Move Static Schemas to index.html</h4>
+        <p>For static pages (home, about, list-your-practice), move schema directly into <code>index.html</code>:</p>
+        <div class="code-block"><span class="cm">&lt;!-- index.html &lt;head&gt; — static schemas visible to all crawlers --&gt;</span>
+<span class="ck">&lt;script</span> type=<span class="cs">"application/ld+json"</span><span class="ck">&gt;</span>
+{
+  <span class="cv">"@context"</span>: <span class="cs">"https://schema.org"</span>,
+  <span class="cv">"@type"</span>: <span class="cs">"WebSite"</span>,
+  <span class="cv">"url"</span>: <span class="cs">"https://hawaiiwellness.net"</span>,
+  <span class="cv">"name"</span>: <span class="cs">"Hawaiʻi Wellness"</span>,
+  <span class="cv">"potentialAction"</span>: {
+    <span class="cv">"@type"</span>: <span class="cs">"SearchAction"</span>,
+    <span class="cv">"target"</span>: <span class="cs">"https://hawaiiwellness.net/directory?query={search_term_string}"</span>,
+    <span class="cv">"query-input"</span>: <span class="cs">"required name=search_term_string"</span>
+  }
+}
+<span class="ck">&lt;/script&gt;</span></div>
+        <p>For dynamic pages (/profile/:id, /articles/:slug), these require SSR or the API layer to inject schema into the HTML response.</p>
+        <h4>Missing Schema Types to Add</h4>
+        <ul>
+          <li><strong>MedicalBusiness</strong> — use instead of generic LocalBusiness for practitioners</li>
+          <li><strong>HealthAndBeautyBusiness</strong> — for wellness centers</li>
+          <li><strong>FAQPage</strong> — for /help accordion content</li>
+          <li><strong>WebSite with SearchAction</strong> — enables Google Sitelinks search box</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Blocker 6 -->
+    <div class="issue-card critical">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">📄</span>
+        <div class="issue-meta">
+          <div class="issue-title">Island Pages (Maui, Oahu, Kauai) Show "Coming Soon" — Thin Content</div>
+          <div class="issue-desc">Three of four island pages show placeholder content. Google penalizes thin pages. These are high-value local SEO pages missing 300+ words of real content.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 High Impact</span>
+            <span class="badge badge-amber">Medium Effort</span>
+            <span class="badge badge-gray">src/pages/MauiHome.tsx</span>
+            <span class="badge badge-gray">src/pages/OahuHome.tsx</span>
+            <span class="badge badge-gray">src/pages/KauaiHome.tsx</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Each Island Page Should Include</h4>
+        <ul>
+          <li>200–300 word island overview (wellness culture, geography, featured healing traditions)</li>
+          <li>Featured practitioners/centers (tier=featured, queried from Supabase)</li>
+          <li>Top modalities on this island with counts (e.g., "Massage: 45 providers")</li>
+          <li>City breakdown: "Lahaina: 12 | Kihei: 8 | Wailea: 15" (with links to filtered directory)</li>
+          <li>Waitlist form if listings not yet populated (already exists — good!)</li>
+          <li>Link to /directory?island=[island] with clear CTA</li>
+        </ul>
+        <p>Query practitioner counts by island from Supabase; display as a grid. Even "coming soon" pages should have real SEO content.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     GOOGLE SEO
+══════════════════════════════════════════════════════════ -->
+<section id="google" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">🔍</span>Google SEO</div>
+    <p class="section-subtitle">Technical, on-page, content, and link-building recommendations for organic Google search.</p>
+
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="showTab('google','tech',this)">⚙️ Technical</button>
+      <button class="tab-btn" onclick="showTab('google','onpage',this)">📝 On-Page</button>
+      <button class="tab-btn" onclick="showTab('google','content',this)">📚 Content</button>
+      <button class="tab-btn" onclick="showTab('google','links',this)">🔗 Links</button>
+    </div>
+
+    <div id="google-tech" class="tab-panel visible">
+      <div class="issue-card warning">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🌐</span>
+          <div class="issue-meta">
+            <div class="issue-title">Dynamic Canonicals Not Setting Correct URLs Per Page</div>
+            <div class="issue-desc">index.html hardcodes canonical as the homepage. usePageMeta hook updates it dynamically but only after JS executes — Googlebot's first crawl sees the wrong canonical.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">Easy</span><span class="badge badge-gray">src/hooks/usePageMeta.ts</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Current Behavior</h4>
+          <p>Static head: <code>&lt;link rel="canonical" href="https://hawaiiwellness.net/" /&gt;</code> — hardcoded to home for ALL pages.</p>
+          <h4>Fix</h4>
+          <p>The <code>usePageMeta</code> hook already updates this dynamically (good!), but static HTML must also be correct. The best solution is SSR. Interim: verify Googlebot is picking up the dynamic canonical by checking Google Search Console Coverage tab for canonical conflicts.</p>
+        </div>
+      </div>
+
+      <div class="issue-card warning">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🖼️</span>
+          <div class="issue-meta">
+            <div class="issue-title">Hero Images Have Spaces in Filenames + No WebP Optimization</div>
+            <div class="issue-desc">Hero images named "kauai hero.jpg", "maui hero.jpg" etc. URL encoding required. No WebP format detected. Impacts LCP (Largest Contentful Paint) and Core Web Vitals score.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">Easy</span><span class="badge badge-gray">public/</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Fix</h4>
+          <ul>
+            <li>Rename files: <code>kauai-hero.jpg</code>, <code>maui-hero.jpg</code>, <code>oahu-hero.jpg</code></li>
+            <li>Convert to WebP (use Squoosh or sharp npm): target &lt;150KB per hero image</li>
+            <li>Add width/height attributes to prevent CLS (Cumulative Layout Shift)</li>
+            <li>Use <code>fetchpriority="high"</code> on above-fold hero images for LCP improvement</li>
+          </ul>
+          <div class="code-block"><span class="ck">&lt;img</span>
+  src=<span class="cs">"/big-island-hero.webp"</span>
+  width=<span class="cs">"1920"</span> height=<span class="cs">"600"</span>
+  alt=<span class="cs">"Big Island of Hawaiʻi wellness landscape"</span>
+  fetchpriority=<span class="cs">"high"</span>
+  loading=<span class="cs">"eager"</span>
+<span class="ck">/&gt;</span></div>
+        </div>
+      </div>
+
+      <div class="issue-card warning">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🤖</span>
+          <div class="issue-meta">
+            <div class="issue-title">robots.txt Missing Multiple Sitemap References</div>
+            <div class="issue-desc">Current robots.txt only references one sitemap. After building dynamic practitioner/article sitemaps, all must be listed here.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">Easy</span><span class="badge badge-gray">public/robots.txt</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <div class="code-block"><span class="ck">User-agent: GPTBot</span>
+<span class="cv">Allow: /</span>
+
+<span class="ck">User-agent: ClaudeBot</span>
+<span class="cv">Allow: /</span>
+
+<span class="ck">User-agent: PerplexityBot</span>
+<span class="cv">Allow: /</span>
+
+<span class="ck">User-agent: *</span>
+<span class="cv">Allow: /</span>
+<span class="cv">Disallow: /dashboard</span>
+<span class="cv">Disallow: /admin</span>
+<span class="cv">Disallow: /auth</span>
+
+<span class="ck">Sitemap: https://hawaiiwellness.net/sitemap.xml</span>
+<span class="ck">Sitemap: https://hawaiiwellness.net/api/sitemap-practitioners.xml</span>
+<span class="ck">Sitemap: https://hawaiiwellness.net/api/sitemap-centers.xml</span>
+<span class="ck">Sitemap: https://hawaiiwellness.net/api/sitemap-articles.xml</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="google-onpage" class="tab-panel">
+      <div class="issue-card warning">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🏷️</span>
+          <div class="issue-meta">
+            <div class="issue-title">All Island Pages Share the Same Title Tag</div>
+            <div class="issue-desc">Every page displays "Hawaiʻi Wellness — Holistic Health Directory". Island-specific pages need island names in title for SERP CTR. SERP snippets don't distinguish Maui from Kauai.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">Easy</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Recommended Titles</h4>
+          <ul>
+            <li><strong>/big-island:</strong> "Big Island Wellness Practitioners & Healers | Hawaiʻi Wellness"</li>
+            <li><strong>/maui:</strong> "Maui Wellness Practitioners & Holistic Health | Hawaiʻi Wellness"</li>
+            <li><strong>/oahu:</strong> "Oʻahu Wellness Directory — Honolulu, Kailua & More | Hawaiʻi Wellness"</li>
+            <li><strong>/kauai:</strong> "Kauaʻi Holistic Health Practitioners & Centers | Hawaiʻi Wellness"</li>
+            <li><strong>/profile/:id:</strong> "[Name] — [Top Modality] in [City], Hawaiʻi | Hawaiʻi Wellness"</li>
+            <li><strong>/articles/:slug:</strong> "[Article Title] | Hawaiʻi Wellness Blog"</li>
+          </ul>
+          <p>Update island config objects in <span class="file-tag">src/lib/siteConfig.ts</span> or pass to <code>usePageMeta</code> in each island page component.</p>
+        </div>
+      </div>
+
+      <div class="issue-card warning">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">📋</span>
+          <div class="issue-meta">
+            <div class="issue-title">Meta Descriptions Are Generic — Low CTR</div>
+            <div class="issue-desc">Home page description is reasonable. Island pages likely show the home description. Profile pages need practitioner-specific descriptions with modality + location keywords.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">Easy</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Recommended Descriptions (155 char max)</h4>
+          <ul>
+            <li><strong>Maui:</strong> "Browse 200+ certified wellness practitioners in Maui — Lahaina, Kihei, Wailea. Find massage therapists, yoga teachers, acupuncturists & more."</li>
+            <li><strong>Profile:</strong> "[Name] offers [Modalities] in [City], Maui. [First 100 chars of bio]. Book a session or get contact info at Hawaiʻi Wellness."</li>
+            <li><strong>Directory:</strong> "Find holistic health practitioners across all Hawaiian islands. Filter by modality, island, city. 500+ providers listed — updated daily."</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="issue-card info">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🔍</span>
+          <div class="issue-meta">
+            <div class="issue-title">No Per-Modality or Per-City Landing Pages</div>
+            <div class="issue-desc">Users searching "acupuncture Hawaii" or "yoga Lahaina" find no dedicated page — all filtering is client-side. These are high-value keyword opportunities with dedicated indexable URLs.</div>
+            <div class="issue-badges"><span class="badge badge-red">🔴 High Impact</span><span class="badge badge-amber">Medium Effort</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Create Modality Landing Pages</h4>
+          <p>Add routes: <code>/modalities/massage-therapy</code>, <code>/modalities/yoga</code>, <code>/modalities/reiki</code>, etc.</p>
+          <p>Each page: 300-word intro + embedded directory filtered by modality + link to island-specific view.</p>
+          <h4>Create City Landing Pages</h4>
+          <p>Add routes: <code>/maui/lahaina</code>, <code>/maui/kihei</code>, <code>/big-island/kailua-kona</code>, etc.</p>
+          <p>These capture ultra-specific local searches like "massage therapist Lahaina Maui".</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="google-content" class="tab-panel">
+      <div class="callout callout-blue">
+        <span class="callout-icon">💡</span>
+        <div>Articles are the <strong>primary GEO asset</strong> for this site. AI engines love structured Q&A content. Every article you publish with proper schema and direct-answer formatting is a citation opportunity in Perplexity, Google AI Overviews, and ChatGPT search.</div>
+      </div>
+
+      <div class="issue-card info">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">✍️</span>
+          <div class="issue-meta">
+            <div class="issue-title">Content Strategy: 15+ Articles Needed in 30 Days</div>
+            <div class="issue-desc">The articles section exists but lacks keyword-targeted content. Blog posts are the primary driver for organic reach and AI citations in a directory site.</div>
+            <div class="issue-badges"><span class="badge badge-red">🔴 High Impact</span><span class="badge badge-amber">Hard Effort</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Priority Article List (Publish in This Order)</h4>
+          <ul>
+            <li>"What is Reiki? Benefits, Cost & Practitioners in Hawaii" — target: reiki hawaii</li>
+            <li>"Best Massage Therapy on the Big Island of Hawaii" — target: massage big island</li>
+            <li>"Yoga Classes in Maui: Complete 2026 Guide" — target: yoga classes maui</li>
+            <li>"Acupuncture for Stress & Anxiety in Hawaii" — target: acupuncture stress hawaii</li>
+            <li>"Lomilomi Hawaiian Massage: History, Benefits & Where to Book" — target: lomilomi massage</li>
+            <li>"Holistic Wellness Retreats in Hawaii: Top 10 Picks" — target: wellness retreats hawaii</li>
+            <li>"Sound Healing Hawaii: What to Expect in a Session" — target: sound healing hawaii</li>
+            <li>"How to Find the Right Wellness Practitioner in Hawaii" — target: wellness practitioner hawaii</li>
+            <li>"Ayurveda on Kauai: Practitioners & Wellness Centers" — target: ayurveda kauai</li>
+            <li>"Breathwork Hawaii: Classes, Retreats & Practitioners" — target: breathwork hawaii</li>
+          </ul>
+          <h4>Article Format for AI SEO</h4>
+          <p>Each article should: lead with a direct 50-word answer, use H2 subheadings as questions, include FAQPage schema, feature an og:image, and end with a CTA linking to the filtered directory.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="google-links" class="tab-panel">
+      <div class="issue-card info">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🔗</span>
+          <div class="issue-meta">
+            <div class="issue-title">No Internal Linking Strategy — Topical Authority Diluted</div>
+            <div class="issue-desc">Directory pages link to profiles but there are no topical clusters, modality hubs, or location hubs linking related content together. PageRank is not flowing efficiently.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-amber">Medium Effort</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>Internal Linking Architecture</h4>
+          <ul>
+            <li><strong>Home →</strong> Top 5 modality pages + Top 4 island pages + Latest 3 articles</li>
+            <li><strong>Island page →</strong> Top 3 modalities on that island + City sub-pages</li>
+            <li><strong>Modality page →</strong> 8-10 practitioner profiles with that modality</li>
+            <li><strong>Practitioner profile →</strong> 3-4 related practitioners (same modality + island)</li>
+            <li><strong>Article →</strong> 3-5 relevant practitioner profiles + related articles</li>
+          </ul>
+          <p>Implement <code>&lt;RelatedPractitioners&gt;</code> React component; query Supabase for <code>modalities @&gt; [modality] AND island = X</code>.</p>
+        </div>
+      </div>
+
+      <div class="issue-card info">
+        <div class="issue-header" onclick="toggleIssue(this)">
+          <span class="issue-icon">🏆</span>
+          <div class="issue-meta">
+            <div class="issue-title">No Backlink Strategy — Domain Authority Is Very Low</div>
+            <div class="issue-desc">New site with minimal backlink profile. Local authority signals missing. Competitors with established domains will outrank without a deliberate link-building plan.</div>
+            <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-amber">Hard Effort</span></div>
+          </div>
+          <span class="issue-expand">▼</span>
+        </div>
+        <div class="issue-body">
+          <h4>30-Day Quick Wins</h4>
+          <ul>
+            <li>Ask each Featured/Premium practitioner to link back from their own website</li>
+            <li>Submit to Yelp, Wellness.com, Mindbody, Healthgrades (for practitioners)</li>
+            <li>Create Google Business Profile if a physical office exists</li>
+            <li>Pitch guest post to HawaiiMagazine.com, GoHawaii.com, or local tourism blogs</li>
+            <li>Sponsor a local wellness event → earn .gov or local news backlink</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     AI / GEO
+══════════════════════════════════════════════════════════ -->
+<section id="ai" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">🤖</span>AI SEO / GEO (Generative Engine Optimization)</div>
+    <p class="section-subtitle">Optimizing for ChatGPT, Perplexity, Claude, and Google AI Overviews — the fastest-growing search channels in 2026.</p>
+
+    <div class="callout callout-amber">
+      <span class="callout-icon">⚠️</span>
+      <div><strong>GEO Context:</strong> ChatGPT hit 800M+ weekly active users in late 2025. Perplexity processed 780M queries in May 2025 alone — up 239% in one year. Users are increasingly asking AI for local service recommendations. A wellness directory that's invisible to AI crawlers loses all of this traffic.</div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="stat-card stat-red">
+        <div class="stat-label">AI Crawlability Score</div>
+        <div class="stat-value">0 / 10</div>
+        <div class="stat-note">All crawlers see empty HTML shell</div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="stat-label">llms.txt Present</div>
+        <div class="stat-value">No</div>
+        <div class="stat-note">No AI-specific crawler guidance</div>
+      </div>
+    </div>
+
+    <div class="issue-card critical">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🕷️</span>
+        <div class="issue-meta">
+          <div class="issue-title">AI Crawlers See Only Empty HTML — Zero GEO Visibility</div>
+          <div class="issue-desc">The entire site is invisible to GPTBot, ClaudeBot, and PerplexityBot. When these crawlers visit any page, they see &lt;div id="root"&gt;&lt;/div&gt; with no content whatsoever.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 CRITICAL</span>
+            <span class="badge badge-purple">Hard — 2-3 weeks</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Three-Tier Fix Strategy</h4>
+        <p><strong>Tier 1 — This Sprint (days 1-7):</strong> Build an Express/Node API layer as Vercel serverless functions:</p>
+        <div class="code-block"><span class="cm">// api/profile/[id].ts — Vercel serverless</span>
+<span class="ck">import</span> { renderToStaticMarkup } from <span class="cs">'react-dom/server'</span>;
+
+<span class="ck">export default async function</span> handler(req, res) {
+  <span class="ck">const</span> { id } = req.query;
+  <span class="ck">const</span> { data: p } = <span class="ck">await</span> supabase.from(<span class="cs">'practitioners'</span>).select(<span class="cs">'*'</span>).eq(<span class="cs">'id'</span>, id).single();
+
+  <span class="ck">const</span> html = <span class="cs">`&lt;!DOCTYPE html&gt;
+  &lt;html&gt;&lt;head&gt;
+    &lt;title&gt;${p.name} — ${p.modalities[0]} in ${p.city} | Hawaiʻi Wellness&lt;/title&gt;
+    &lt;meta name="description" content="${p.bio?.substring(0, 155)}" /&gt;
+    &lt;script type="application/ld+json"&gt;${JSON.stringify(buildSchema(p))}&lt;/script&gt;
+  &lt;/head&gt;&lt;body&gt;
+    &lt;h1&gt;${p.name}&lt;/h1&gt;
+    &lt;p&gt;${p.bio}&lt;/p&gt;
+    &lt;p&gt;Modalities: ${p.modalities.join(', ')}&lt;/p&gt;
+    &lt;p&gt;Location: ${p.city}, ${p.island}&lt;/p&gt;
+  &lt;/body&gt;&lt;/html&gt;`</span>;
+
+  res.setHeader(<span class="cs">'Content-Type'</span>, <span class="cs">'text/html'</span>);
+  res.send(html);
+}</div>
+        <p><strong>Tier 2 — Sprint 2 (weeks 3-6):</strong> Migrate to Next.js with ISR revalidation. True SSR, Vercel-native, no custom server needed.</p>
+        <p><strong>Tier 3 — Ongoing:</strong> Monitor GPTBot access in Vercel logs; verify AI crawlers are fetching and indexing profiles.</p>
+      </div>
+    </div>
+
+    <div class="issue-card warning">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">📝</span>
+        <div class="issue-meta">
+          <div class="issue-title">No FAQ / Direct-Answer Content for AI Overviews</div>
+          <div class="issue-desc">Google AI Overviews and Perplexity prefer direct-answer content with question-format H2 headers. The /help page has FAQs but no FAQPage schema. Articles lack Q&A structure.</div>
+          <div class="issue-badges">
+            <span class="badge badge-red">🔴 High Impact</span>
+            <span class="badge badge-blue">Easy</span>
+            <span class="badge badge-gray">src/pages/HelpCenter.tsx</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Add FAQPage Schema to /help</h4>
+        <p>The help center already has accordion Q&A. Wrap it in FAQPage schema and inject statically:</p>
+        <div class="code-block">{
+  <span class="cv">"@context"</span>: <span class="cs">"https://schema.org"</span>,
+  <span class="cv">"@type"</span>: <span class="cs">"FAQPage"</span>,
+  <span class="cv">"mainEntity"</span>: [
+    {
+      <span class="cv">"@type"</span>: <span class="cs">"Question"</span>,
+      <span class="cv">"name"</span>: <span class="cs">"How do I find a wellness practitioner in Hawaii?"</span>,
+      <span class="cv">"acceptedAnswer"</span>: {
+        <span class="cv">"@type"</span>: <span class="cs">"Answer"</span>,
+        <span class="cv">"text"</span>: <span class="cs">"Use the Hawaiʻi Wellness directory at hawaiiwellness.net. Filter by island, city, and modality to find certified practitioners near you."</span>
+      }
+    }
+  ]
+}</div>
+        <h4>AI-Optimized Article Format</h4>
+        <p>Each new article should follow TLDR-first structure:</p>
+        <ul>
+          <li>First paragraph: direct 50-word answer to the title question</li>
+          <li>H2 headers phrased as questions ("What are the benefits of Reiki?")</li>
+          <li>Bullet lists for scannable answers</li>
+          <li>FAQPage schema if article has 3+ Q&A sections</li>
+          <li>High-quality featured image (og:image) — Perplexity shows images in results</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="issue-card warning">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">📊</span>
+        <div class="issue-meta">
+          <div class="issue-title">MedicalBusiness Schema Not Used for Practitioners</div>
+          <div class="issue-desc">Profiles use generic LocalBusiness schema. MedicalBusiness is more specific and signals to AI engines that this is a health/wellness service — higher relevance for health queries.</div>
+          <div class="issue-badges">
+            <span class="badge badge-amber">🟡 Medium</span>
+            <span class="badge badge-blue">Easy</span>
+            <span class="badge badge-gray">src/pages/ProfileDetail.tsx</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Replace LocalBusiness with MedicalBusiness</h4>
+        <div class="code-block">{
+  <span class="cv">"@context"</span>: <span class="cs">"https://schema.org"</span>,
+  <span class="cv">"@type"</span>: [<span class="cs">"MedicalBusiness"</span>, <span class="cs">"LocalBusiness"</span>],
+  <span class="cv">"name"</span>: <span class="cs">"Jane Smith — Reiki Master"</span>,
+  <span class="cv">"medicalSpecialty"</span>: <span class="cs">"EnergyMedicine"</span>,
+  <span class="cv">"areaServed"</span>: [<span class="cs">"Lahaina"</span>, <span class="cs">"Kihei"</span>, <span class="cs">"Maui"</span>],
+  <span class="cv">"knowsAbout"</span>: [<span class="cs">"Reiki"</span>, <span class="cs">"Energy Healing"</span>, <span class="cs">"Meditation"</span>],
+  <span class="cv">"availableService"</span>: {
+    <span class="cv">"@type"</span>: <span class="cs">"MedicalTherapy"</span>,
+    <span class="cv">"name"</span>: <span class="cs">"Reiki Energy Healing Session"</span>
+  }
+}</div>
+        <p>Update <span class="file-tag">src/pages/ProfileDetail.tsx</span> in the <code>practitionerSchema</code> object, line ~220.</p>
+      </div>
+    </div>
+
+    <div class="issue-card info">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🌐</span>
+        <div class="issue-meta">
+          <div class="issue-title">Build a Public API Endpoint for AI Data Access</div>
+          <div class="issue-desc">Long-term GEO advantage: provide AI engines a structured JSON API they can call for fresh practitioner data, rather than relying on HTML scraping.</div>
+          <div class="issue-badges">
+            <span class="badge badge-green">🟢 Low — Long-term</span>
+            <span class="badge badge-amber">Medium Effort</span>
+          </div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Proposed API Endpoint</h4>
+        <div class="code-block"><span class="cm"># Paginated JSON API for AI engines</span>
+GET /api/search?modality=massage&island=maui&limit=10
+
+{
+  <span class="cv">"results"</span>: [
+    {
+      <span class="cv">"type"</span>: <span class="cs">"practitioner"</span>,
+      <span class="cv">"name"</span>: <span class="cs">"John Doe"</span>,
+      <span class="cv">"modalities"</span>: [<span class="cs">"Massage"</span>, <span class="cs">"Lomilomi"</span>],
+      <span class="cv">"location"</span>: <span class="cs">"Lahaina, Maui"</span>,
+      <span class="cv">"phone"</span>: <span class="cs">"808-xxx-xxxx"</span>,
+      <span class="cv">"url"</span>: <span class="cs">"https://hawaiiwellness.net/profile/..."</span>
+    }
+  ],
+  <span class="cv">"attribution"</span>: <span class="cs">"Source: Hawaiʻi Wellness — hawaiiwellness.net"</span>
+}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     QUICK WINS
+══════════════════════════════════════════════════════════ -->
+<section id="quickwins" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">⚡</span>Quick Wins</div>
+    <p class="section-subtitle">12 high-impact fixes you can ship in 1-3 days. No architectural changes required.</p>
+
+    <div class="callout callout-green">
+      <span class="callout-icon">✅</span>
+      <div><strong>Do these first.</strong> Each item below can be completed in under a day and collectively improves crawlability, SERP CTR, social sharing, and AI indexing. None require SSR or major refactoring.</div>
+    </div>
+
+    <div class="card">
+      <table class="win-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Task</th>
+            <th>Impact</th>
+            <th>Time</th>
+            <th>File(s)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">1</span></td>
+            <td><div class="win-task">Add og:image (1200×630px) to static head</div></td>
+            <td><span class="badge badge-red">🔴 High</span></td>
+            <td>2h</td>
+            <td><span class="file-tag">index.html</span> <span class="file-tag">public/og-image.jpg</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">2</span></td>
+            <td><div class="win-task">Create public/llms.txt with AI crawler rules</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>1h</td>
+            <td><span class="file-tag">public/llms.txt</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">3</span></td>
+            <td><div class="win-task">Add AI crawler rules to robots.txt (GPTBot, ClaudeBot, PerplexityBot)</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>30m</td>
+            <td><span class="file-tag">public/robots.txt</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">4</span></td>
+            <td><div class="win-task">Move Organization + WebSite schemas to static index.html head</div></td>
+            <td><span class="badge badge-red">🔴 High</span></td>
+            <td>1h</td>
+            <td><span class="file-tag">index.html</span> <span class="file-tag">src/App.tsx</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">5</span></td>
+            <td><div class="win-task">Add WebSite schema with sitelinks search box</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>1h</td>
+            <td><span class="file-tag">index.html</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">6</span></td>
+            <td><div class="win-task">Update island page title tags (include island name)</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>1h</td>
+            <td><span class="file-tag">src/pages/BigIsland.tsx</span> + all island pages</td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">7</span></td>
+            <td><div class="win-task">Write unique meta descriptions for each island page</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>1h</td>
+            <td><span class="file-tag">src/lib/siteConfig.ts</span> island configs</td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">8</span></td>
+            <td><div class="win-task">Add FAQPage schema to /help accordion content</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>2h</td>
+            <td><span class="file-tag">src/pages/HelpCenter.tsx</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">9</span></td>
+            <td><div class="win-task">Add twitter:image to static head</div></td>
+            <td><span class="badge badge-green">🟢 Low</span></td>
+            <td>30m</td>
+            <td><span class="file-tag">index.html</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">10</span></td>
+            <td><div class="win-task">Rename hero images (remove spaces), convert to WebP</div></td>
+            <td><span class="badge badge-amber">🟡 Med</span></td>
+            <td>2h</td>
+            <td><span class="file-tag">public/*.jpg</span> + <span class="file-tag">src/lib/siteConfig.ts</span></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">11</span></td>
+            <td><div class="win-task">Register site in Google Search Console + Bing Webmaster Tools</div></td>
+            <td><span class="badge badge-red">🔴 High</span></td>
+            <td>1h</td>
+            <td>External — add verification meta tag to index.html</td>
+          </tr>
+          <tr>
+            <td><span style="font-weight:700; color:var(--teal);">12</span></td>
+            <td><div class="win-task">Add loading="lazy" to practitioner card images in directory</div></td>
+            <td><span class="badge badge-green">🟢 Low</span></td>
+            <td>30m</td>
+            <td><span class="file-tag">src/components/ProviderCard.tsx</span></td>
+          </tr>
+          <tr style="background:var(--purple-light);">
+            <td><span style="font-weight:700; color:var(--purple);">13</span></td>
+            <td><div class="win-task"><strong>🔒 NEW:</strong> Remove phone/email from ProfileDetail initial render — replace with click-to-reveal buttons</div></td>
+            <td><span class="badge badge-red">🔴 High</span></td>
+            <td>3h</td>
+            <td><span class="file-tag">src/pages/ProfileDetail.tsx</span></td>
+          </tr>
+          <tr style="background:var(--purple-light);">
+            <td><span style="font-weight:700; color:var(--purple);">14</span></td>
+            <td><div class="win-task"><strong>🔒 NEW:</strong> Strip telephone + email from all JSON-LD schema markup (LocalBusiness / MedicalBusiness)</div></td>
+            <td><span class="badge badge-red">🔴 High</span></td>
+            <td>30m</td>
+            <td><span class="file-tag">src/pages/ProfileDetail.tsx</span> <span class="file-tag">src/pages/CenterDetail.tsx</span></td>
+          </tr>
+          <tr style="background:var(--purple-light);">
+            <td><span style="font-weight:700; color:var(--purple);">15</span></td>
+            <td><div class="win-task"><strong>🔒 NEW:</strong> Build /api/contact/reveal Edge Function — rate-limited, logs views, returns phone or email on demand</div></td>
+            <td><span class="badge badge-red">🔴 High</span></td>
+            <td>4h</td>
+            <td><span class="file-tag">supabase/functions/contact-reveal/index.ts</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     ROADMAP
+══════════════════════════════════════════════════════════ -->
+<section id="roadmap" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">📅</span>30-60-90 Day Roadmap</div>
+    <p class="section-subtitle">Sequenced implementation plan prioritized by impact and dependencies.</p>
+
+    <div class="roadmap-phase phase-1">
+      <div class="phase-header">
+        <span class="phase-badge">Days 1–14</span>
+        <div>
+          <div class="phase-title">🚨 Foundation — Fix the Blockers</div>
+          <div class="phase-subtitle">Crawlability fix + all quick wins + sitemap generation</div>
+        </div>
+      </div>
+      <div class="phase-tasks">
+        <div class="phase-task"><div class="task-dot"></div>Deploy all 12 quick wins (og:image, llms.txt, robots.txt, schemas, title tags)</div>
+        <div class="phase-task"><div class="task-dot"></div>Decide: Express API layer vs. Next.js migration (have architectural decision by Day 3)</div>
+        <div class="phase-task"><div class="task-dot"></div>Build /api/profile/:id serverless function (Vercel) — render practitioner HTML + schema</div>
+        <div class="phase-task"><div class="task-dot"></div>Test with curl as GPTBot — confirm HTML is returned with full content</div>
+        <div class="phase-task"><div class="task-dot"></div>Build /api/sitemap-practitioners.xml + /api/sitemap-articles.xml (dynamic sitemaps)</div>
+        <div class="phase-task"><div class="task-dot"></div>Register with Google Search Console + submit all sitemaps</div>
+        <div class="phase-task"><div class="task-dot"></div>Rename hero images, convert to WebP, add loading attributes</div>
+        <div class="phase-task"><div class="task-dot"></div>Add FAQPage schema to /help page</div>
+        <div class="phase-task" style="background:var(--purple-light); border-radius:6px; padding:8px 10px; margin:4px 0;">
+          <div class="task-dot" style="background:var(--purple);"></div>
+          <strong>🔒 Privacy:</strong> Remove phone/email from ProfileDetail + CenterDetail initial HTML render
+        </div>
+        <div class="phase-task" style="background:var(--purple-light); border-radius:6px; padding:8px 10px; margin:4px 0;">
+          <div class="task-dot" style="background:var(--purple);"></div>
+          <strong>🔒 Privacy:</strong> Build <code>contact-reveal</code> Supabase Edge Function (rate-limited, logged)
+        </div>
+        <div class="phase-task" style="background:var(--purple-light); border-radius:6px; padding:8px 10px; margin:4px 0;">
+          <div class="task-dot" style="background:var(--purple);"></div>
+          <strong>🔒 Privacy:</strong> Strip telephone/email from all JSON-LD schema — address + geo only
+        </div>
+        <div class="phase-task" style="background:var(--purple-light); border-radius:6px; padding:8px 10px; margin:4px 0;">
+          <div class="task-dot" style="background:var(--purple);"></div>
+          <strong>🔒 Privacy:</strong> SSR API layer selects only non-PII fields from Supabase (id, name, bio, modalities, city, island, website_url, external_booking_url, lat, lng)
+        </div>
+      </div>
+    </div>
+
+    <div class="roadmap-phase phase-2">
+      <div class="phase-header">
+        <span class="phase-badge">Days 15–60</span>
+        <div>
+          <div class="phase-title">⚡ Growth — Content & Schema</div>
+          <div class="phase-subtitle">Article production + schema improvements + island page content + internal linking</div>
+        </div>
+      </div>
+      <div class="phase-tasks">
+        <div class="phase-task"><div class="task-dot"></div>Write + publish 10 keyword-targeted articles (2/week cadence) with FAQPage schema + og:image</div>
+        <div class="phase-task"><div class="task-dot"></div>Replace LocalBusiness with MedicalBusiness schema on practitioner profiles</div>
+        <div class="phase-task"><div class="task-dot"></div>Add HealthAndBeautyBusiness schema on wellness center pages</div>
+        <div class="phase-task"><div class="task-dot"></div>Populate Maui, Oahu, Kauai island pages with 300-word content + practitioner counts by city</div>
+        <div class="phase-task"><div class="task-dot"></div>Build 5 modality landing pages (/modalities/massage, /modalities/reiki, /modalities/yoga, etc.)</div>
+        <div class="phase-task"><div class="task-dot"></div>Build top city landing pages for Big Island + Maui (/big-island/kailua-kona, /maui/lahaina, etc.)</div>
+        <div class="phase-task"><div class="task-dot"></div>Implement RelatedPractitioners component — links practitioners to similar listings</div>
+        <div class="phase-task"><div class="task-dot"></div>Link articles ↔ practitioners (related articles on profile pages; practitioner cards in articles)</div>
+        <div class="phase-task"><div class="task-dot"></div>Begin backlink outreach: 20 practitioners + 5 Hawaii wellness/travel blogs</div>
+      </div>
+    </div>
+
+    <div class="roadmap-phase phase-3">
+      <div class="phase-header">
+        <span class="phase-badge">Days 61–90</span>
+        <div>
+          <div class="phase-title">🚀 Scale — Authority & Architecture</div>
+          <div class="phase-subtitle">Performance optimization + analytics + long-term architecture decision</div>
+        </div>
+      </div>
+      <div class="phase-tasks">
+        <div class="phase-task"><div class="task-dot"></div>Run Lighthouse audit — fix LCP, CLS, INP issues; target all Core Web Vitals in green</div>
+        <div class="phase-task"><div class="task-dot"></div>Monitor Perplexity / ChatGPT search for hawaiiwellness.net mentions monthly</div>
+        <div class="phase-task"><div class="task-dot"></div>Set up Google Analytics 4 + UTM parameters for all article CTAs</div>
+        <div class="phase-task"><div class="task-dot"></div>Track target keywords in Semrush/Ahrefs (20 priority keywords by island + modality)</div>
+        <div class="phase-task"><div class="task-dot"></div>Continue article pipeline — reach 20+ published articles total</div>
+        <div class="phase-task"><div class="task-dot"></div>Evaluate Next.js migration — plan sprint if API layer feels hacky</div>
+        <div class="phase-task"><div class="task-dot"></div>Build /api/search JSON endpoint for AI engines (long-term GEO signal)</div>
+        <div class="phase-task"><div class="task-dot"></div>Update CLAUDE.md with SEO guidelines for all future development work</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     PRIORITY MATRIX
+══════════════════════════════════════════════════════════ -->
+<section id="matrix" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">📊</span>Priority Matrix</div>
+    <p class="section-subtitle">Impact vs. Effort — where to focus first.</p>
+
+    <div style="display:grid; grid-template-columns: 36px 1fr; grid-template-rows: 1fr 1fr 36px; gap:10px; height:500px; max-width:780px;">
+      <!-- Left axis label -->
+      <div style="grid-row:1/3; display:flex; align-items:center; justify-content:center;">
+        <div style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--gray-500);">
+          ← Low Impact · High Impact →
+        </div>
+      </div>
+
+      <!-- Top-left quadrant: High Impact + Low Effort = DO FIRST -->
+      <div class="matrix-quadrant q-do-first" style="grid-column:2; grid-row:1;">
+        <div class="q-label" style="margin-bottom:10px;">
+          <div class="q-label-top" style="color:var(--red);">🔴 Do First</div>
+          <div class="q-label-sub">High Impact · Low-Medium Effort</div>
+        </div>
+        <span class="matrix-item">og:image</span>
+        <span class="matrix-item">llms.txt</span>
+        <span class="matrix-item">Static schemas in head</span>
+        <span class="matrix-item">Dynamic sitemaps</span>
+        <span class="matrix-item">Google Search Console</span>
+        <span class="matrix-item">Island page titles</span>
+        <span class="matrix-item">robots.txt AI rules</span>
+      </div>
+
+      <!-- Top-right quadrant: High Impact + High Effort = PLAN -->
+      <div class="matrix-quadrant q-schedule" style="grid-column:3; grid-row:1;">
+        <div class="q-label" style="margin-bottom:10px;">
+          <div class="q-label-top" style="color:var(--amber);">🟡 Plan & Schedule</div>
+          <div class="q-label-sub">High Impact · High Effort</div>
+        </div>
+        <span class="matrix-item">SSR / API layer fix</span>
+        <span class="matrix-item">Next.js migration</span>
+        <span class="matrix-item">10+ articles</span>
+        <span class="matrix-item">Modality pages</span>
+        <span class="matrix-item">City landing pages</span>
+        <span class="matrix-item">MedicalBusiness schema</span>
+      </div>
+
+      <!-- Bottom-left: Low Impact + Low Effort = DELEGATE -->
+      <div class="matrix-quadrant q-delegate" style="grid-column:2; grid-row:2;">
+        <div class="q-label" style="margin-bottom:10px;">
+          <div class="q-label-top" style="color:var(--blue);">🔵 Fill-in / Delegate</div>
+          <div class="q-label-sub">Low Impact · Low Effort</div>
+        </div>
+        <span class="matrix-item">twitter:image</span>
+        <span class="matrix-item">WebP images</span>
+        <span class="matrix-item">Alt text on images</span>
+        <span class="matrix-item">loading="lazy"</span>
+        <span class="matrix-item">BreadcrumbList static</span>
+        <span class="matrix-item">noscript fallback</span>
+      </div>
+
+      <!-- Bottom-right: Low Impact + High Effort = DEPRIORITIZE -->
+      <div class="matrix-quadrant q-skip" style="grid-column:3; grid-row:2;">
+        <div class="q-label" style="margin-bottom:10px;">
+          <div class="q-label-top" style="color:var(--gray-600);">⚪ Deprioritize</div>
+          <div class="q-label-sub">Low Impact · High Effort</div>
+        </div>
+        <span class="matrix-item">Public JSON API</span>
+        <span class="matrix-item">Backlink outreach</span>
+        <span class="matrix-item">Citation meta tags</span>
+        <span class="matrix-item">H1 in static HTML</span>
+      </div>
+
+      <!-- Bottom axis label -->
+      <div style="grid-column:2/4; grid-row:3; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--gray-500);">
+        Low Effort ← · → High Effort
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:14px;">📋 Recommended Execution Order</div>
+      <table class="win-table">
+        <thead>
+          <tr><th>Priority</th><th>Action</th><th>Impact</th><th>Effort</th><th>Sprint</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Add og:image + twitter:image to index.html</td><td><span class="badge badge-red">High</span></td><td>2h</td><td>Sprint 1</td></tr>
+          <tr><td>2</td><td>Create llms.txt + update robots.txt for AI bots</td><td><span class="badge badge-amber">Med</span></td><td>1h</td><td>Sprint 1</td></tr>
+          <tr><td>3</td><td>Move static schemas (Org, WebSite) to index.html head</td><td><span class="badge badge-red">High</span></td><td>1h</td><td>Sprint 1</td></tr>
+          <tr><td>4</td><td>Register Google Search Console + submit sitemap</td><td><span class="badge badge-red">High</span></td><td>1h</td><td>Sprint 1</td></tr>
+          <tr><td>5</td><td>Fix island page titles + meta descriptions</td><td><span class="badge badge-amber">Med</span></td><td>2h</td><td>Sprint 1</td></tr>
+          <tr><td>6</td><td>Build API layer for SSR crawlability (Vercel serverless)</td><td><span class="badge badge-red">Critical</span></td><td>3-5d</td><td>Sprint 1</td></tr>
+          <tr><td>7</td><td>Build dynamic sitemaps (practitioners + articles)</td><td><span class="badge badge-red">High</span></td><td>1d</td><td>Sprint 1</td></tr>
+          <tr><td>8</td><td>Add FAQPage schema to /help</td><td><span class="badge badge-amber">Med</span></td><td>2h</td><td>Sprint 1</td></tr>
+          <tr><td>9</td><td>Write + publish first 5 keyword articles</td><td><span class="badge badge-red">High</span></td><td>1 week</td><td>Sprint 2</td></tr>
+          <tr><td>10</td><td>Populate island pages (Maui, Oahu, Kauai) with real content</td><td><span class="badge badge-red">High</span></td><td>2d</td><td>Sprint 2</td></tr>
+          <tr><td>11</td><td>Add modality landing pages + city landing pages</td><td><span class="badge badge-red">High</span></td><td>3-5d</td><td>Sprint 2</td></tr>
+          <tr><td>12</td><td>Upgrade to MedicalBusiness + HealthAndBeautyBusiness schema</td><td><span class="badge badge-amber">Med</span></td><td>1d</td><td>Sprint 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     METRICS
+══════════════════════════════════════════════════════════ -->
+<section id="metrics" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">📈</span>Success Metrics</div>
+    <p class="section-subtitle">Track these KPIs monthly to measure the impact of SEO improvements.</p>
+
+    <div class="card">
+      <table class="metrics-table">
+        <thead>
+          <tr><th>Metric</th><th>Current</th><th>30-Day Target</th><th>90-Day Target</th><th>Tool</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Google Search Impressions</td>
+            <td class="current-val">&lt;100/mo</td>
+            <td class="target-val">1,000+</td>
+            <td class="target-val">5,000+</td>
+            <td>Google Search Console</td>
+          </tr>
+          <tr>
+            <td>Average CTR</td>
+            <td class="current-val">&lt;2%</td>
+            <td class="target-val">3%+</td>
+            <td class="target-val">5%+</td>
+            <td>Google Search Console</td>
+          </tr>
+          <tr>
+            <td>Practitioner pages indexed by Google</td>
+            <td class="current-val">~0-50</td>
+            <td class="target-val">100+</td>
+            <td class="target-val">300+</td>
+            <td>GSC Coverage Report</td>
+          </tr>
+          <tr>
+            <td>Articles indexed</td>
+            <td class="current-val">~5</td>
+            <td class="target-val">10+</td>
+            <td class="target-val">25+</td>
+            <td>Google Search Console</td>
+          </tr>
+          <tr>
+            <td>Organic traffic (sessions)</td>
+            <td class="current-val">&lt;100/mo</td>
+            <td class="target-val">250+</td>
+            <td class="target-val">1,000+</td>
+            <td>Google Analytics 4</td>
+          </tr>
+          <tr>
+            <td>Perplexity / AI search referrals</td>
+            <td class="current-val">0</td>
+            <td class="target-val">10+</td>
+            <td class="target-val">50+</td>
+            <td>GA4 + UTM tracking</td>
+          </tr>
+          <tr>
+            <td>Core Web Vitals LCP</td>
+            <td class="current-val">Unknown</td>
+            <td class="target-val">&lt;2.5s</td>
+            <td class="target-val">&lt;2.0s</td>
+            <td>Lighthouse / PageSpeed</td>
+          </tr>
+          <tr>
+            <td>Backlinks (referring domains)</td>
+            <td class="current-val">&lt;5</td>
+            <td class="target-val">10+</td>
+            <td class="target-val">25+</td>
+            <td>Ahrefs / Semrush</td>
+          </tr>
+          <tr>
+            <td>Perplexity mentions of hawaiiwellness</td>
+            <td class="current-val">0</td>
+            <td class="target-val">5+</td>
+            <td class="target-val">20+</td>
+            <td>Manual Perplexity search</td>
+          </tr>
+          <tr>
+            <td>FAQPage rich results in SERP</td>
+            <td class="current-val">0</td>
+            <td class="target-val">1+</td>
+            <td class="target-val">3+</td>
+            <td>Google Rich Results Test</td>
+          </tr>
+          <tr>
+            <td>Practitioner signups from organic</td>
+            <td class="current-val">Unknown</td>
+            <td class="target-val">Track baseline</td>
+            <td class="target-val">20% of signups</td>
+            <td>GA4 conversion events</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-blue" style="margin-top:20px;">
+      <span class="callout-icon">🎯</span>
+      <div>
+        <strong>Competitive Opportunity:</strong> Most local Hawaiian wellness practices are NOT optimizing for AI search. Being the first wellness directory in Hawaii that's fully crawlable by GPTBot, ClaudeBot, and PerplexityBot is a significant first-mover advantage. Users asking "find me a Reiki practitioner in Maui" to ChatGPT or Perplexity should see hawaiiwellness.net — but only after fixing the SPA crawlability blocker.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:12px;">🔍 Quick Verification Checklist</div>
+      <div class="issue-body" style="display:block; padding:0;">
+        <ul>
+          <li>✅ Test GPTBot crawl: <code>curl -H "User-Agent: Mozilla/5.0 (compatible; GPTBot/1.0)" https://hawaiiwellness.net/profile/[id]</code></li>
+          <li>✅ Validate schema: <a href="https://validator.schema.org" target="_blank" style="color:var(--teal);">validator.schema.org</a></li>
+          <li>✅ Check rich results: <a href="https://search.google.com/test/rich-results" target="_blank" style="color:var(--teal);">search.google.com/test/rich-results</a></li>
+          <li>✅ Test og:image: <a href="https://developers.facebook.com/tools/debug/" target="_blank" style="color:var(--teal);">Facebook Sharing Debugger</a></li>
+          <li>✅ Core Web Vitals: <a href="https://pagespeed.web.dev" target="_blank" style="color:var(--teal);">pagespeed.web.dev</a></li>
+          <li>✅ Check sitemap: <a href="https://hawaiiwellness.net/sitemap.xml" target="_blank" style="color:var(--teal);">hawaiiwellness.net/sitemap.xml</a></li>
+          <li>✅ Check llms.txt (after creating): <a href="https://hawaiiwellness.net/llms.txt" target="_blank" style="color:var(--teal);">hawaiiwellness.net/llms.txt</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     PRIVACY + SEO
+══════════════════════════════════════════════════════════ -->
+<section id="privacy" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">🔒</span>Privacy-Safe SEO Architecture</div>
+    <p class="section-subtitle">How to be fully crawlable by AI and Google while keeping provider phone numbers and emails protected from scrapers — with zero cloaking risk.</p>
+
+    <div class="callout callout-blue">
+      <span class="callout-icon">💡</span>
+      <div><strong>The core principle:</strong> Contact info should never be in any HTML source — not for crawlers, not for users. It loads only when a real user clicks a button. This is the same pattern used by Airbnb, Yelp, and LinkedIn. It's universally accepted, GDPR-friendly, and eliminates any cloaking concern entirely.</div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:16px;">🏗️ Two-Layer Architecture</div>
+      <div class="grid-2">
+        <div style="background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:16px;">
+          <div style="font-weight:700; font-size:13px; color:var(--gray-700); margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+            <span style="background:var(--teal); color:white; border-radius:6px; padding:2px 8px; font-size:11px;">LAYER 1</span>
+            SSR / Crawlable HTML
+          </div>
+          <p style="font-size:12px; color:var(--gray-600); margin-bottom:10px;">Served to: Googlebot, GPTBot, ClaudeBot, PerplexityBot, social scrapers (Slack, iMessage)</p>
+          <div style="font-size:12px;">
+            <div style="color:var(--green); margin-bottom:4px;">✅ Name, bio, modalities</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ City, island, geo coordinates</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ Website URL, booking URL</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ Schema markup (no PII fields)</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ og:title, og:description, og:image</div>
+            <div style="color:var(--red); margin-bottom:4px;">❌ Phone number — never here</div>
+            <div style="color:var(--red);">❌ Email address — never here</div>
+          </div>
+        </div>
+        <div style="background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:16px;">
+          <div style="font-weight:700; font-size:13px; color:var(--gray-700); margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+            <span style="background:var(--purple); color:white; border-radius:6px; padding:2px 8px; font-size:11px;">LAYER 2</span>
+            Click-to-Reveal (JS only)
+          </div>
+          <p style="font-size:12px; color:var(--gray-600); margin-bottom:10px;">Served to: real users after explicit button click → API call → return value</p>
+          <div style="font-size:12px;">
+            <div style="color:var(--green); margin-bottom:4px;">✅ Everything from Layer 1</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ "Show Phone" button → fetches live</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ "Show Email" button → fetches live</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ RequestInfoModal (existing)</div>
+            <div style="color:var(--green); margin-bottom:4px;">✅ Rate-limited, logged per view</div>
+            <div style="color:var(--green);">✅ GDPR-compliant access log</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Why No Cloaking Risk -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:12px;">✅ Why This Has Zero Cloaking Risk</div>
+      <div class="issue-body" style="display:block; padding:0;">
+        <p>Google's cloaking policy prohibits showing crawlers <em>different content</em> than users see. The click-to-reveal pattern is <strong>not cloaking</strong> because:</p>
+        <ul>
+          <li>The HTML source is <strong>identical</strong> for crawlers and users — both receive the same server-rendered HTML</li>
+          <li>Contact info is absent from the HTML source <strong>for everyone</strong>, not just crawlers</li>
+          <li>It loads via a separate API call triggered by a click — the same way a user would interact with it</li>
+          <li>This is explicitly the pattern Google documents as acceptable for gated/progressive content</li>
+          <li>Airbnb, Yelp, LinkedIn, Booking.com all use this exact pattern — no SEO penalties</li>
+        </ul>
+        <p style="margin-top:8px;">The previous two-layer idea (serve different HTML to bots vs. users) carried cloaking risk. This approach has none.</p>
+      </div>
+    </div>
+
+    <!-- Implementation -->
+    <div class="issue-card info open">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">⚙️</span>
+        <div class="issue-meta">
+          <div class="issue-title">Step 1 — Remove Phone/Email from ProfileDetail Initial Render</div>
+          <div class="issue-desc">Replace static display of phone/email with click-to-reveal button components. Contact data is never in the DOM until a user explicitly clicks.</div>
+          <div class="issue-badges"><span class="badge badge-red">🔴 High</span><span class="badge badge-blue">3 hours</span><span class="badge badge-gray">src/pages/ProfileDetail.tsx</span></div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Current Pattern (Unsafe)</h4>
+        <div class="code-block"><span class="cm">// ProfileDetail.tsx — phone/email in initial render (scraper-visible)</span>
+{p.phone && <span class="ck">&lt;a</span> href={<span class="cs">`tel:${p.phone}`</span>}<span class="ck">&gt;</span>{p.phone}<span class="ck">&lt;/a&gt;</span>}
+{p.email && <span class="ck">&lt;a</span> href={<span class="cs">`mailto:${p.email}`</span>}<span class="ck">&gt;</span>{p.email}<span class="ck">&lt;/a&gt;</span>}</div>
+        <h4>New Pattern (Click-to-Reveal)</h4>
+        <div class="code-block"><span class="cm">// src/components/ContactReveal.tsx — new component</span>
+<span class="ck">import</span> { useState } from <span class="cs">'react'</span>;
+
+<span class="ck">export function</span> ContactReveal({ id, type }: { id: string; type: <span class="cs">'phone'</span> | <span class="cs">'email'</span> }) {
+  <span class="ck">const</span> [value, setValue] = useState&lt;string | null&gt;(null);
+  <span class="ck">const</span> [loading, setLoading] = useState(false);
+
+  <span class="ck">const</span> reveal = async () => {
+    setLoading(true);
+    <span class="ck">const</span> res = <span class="ck">await</span> fetch(<span class="cs">`/api/contact/reveal?id=${id}&type=${type}`</span>);
+    <span class="ck">const</span> data = <span class="ck">await</span> res.json();
+    setValue(data.value);
+    setLoading(false);
+  };
+
+  <span class="ck">if</span> (value) {
+    <span class="ck">return</span> type === <span class="cs">'phone'</span>
+      ? <span class="ck">&lt;a</span> href={<span class="cs">`tel:${value}`</span>}<span class="ck">&gt;</span>{value}<span class="ck">&lt;/a&gt;</span>
+      : <span class="ck">&lt;a</span> href={<span class="cs">`mailto:${value}`</span>}<span class="ck">&gt;</span>{value}<span class="ck">&lt;/a&gt;</span>;
+  }
+
+  <span class="ck">return</span> (
+    <span class="ck">&lt;button</span> onClick={reveal} disabled={loading}<span class="ck">&gt;</span>
+      {loading ? <span class="cs">'Loading...'</span> : type === <span class="cs">'phone'</span> ? <span class="cs">'📞 Show Phone'</span> : <span class="cs">'✉️ Show Email'</span>}
+    <span class="ck">&lt;/button&gt;</span>
+  );
+}
+
+<span class="cm">// In ProfileDetail.tsx — replace old phone/email display with:</span>
+{p.hasPhone && <span class="ck">&lt;ContactReveal</span> id={p.id} type=<span class="cs">"phone"</span> <span class="ck">/&gt;</span>}
+{p.hasEmail && <span class="ck">&lt;ContactReveal</span> id={p.id} type=<span class="cs">"email"</span> <span class="ck">/&gt;</span>}</div>
+        <p><strong>Note:</strong> Use a boolean <code>hasPhone</code>/<code>hasEmail</code> flag (not the actual value) in the initial Supabase query so the UI can show/hide the button without exposing PII in the response.</p>
+      </div>
+    </div>
+
+    <div class="issue-card info">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🔧</span>
+        <div class="issue-meta">
+          <div class="issue-title">Step 2 — Build the contact-reveal Edge Function</div>
+          <div class="issue-desc">Supabase Edge Function that validates the request, rate-limits per IP, logs the view, and returns phone or email. Never exposes raw data in the initial page load.</div>
+          <div class="issue-badges"><span class="badge badge-red">🔴 High</span><span class="badge badge-blue">4 hours</span><span class="badge badge-gray">supabase/functions/contact-reveal/index.ts</span></div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="code-block"><span class="cm">// supabase/functions/contact-reveal/index.ts</span>
+<span class="ck">import</span> { serve } from <span class="cs">'https://deno.land/std/http/server.ts'</span>;
+<span class="ck">import</span> { createClient } from <span class="cs">'https://esm.sh/@supabase/supabase-js'</span>;
+
+serve(<span class="ck">async</span> (req) => {
+  <span class="ck">const</span> { id, type } = Object.fromEntries(new URL(req.url).searchParams);
+
+  <span class="cm">// 1. Validate input</span>
+  <span class="ck">if</span> (!id || !(<span class="cs">'phone'</span> | <span class="cs">'email'</span>).includes(type)) {
+    <span class="ck">return new</span> Response(JSON.stringify({ error: <span class="cs">'Invalid request'</span> }), { status: 400 });
+  }
+
+  <span class="cm">// 2. Rate limit: 10 reveals per IP per hour (use KV store or Supabase table)</span>
+  <span class="ck">const</span> ip = req.headers.get(<span class="cs">'x-forwarded-for'</span>) ?? <span class="cs">'unknown'</span>;
+  <span class="ck">const</span> withinLimit = <span class="ck">await</span> checkRateLimit(ip);
+  <span class="ck">if</span> (!withinLimit) {
+    <span class="ck">return new</span> Response(JSON.stringify({ error: <span class="cs">'Rate limit exceeded'</span> }), { status: 429 });
+  }
+
+  <span class="cm">// 3. Fetch from DB using service role (bypasses RLS)</span>
+  <span class="ck">const</span> supabase = createClient(Deno.env.get(<span class="cs">'SUPABASE_URL'</span>)!, Deno.env.get(<span class="cs">'SUPABASE_SERVICE_ROLE_KEY'</span>)!);
+  <span class="ck">const</span> field = type === <span class="cs">'phone'</span> ? <span class="cs">'phone'</span> : <span class="cs">'email'</span>;
+  <span class="ck">const</span> { data } = <span class="ck">await</span> supabase
+    .from(<span class="cs">'practitioners'</span>)
+    .select(field)
+    .eq(<span class="cs">'id'</span>, id)
+    .eq(<span class="cs">'status'</span>, <span class="cs">'published'</span>) <span class="cm">// only published listings</span>
+    .single();
+
+  <span class="cm">// 4. Log the reveal event for analytics</span>
+  <span class="ck">await</span> supabase.from(<span class="cs">'contact_reveals'</span>).insert({
+    listing_id: id, type, ip_hash: hashIp(ip), revealed_at: <span class="ck">new</span> Date()
+  });
+
+  <span class="ck">return new</span> Response(JSON.stringify({ value: data?.[field] ?? null }), {
+    headers: { <span class="cs">'Content-Type'</span>: <span class="cs">'application/json'</span> }
+  });
+});</div>
+        <h4>Also Create: contact_reveals Table</h4>
+        <div class="code-block"><span class="cm">-- Migration: track contact reveals for analytics + abuse detection</span>
+<span class="ck">CREATE TABLE</span> contact_reveals (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  listing_id  uuid REFERENCES practitioners(id),
+  type        text CHECK (type IN (<span class="cs">'phone'</span>, <span class="cs">'email'</span>)),
+  ip_hash     text,
+  revealed_at timestamptz DEFAULT now()
+);
+<span class="ck">CREATE INDEX</span> ON contact_reveals (listing_id);
+<span class="ck">CREATE INDEX</span> ON contact_reveals (ip_hash, revealed_at); <span class="cm">-- for rate limiting</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card info">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">📋</span>
+        <div class="issue-meta">
+          <div class="issue-title">Step 3 — Update SSR API Layer to Select Only Non-PII Fields</div>
+          <div class="issue-desc">When building the server-side profile rendering for SEO crawlers, the Supabase query must explicitly exclude email and phone from the SELECT statement.</div>
+          <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">30 min</span><span class="badge badge-gray">api/profile/[id].ts</span></div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <div class="code-block"><span class="cm">// api/profile/[id].ts — safe field selection (no PII)</span>
+<span class="ck">const</span> { data: p } = <span class="ck">await</span> supabase
+  .from(<span class="cs">'practitioners'</span>)
+  .select(<span class="cs">`
+    id, name, bio, modalities, city, island,
+    website_url, external_booking_url,
+    lat, lng, photo_url, tier, session_type,
+    accepts_new_clients,
+    phone IS NOT NULL AS has_phone,
+    email IS NOT NULL AS has_email
+  `</span>)
+  <span class="cm">// ↑ has_phone/has_email are booleans — safe to expose for UI state</span>
+  <span class="cm">// ↑ actual phone/email values are NEVER selected here</span>
+  .eq(<span class="cs">'id'</span>, id)
+  .eq(<span class="cs">'status'</span>, <span class="cs">'published'</span>)
+  .single();</div>
+        <p>The SSR HTML will show a "📞 Show Phone" button (because <code>has_phone = true</code>) without ever including the actual number. Same for email.</p>
+      </div>
+    </div>
+
+    <div class="issue-card info">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">🏷️</span>
+        <div class="issue-meta">
+          <div class="issue-title">Step 4 — Strip PII from All JSON-LD Schema Markup</div>
+          <div class="issue-desc">LocalBusiness and MedicalBusiness schema should include address, geo, and service info — but never telephone or email. These fields are optional in schema.org and omitting them has no SEO downside.</div>
+          <div class="issue-badges"><span class="badge badge-amber">🟡 Medium</span><span class="badge badge-blue">30 min</span><span class="badge badge-gray">src/pages/ProfileDetail.tsx</span></div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Before (leaks PII into schema)</h4>
+        <div class="code-block">{
+  <span class="cv">"@type"</span>: <span class="cs">"LocalBusiness"</span>,
+  <span class="cv">"telephone"</span>: <span class="cs">"808-555-1234"</span>,   <span class="cm">// ← remove this</span>
+  <span class="cv">"email"</span>: <span class="cs">"jane@example.com"</span>    <span class="cm">// ← remove this</span>
+}</div>
+        <h4>After (safe schema)</h4>
+        <div class="code-block">{
+  <span class="cv">"@context"</span>: <span class="cs">"https://schema.org"</span>,
+  <span class="cv">"@type"</span>: [<span class="cs">"MedicalBusiness"</span>, <span class="cs">"LocalBusiness"</span>],
+  <span class="cv">"name"</span>: <span class="cs">"Jane Smith — Reiki Master"</span>,
+  <span class="cv">"description"</span>: <span class="cs">"..."</span>,
+  <span class="cv">"url"</span>: <span class="cs">"https://hawaiiwellness.net/profile/123"</span>,
+  <span class="cv">"image"</span>: <span class="cs">"https://..."</span>,
+  <span class="cv">"address"</span>: {
+    <span class="cv">"@type"</span>: <span class="cs">"PostalAddress"</span>,
+    <span class="cv">"addressLocality"</span>: <span class="cs">"Lahaina"</span>,
+    <span class="cv">"addressRegion"</span>: <span class="cs">"HI"</span>,
+    <span class="cv">"addressCountry"</span>: <span class="cs">"US"</span>
+  },
+  <span class="cv">"geo"</span>: { <span class="cv">"@type"</span>: <span class="cs">"GeoCoordinates"</span>, <span class="cv">"latitude"</span>: 20.87, <span class="cv">"longitude"</span>: -156.47 },
+  <span class="cv">"areaServed"</span>: <span class="cs">"Lahaina, Maui, Hawaii"</span>,
+  <span class="cv">"knowsAbout"</span>: [<span class="cs">"Reiki"</span>, <span class="cs">"Energy Healing"</span>]
+  <span class="cm">// No telephone, no email — intentional</span>
+}</div>
+        <p>In <span class="file-tag">src/pages/ProfileDetail.tsx</span>, remove <code>telephone: p.phone</code> and <code>email: p.email</code> from the <code>practitionerSchema</code> object (~line 220).</p>
+      </div>
+    </div>
+
+    <!-- Bonus: What this unlocks -->
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:12px;">🎁 Bonus Benefits of This Architecture</div>
+      <div class="grid-2">
+        <div>
+          <h4 style="font-size:12px; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Provider Benefits</h4>
+          <ul style="font-size:13px; color:var(--gray-700); padding-left:16px; line-height:1.8;">
+            <li>Personal email/phone never indexed by Google — can't be found by spammers via search</li>
+            <li>Providers can update contact info without worrying about cached Google results</li>
+            <li>GDPR/CCPA compliant by default (PII not publicly exposed)</li>
+            <li>Builds provider trust — shows platform takes their privacy seriously</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="font-size:12px; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Platform Benefits</h4>
+          <ul style="font-size:13px; color:var(--gray-700); padding-left:16px; line-height:1.8;">
+            <li><code>contact_reveals</code> table gives you real engagement analytics per listing</li>
+            <li>Rate limiting prevents bulk scraping even from users who run scripts</li>
+            <li>Can monetize contact reveals for free-tier (e.g., "3 free reveals/mo — upgrade for unlimited")</li>
+            <li>Zero cloaking risk — clean architecture Googlebot approves of</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     TIMING
+══════════════════════════════════════════════════════════ -->
+<section id="timing" class="page-section">
+  <div class="container">
+    <div class="section-title"><span class="icon">⏱</span>Is It Safe to Optimize for SEO Now?</div>
+    <p class="section-subtitle">You have unpublished drafts and data accuracy issues. Here's exactly what to do now vs. what to wait on.</p>
+
+    <div class="callout callout-green">
+      <span class="callout-icon">✅</span>
+      <div><strong>Short answer: Yes — start now.</strong> SEO infrastructure work is completely independent of listing quality. Google takes 4-12 weeks to crawl and index new signals anyway. Starting today means your foundation is in place by the time your listings are polished. And critically — draft listings (<code>status = 'draft'</code>) will never appear in your sitemap or SSR layer, so unpolished data stays invisible.</div>
+    </div>
+
+    <!-- Do Now vs Wait Table -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:14px;">📋 Do Now vs. Wait Until Listings Are Ready</div>
+      <table class="win-table">
+        <thead>
+          <tr><th>Task</th><th>Do Now?</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>og:image, llms.txt, robots.txt updates</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Zero dependency on listing quality. Pure infrastructure.</td>
+          </tr>
+          <tr>
+            <td>Static schema in index.html (Organization, WebSite)</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Site-level schema, not listing-level. Completely safe.</td>
+          </tr>
+          <tr>
+            <td>Register Google Search Console</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Need it running to monitor progress. Earlier = better baseline data.</td>
+          </tr>
+          <tr>
+            <td>Dynamic sitemap (published listings only)</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Only <code>status='published'</code> listings appear. Drafts are automatically excluded.</td>
+          </tr>
+          <tr>
+            <td>Click-to-reveal + contact-reveal Edge Function</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Privacy architecture — implement before any SSR work goes live.</td>
+          </tr>
+          <tr>
+            <td>SSR / API layer for crawlability</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Only serves published listings. Data accuracy only matters for published profiles.</td>
+          </tr>
+          <tr>
+            <td>FAQPage schema on /help</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>No dependency on practitioners at all.</td>
+          </tr>
+          <tr>
+            <td>Island page title tags + meta descriptions</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Page-level metadata. Not tied to listing data.</td>
+          </tr>
+          <tr>
+            <td>Article content creation</td>
+            <td><span class="badge badge-green">✅ Now</span></td>
+            <td>Articles are entirely independent of directory listings.</td>
+          </tr>
+          <tr>
+            <td>MedicalBusiness schema on profile pages</td>
+            <td><span class="badge badge-amber">⚠️ Now, with null guards</span></td>
+            <td>Fine to add now — just ensure the schema omits empty fields. <code>address: p.address ? {...} : undefined</code></td>
+          </tr>
+          <tr>
+            <td>Profile-level meta descriptions (from bio)</td>
+            <td><span class="badge badge-amber">⚠️ Partial</span></td>
+            <td>Generate from existing bio text. Short bios produce weak descriptions — that's OK for now. Google will update when bio improves.</td>
+          </tr>
+          <tr>
+            <td>Modality / city landing pages</td>
+            <td><span class="badge badge-amber">⚠️ Partial</span></td>
+            <td>Can build pages now, but show "X practitioners in [City]" counts. Even a low count is fine — grows naturally as you publish more listings.</td>
+          </tr>
+          <tr>
+            <td>Submitting individual profile URLs to Google</td>
+            <td><span class="badge badge-red">⏳ Wait</span></td>
+            <td>Only manually request indexing for profiles you're confident are accurate and complete. Don't burn crawl requests on thin profiles.</td>
+          </tr>
+          <tr>
+            <td>Outreach / backlinks for specific practitioner pages</td>
+            <td><span class="badge badge-red">⏳ Wait</span></td>
+            <td>Don't promote specific profiles until data is verified. Broken or inaccurate listings burn trust.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Data accuracy guidance -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:12px;">🎯 Data Accuracy Strategy — Work in Parallel</div>
+      <p style="font-size:13px; color:var(--gray-700); margin-bottom:12px;">SEO infrastructure and data cleanup can run simultaneously. Here's how to think about them as parallel workstreams:</p>
+      <div class="grid-2">
+        <div style="background:var(--teal-light); border:1px solid #99f6e4; border-radius:10px; padding:14px;">
+          <div style="font-weight:700; font-size:13px; color:var(--teal-dark); margin-bottom:8px;">🏗️ SEO Infrastructure (You, Starting Now)</div>
+          <ul style="font-size:12px; color:var(--gray-700); padding-left:14px; line-height:1.8;">
+            <li>og:image, llms.txt, robots.txt</li>
+            <li>Static schemas in index.html</li>
+            <li>Dynamic sitemaps (published only)</li>
+            <li>Click-to-reveal + Edge Function</li>
+            <li>SSR API layer for crawlers</li>
+            <li>Article content pipeline</li>
+            <li>Island page content</li>
+          </ul>
+        </div>
+        <div style="background:var(--blue-light); border:1px solid #93c5fd; border-radius:10px; padding:14px;">
+          <div style="font-weight:700; font-size:13px; color:var(--blue); margin-bottom:8px;">📋 Listing Quality (Parallel Workstream)</div>
+          <ul style="font-size:12px; color:var(--gray-700); padding-left:14px; line-height:1.8;">
+            <li>Run website enrichment pipeline (script 22) to auto-fill blanks</li>
+            <li>Review + publish draft listings in Admin panel</li>
+            <li>Contact providers for bio/photo updates</li>
+            <li>Verify addresses, phone numbers, modalities</li>
+            <li>Set a "publish threshold": bio ≥ 50 words + photo + modalities</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publish threshold recommendation -->
+    <div class="issue-card info open">
+      <div class="issue-header" onclick="toggleIssue(this)">
+        <span class="issue-icon">📏</span>
+        <div class="issue-meta">
+          <div class="issue-title">Recommended: Set a Minimum Publish Threshold</div>
+          <div class="issue-desc">Publishing thin profiles hurts SEO. Google penalizes low-quality "thin content" pages. Define a minimum bar before a draft becomes published.</div>
+          <div class="issue-badges"><span class="badge badge-amber">🟡 Important</span><span class="badge badge-blue">Easy</span><span class="badge badge-gray">src/pages/admin/AdminPanel.tsx</span></div>
+        </div>
+        <span class="issue-expand">▼</span>
+      </div>
+      <div class="issue-body">
+        <h4>Suggested Minimum Bar to Publish</h4>
+        <ul>
+          <li><strong>Bio:</strong> ≥ 50 words (short but meaningful — modality + location + approach)</li>
+          <li><strong>Modalities:</strong> At least 1 selected</li>
+          <li><strong>City + Island:</strong> Both set</li>
+          <li><strong>Photo:</strong> Strongly preferred, not strictly required</li>
+          <li><strong>Either</strong> website URL, booking URL, or contact info present</li>
+        </ul>
+        <h4>Add a Profile Completeness Score</h4>
+        <p>The <code>profile_completeness</code> column already exists on the <code>practitioners</code> table (added in Sprint 4 taxonomy work). Wire it into the Admin panel publish button as a soft warning: "This profile scores 40/100 — consider improving before publishing." Don't hard-block, just warn.</p>
+        <div class="code-block"><span class="cm">// src/pages/admin/AdminPanel.tsx — add completeness warning</span>
+<span class="ck">const</span> threshold = 50; <span class="cm">// minimum score to publish without warning</span>
+<span class="ck">const</span> isWeak = practitioner.profile_completeness &lt; threshold;
+
+{isWeak && (
+  <span class="ck">&lt;div</span> className=<span class="cs">"text-amber-600 text-xs"</span><span class="ck">&gt;</span>
+    ⚠️ Completeness: {practitioner.profile_completeness}/100 —
+    consider adding bio, photo, and modalities before publishing.
+  <span class="ck">&lt;/div&gt;</span>
+)}</div>
+      </div>
+    </div>
+
+    <!-- Quick timeline -->
+    <div class="card" style="margin-top:16px;">
+      <div class="section-title" style="font-size:15px; margin-bottom:14px;">📅 Integrated Timeline: SEO + Listings in Parallel</div>
+      <div style="position:relative; padding-left:24px;">
+        <div style="position:absolute; left:8px; top:0; bottom:0; width:2px; background:var(--gray-200);"></div>
+
+        <div style="position:relative; margin-bottom:20px;">
+          <div style="position:absolute; left:-20px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--red);"></div>
+          <div style="font-weight:700; font-size:13px; color:var(--gray-900);">This Week (Days 1-7)</div>
+          <div style="font-size:12px; color:var(--gray-600); margin-top:4px; line-height:1.7;">
+            SEO: og:image · llms.txt · robots.txt · Google Search Console · static schemas<br>
+            Listings: Run script 22 (website enrichment) on Big Island listings · review auto-fills
+          </div>
+        </div>
+
+        <div style="position:relative; margin-bottom:20px;">
+          <div style="position:absolute; left:-20px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--red);"></div>
+          <div style="font-weight:700; font-size:13px; color:var(--gray-900);">Week 2 (Days 8-14)</div>
+          <div style="font-size:12px; color:var(--gray-600); margin-top:4px; line-height:1.7;">
+            SEO: click-to-reveal + Edge Function · dynamic sitemaps · SSR API layer (build)<br>
+            Listings: Admin panel batch review of drafts · set publish threshold · publish best listings
+          </div>
+        </div>
+
+        <div style="position:relative; margin-bottom:20px;">
+          <div style="position:absolute; left:-20px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--amber);"></div>
+          <div style="font-weight:700; font-size:13px; color:var(--gray-900);">Weeks 3-4</div>
+          <div style="font-size:12px; color:var(--gray-600); margin-top:4px; line-height:1.7;">
+            SEO: SSR layer live · verify GPTBot can crawl · first 3 articles published<br>
+            Listings: Email providers for bio/photo updates · data accuracy audit
+          </div>
+        </div>
+
+        <div style="position:relative; margin-bottom:20px;">
+          <div style="position:absolute; left:-20px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--amber);"></div>
+          <div style="font-weight:700; font-size:13px; color:var(--gray-900);">Weeks 5-8</div>
+          <div style="font-size:12px; color:var(--gray-600); margin-top:4px; line-height:1.7;">
+            SEO: MedicalBusiness schema · island + modality landing pages · 10 articles total<br>
+            Listings: Majority of drafts reviewed + published · quality threshold enforced
+          </div>
+        </div>
+
+        <div style="position:relative;">
+          <div style="position:absolute; left:-20px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--green);"></div>
+          <div style="font-weight:700; font-size:13px; color:var(--gray-900);">Weeks 9-12</div>
+          <div style="font-size:12px; color:var(--gray-600); margin-top:4px; line-height:1.7;">
+            SEO: Monitor GSC impressions · backlink outreach · consider Next.js migration<br>
+            Listings: Ongoing quality improvement · highlight complete listings in directory
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function showSection(id, el) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('visible'));
+    document.getElementById(id).classList.add('visible');
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    if (el) el.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleIssue(header) {
+    const card = header.closest('.issue-card');
+    card.classList.toggle('open');
+  }
+
+  function showTab(section, tabId, btn) {
+    const section_el = document.getElementById(section);
+    section_el.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('visible'));
+    section_el.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(section + '-' + tabId).classList.add('visible');
+    btn.classList.add('active');
+  }
+
+  // Auto-open first issue card in each section
+  document.querySelectorAll('.page-section').forEach(section => {
+    const first = section.querySelector('.issue-card.critical');
+    if (first) first.classList.add('open');
+  });
+</script>
+</body>
+</html>

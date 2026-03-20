@@ -9,7 +9,7 @@ import type { Article } from '@/data/mockData';
  */
 export function useArticlesByModality(modalities: string[], enabled = true) {
   return useQuery<Article[]>({
-    queryKey: ['articlesByModality', modalities],
+    queryKey: ['articlesByModality', modalities.join('|')],
     enabled: enabled && modalities.length > 0,
     queryFn: async () => {
       if (!supabase) return [];
