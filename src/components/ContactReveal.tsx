@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Phone, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +17,13 @@ export function ContactReveal({ listingId, listingType, type, className }: Props
   const [error, setError] = useState(false);
   const [notAvailable, setNotAvailable] = useState(false);
 
+  // Auto-clear error after 1.5 s so button silently resets to "Show Phone"
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(false), 1500);
+    return () => clearTimeout(t);
+  }, [error]);
+
   const reveal = async () => {
     setLoading(true);
     setError(false);
@@ -28,7 +35,6 @@ export function ContactReveal({ listingId, listingType, type, className }: Props
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
 
-      // Handle case where server returns { value: null }
       if (data.value === null || data.value === undefined) {
         setNotAvailable(true);
       } else {
@@ -63,13 +69,12 @@ export function ContactReveal({ listingId, listingType, type, className }: Props
 
   const Icon = type === 'phone' ? Phone : Mail;
   const label = type === 'phone' ? 'Show Phone' : 'Show Email';
-  const errorLabel = error ? 'Retry' : label;
 
   return (
     <Button variant="ghost" size="sm" onClick={reveal} disabled={loading}
-      className={`gap-2 text-primary ${className ?? ''}`}>
+      className={`gap-2 transition-opacity ${error ? 'opacity-50' : ''} text-primary ${className ?? ''}`}>
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
-      {errorLabel}
+      {label}
     </Button>
   );
 }

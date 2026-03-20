@@ -1051,42 +1051,86 @@ const ProfileDetail = () => {
             </div>
           )}
 
-          {/* Similar practitioners — shown for all tabs */}
+          {/* Similar practitioners — mini cards */}
           {similarProviders && similarProviders.length > 0 && (
             <div>
-              <h2 className="mb-4 font-display text-xl font-bold">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Similar practitioners on {ISLAND_CONFIG[p.island ?? '']?.label ?? 'Hawaiʻi'}
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {similarProviders.slice(0, 4).map(sp => (
-                  <ProviderCard key={sp.id} provider={sp} compact />
-                ))}
+              </p>
+              <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+                {similarProviders.slice(0, 4).map(sp => {
+                  const hasImg = !!sp.image && !sp.image.includes('unsplash.com/photo-1540555700478');
+                  const initials = sp.name.split(' ').filter(Boolean).slice(0,2).map((w: string) => w[0]).join('').toUpperCase();
+                  const GRADIENTS = ['from-teal-400 to-cyan-500','from-violet-400 to-purple-500','from-amber-400 to-orange-500','from-rose-400 to-pink-500','from-emerald-400 to-green-500'];
+                  const grad = GRADIENTS[sp.name.charCodeAt(0) % GRADIENTS.length];
+                  const topModality = sp.modalities?.[0] ?? '';
+                  return (
+                    <Link key={sp.id} to={`/profile/${sp.id}`}
+                      className="group block rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md hover:border-border/80 transition-all">
+                      <div className="flex items-center gap-2.5">
+                        {hasImg ? (
+                          <img src={sp.image} alt={sp.name}
+                            className="h-10 w-10 flex-shrink-0 rounded-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className={`h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br ${grad} flex items-center justify-center text-white text-xs font-semibold`}>
+                            {initials}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold leading-tight group-hover:text-primary transition-colors">{sp.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{sp.location?.split(',')[0]}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 flex items-center justify-between gap-1.5">
+                        {topModality && (
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-normal truncate ${modalityChipClass(topModality)}`}>
+                            {topModality}
+                          </span>
+                        )}
+                        {sp.acceptsNewClients && (
+                          <span className="flex flex-shrink-0 items-center gap-1 text-[11px] font-medium text-emerald-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Related articles — compact reading list */}
+          {/* Related articles — medium reading list */}
           {relatedArticles.length > 0 && (
             <div className="border-t border-border/50 pt-5">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Related reading
               </p>
-              <div className="space-y-2">
-                {relatedArticles.slice(0, 3).map(a => (
-                  <Link
-                    key={a.id}
-                    to={`/articles/${a.slug}`}
-                    className="flex items-center gap-3 rounded-lg p-2 hover:bg-muted/50 transition-colors group"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-1">
-                        {a.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{a.category}</p>
-                    </div>
-                    <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/50 group-hover:text-primary transition-colors" />
-                  </Link>
-                ))}
+              <div className="divide-y divide-border/40">
+                {relatedArticles.slice(0, 3).map(a => {
+                  const CATEGORY_COLORS: Record<string, string> = {
+                    'Traditions':'#5c7a5a','Wellness':'#1e5f8e','Herbalism':'#5c7a5a',
+                    'Community':'#8b4513','Therapy':'#1e5f8e','Medicine':'#5c7a5a',
+                    'Hawaiian Healing':'#5c7a5a','Breathwork':'#1e5f8e','Somatic Therapy':'#8b4513',
+                  };
+                  const accent = CATEGORY_COLORS[a.category] ?? '#94a3b8';
+                  return (
+                    <Link
+                      key={a.id}
+                      to={`/articles/${a.slug}`}
+                      className="flex items-start gap-3 rounded-lg px-2 py-3 hover:bg-muted/50 transition-colors group"
+                    >
+                      <div className="mt-0.5 h-9 w-1 flex-shrink-0 rounded-full" style={{ background: accent, opacity: 0.65 }} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                          {a.title}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">{a.category}</p>
+                      </div>
+                      <ArrowRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
