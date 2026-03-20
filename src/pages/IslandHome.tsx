@@ -78,6 +78,7 @@ export interface IslandConfig {
   heroSubtitle: string;
   pageTitle: string;
   pageDescription: string;
+  faqItems?: Array<{ question: string; answer: string }>;
 }
 
 interface IslandHomeProps {
@@ -107,6 +108,17 @@ export function IslandHome({ config }: IslandHomeProps) {
   usePageMeta(config.pageTitle, config.pageDescription);
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistState, setWaitlistState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+
+  // FAQ schema
+  const faqSchema = config.faqItems && config.faqItems.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: config.faqItems.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  } : null;
 
   const { data: practitioners = [], isLoading: loadingPractitioners } = usePractitioners(config.island);
   const { data: centers = [], isLoading: loadingCenters } = useCenters(config.island);
@@ -157,6 +169,7 @@ export function IslandHome({ config }: IslandHomeProps) {
 
   return (
     <main>
+      {faqSchema && <JsonLd id="island-faq" data={faqSchema} />}
       {itemListSchema && <JsonLd id={`itemlist-${config.island}`} data={itemListSchema} />}
       <SearchBar
         island={config.island}

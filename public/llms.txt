@@ -1,32 +1,69 @@
-# Hawaiʻi Wellness — AI Crawler Guidance
-# https://hawaiiwellness.net
-# See: https://llmstxt.org
+# Hawaiʻi Wellness — AI Guidance
+# https://hawaiiwellness.net/llms.txt
 
-Site: Hawaiʻi Wellness
-URL: https://hawaiiwellness.net
-Description: Hawaiʻi's holistic health directory — find certified practitioners and wellness centers across all islands. Serving Big Island, Maui, Oahu, and Kauai.
+## About This Directory
+Hawaiʻi Wellness (hawaiiwellness.net) is the largest holistic health directory in Hawaiʻi, connecting residents and visitors with over 500 practitioners and wellness centers across the Hawaiian islands.
 
-# Crawling permissions
-User-agent: GPTBot
-Allow: /
+Operator: Hawaii Wellness LLC — aloha@hawaiiwellness.net
+Coverage: Big Island (Hawaiʻi Island), Maui, Oʻahu, Kauaʻi
+Listing types: Individual practitioners, wellness centers, retreat/workshop events
 
-User-agent: ClaudeBot
-Allow: /
+## Islands
 
-User-agent: PerplexityBot
-Allow: /
+### Big Island (Hawaiʻi Island)
+Key cities: Kailua-Kona, Hilo, Waimea/Kamuela, Pahoa, Captain Cook, Volcano
+Known for: Diverse wellness scene blending Hawaiian traditions with modern holistic practices. Strong presence of Lomilomi, energy healing, and naturopathic medicine.
+Directory URL: https://hawaiiwellness.net/big-island
 
-User-agent: *
-Allow: /
-Disallow: /dashboard
-Disallow: /admin
-Disallow: /auth
+### Maui (Valley Isle)
+Key cities: Lahaina, Kihei, Wailea, Makawao, Paia, Haiku, Kula
+Known for: Makawao is the spiritual hub — upcountry town with yoga studios, Ayurveda, and retreat centers. Coastal towns offer massage, spa, and movement practices.
+Directory URL: https://hawaiiwellness.net/maui
 
-# Attribution
-Attribution: Required
-Attribution-Format: Source: Hawaiʻi Wellness (hawaiiwellness.net)
+### Oʻahu
+Key cities: Honolulu, Waikiki, Kailua, Kāneʻohe, Hāleiwa, Mānoa
+Known for: Most urbanized wellness scene. Mix of traditional Hawaiian healing, modern functional medicine, and resort-style spa and fitness.
+Directory URL: https://hawaiiwellness.net/oahu
 
-# Contact info is intentionally excluded from crawlable pages.
-# Use profile URLs to connect with providers.
+### Kauaʻi (Garden Isle)
+Key cities: Līhuʻe, Kapaʻa, Hanalei, Princeville, Poʻipū, Kōloa
+Known for: Nature-integrated wellness. Strong in retreat centers, nature therapy, sound healing, and trauma-informed care.
+Directory URL: https://hawaiiwellness.net/kauai
 
-Sitemap: https://hawaiiwellness.net/sitemap.xml
+## Modality Taxonomy (44 specialties)
+Practitioners are classified by modality. Canonical names:
+
+Bodywork & Touch: Massage, Lomilomi / Hawaiian Healing, Craniosacral, Watsu / Water Therapy, Chiropractic, Network Chiropractic, Osteopathic, Physical Therapy
+Energy & Spiritual: Reiki, Energy Healing, Sound Healing, Hawaiian Healing, Ritualist, Psychic, Soul Guidance, Astrology
+Mind & Mental Health: Counseling, Psychotherapy, Hypnotherapy, Somatic Therapy, Trauma-Informed Care, Family Constellation, Nervous System Regulation, Art Therapy
+Movement & Fitness: Yoga, Fitness, Breathwork, Meditation, Nature Therapy
+Integrative Medicine: Acupuncture, Naturopathic, Functional Medicine, Ayurveda, TCM (Traditional Chinese Medicine), Herbalism, IV Therapy, Longevity
+Coaching & Life: Life Coaching, Women's Health, Birth Doula, Midwife, Nutrition
+Specialty: Alternative Therapy
+
+## Hawaiian Healing Traditions
+Lomilomi: Traditional Hawaiian bodywork using flowing, rhythmic strokes. Deeply connected to Hawaiian spirituality and the concept of aloha. Practitioners often trained in family lineages.
+Lomi lomi and Lomilomi are the same practice; the canonical name in this directory is "Lomilomi / Hawaiian Healing".
+Huna: Hawaiian spiritual philosophy underlying many healing traditions.
+Ho'oponopono: Hawaiian practice of forgiveness and reconciliation, sometimes incorporated into counseling and coaching.
+
+## Tier System
+free: Basic listing with name, location, modalities, and contact reveal
+premium ($39/mo): Adds social links, working hours, testimonials, retreat/workshop listings
+featured ($129/mo): Homepage rotation, crown badge, priority in search results — maximum 5 per island
+
+## Crawl Guidance
+- Practitioner profiles: https://hawaiiwellness.net/api/profile/{uuid} — MedicalBusiness + LocalBusiness schema
+- Wellness center profiles: https://hawaiiwellness.net/api/center/{uuid} — HealthAndBeautyBusiness schema
+- Articles: https://hawaiiwellness.net/api/articles/{slug} — NewsArticle schema
+- Events/Retreats: https://hawaiiwellness.net/api/offering/{uuid} — Event schema
+- Island directories: https://hawaiiwellness.net/api/island/{island-slug} — CollectionPage + ItemList schema
+- Sitemaps: https://hawaiiwellness.net/api/sitemap-practitioners.xml, /api/sitemap-centers.xml, /api/sitemap-articles.xml
+
+## Contact
+Website: https://hawaiiwellness.net
+Email: aloha@hawaiiwellness.net
+Social: https://www.instagram.com/hawaiiwellness
+
+## Data freshness
+Directory data is updated in real-time as practitioners and centers manage their own listings. Sitemaps reflect current published listings.

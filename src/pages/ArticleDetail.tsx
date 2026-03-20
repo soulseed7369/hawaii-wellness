@@ -15,6 +15,8 @@ import { ArrowLeft, Facebook, Twitter, Link2, Check } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { useArticleBySlug } from '@/hooks/useArticles';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { useRelatedPractitioners } from '@/hooks/useRelatedPractitioners';
+import { ProviderCard } from '@/components/ProviderCard';
 import { JsonLd } from '@/components/JsonLd';
 import { SITE_URL, SITE_NAME } from '@/lib/siteConfig';
 
@@ -78,6 +80,10 @@ function ShareButtons({ title }: { title: string }) {
 export default function ArticleDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { data: article, isLoading, isError } = useArticleBySlug(slug ?? '');
+  const { data: relatedPractitioners = [] } = useRelatedPractitioners(
+    article?.category ? [article.category] : [],
+    undefined,
+  );
 
   // ── Per-page meta (title, description, canonical) ─────────────────────
   usePageMeta(
@@ -221,6 +227,18 @@ export default function ArticleDetail() {
           </Button>
           <ShareButtons title={article.title} />
         </div>
+
+        {/* Practitioners in this tradition */}
+        {relatedPractitioners.length > 0 && (
+          <section className="mt-12 border-t border-border pt-8">
+            <h2 className="mb-4 text-xl font-semibold">Practitioners in this tradition</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedPractitioners.map(p => (
+                <ProviderCard key={p.id} provider={p} />
+              ))}
+            </div>
+          </section>
+        )}
     </div>
   );
 }

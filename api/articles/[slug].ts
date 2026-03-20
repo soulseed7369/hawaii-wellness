@@ -65,6 +65,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: 'Hawaiʻi Wellness',
       logo: { '@type': 'ImageObject', url: `${SITE}/hawaii-wellness-logo-OG.png`, width: 1200, height: 630 },
     },
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', 'h2', '.article-summary'],
+    },
     breadcrumb: {
       '@type': 'BreadcrumbList',
       itemListElement: [

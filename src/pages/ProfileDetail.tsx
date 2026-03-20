@@ -5,8 +5,10 @@ import { useSimilarPractitioners } from "@/hooks/usePractitioners";
 import { usePractitionerOfferings } from "@/hooks/usePractitionerOfferings";
 import { usePractitionerClasses } from "@/hooks/usePractitionerClasses";
 import { usePractitionerTestimonials } from "@/hooks/usePractitionerTestimonials";
+import { useArticlesByModality } from "@/hooks/useArticlesByModality";
 import { useTrackView, useTrackClick } from "@/hooks/useTrackEvent";
 import { ProviderCard } from "@/components/ProviderCard";
+import { ArticleCard } from "@/components/ArticleCard";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -249,6 +251,10 @@ const ProfileDetail = () => {
   const { data: classes } = usePractitionerClasses(p?.id ?? null);
   const { data: offerings } = usePractitionerOfferings(p?.id ?? null);
   const { data: newTestimonials } = usePractitionerTestimonials(p?.id ?? null);
+  const { data: relatedArticles = [] } = useArticlesByModality(
+    p?.services ?? [],
+    !!p,
+  );
 
   const [activeTab, setActiveTab] = useState<TabType>('about');
   const [reportOpen, setReportOpen] = useState(false);
@@ -460,6 +466,38 @@ const ProfileDetail = () => {
     },
   } : null;
 
+  // ── Event schema for upcoming offerings ──────────────────────────────────
+  const upcomingOfferings = (offerings ?? []).filter(o => o.start_date);
+  const eventSchemas = upcomingOfferings.map(o => ({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: o.title,
+    description: o.description ?? undefined,
+    startDate: o.start_date,
+    endDate: o.end_date ?? undefined,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    location: o.location ? {
+      '@type': 'Place',
+      name: o.location,
+      address: { '@type': 'PostalAddress', addressRegion: 'HI', addressCountry: 'US' },
+    } : {
+      '@type': 'Place',
+      name: p.location ?? 'Hawaiʻi',
+      address: { '@type': 'PostalAddress', addressRegion: 'HI', addressCountry: 'US' },
+    },
+    organizer: { '@type': 'Person', name: p.name, url: profileUrl },
+    url: o.registration_url ?? profileUrl,
+    ...(o.price_fixed != null ? {
+      offers: {
+        '@type': 'Offer',
+        price: String(o.price_fixed),
+        priceCurrency: 'USD',
+        url: o.registration_url ?? profileUrl,
+      },
+    } : {}),
+  }));
+
   return (
     <main>
       <JsonLd id="profile-localbusiness" data={localBusinessSchema} />
@@ -467,6 +505,9 @@ const ProfileDetail = () => {
       {reviewSchema && <JsonLd id="profile-reviews" data={reviewSchema} />}
       {faqSchema && <JsonLd id="profile-faq" data={faqSchema} />}
       {serviceCatalogSchema && <JsonLd id="profile-services" data={serviceCatalogSchema} />}
+      {eventSchemas.map((schema, i) => (
+        <JsonLd key={`event-${i}`} id={`profile-event-${i}`} data={schema} />
+      ))}
 
       {/* Breadcrumb nav */}
       <div className="container pt-4">
@@ -1029,6 +1070,18 @@ const ProfileDetail = () => {
               <div className="grid gap-4 sm:grid-cols-2">
                 {similarProviders.slice(0, 4).map(sp => (
                   <ProviderCard key={sp.id} provider={sp} compact />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Related articles */}
+          {relatedArticles.length > 0 && (
+            <div>
+              <h2 className="mb-4 font-display text-xl font-bold">Wellness resources</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {relatedArticles.map(a => (
+                  <ArticleCard key={a.id} article={a} />
                 ))}
               </div>
             </div>

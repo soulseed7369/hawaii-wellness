@@ -8,6 +8,28 @@ const config = {
   heroSubtitle: "Browse holistic health providers in Lahaina, Kihei, Makawao & across the Valley Isle",
   pageTitle: "Maui Wellness Practitioners & Holistic Health | Hawaiʻi Wellness",
   pageDescription: "Find massage therapists, yoga instructors, acupuncturists & holistic healers in Lahaina, Kihei, Wailea, Makawao & across Maui. Browse Maui's growing wellness directory.",
+  faqItems: [
+    {
+      question: "What makes Makawao such a wellness hub on Maui?",
+      answer: "Makawao, nestled in Maui's upcountry, is known for its vibrant alternative and wellness community. The cooler climate, artistic vibe, and spiritual energy attract practitioners of yoga, somatic therapy, energy healing, and life coaching. Many visitors and residents are drawn to Makawao's holistic lifestyle and strong wellness network.",
+    },
+    {
+      question: "What are the best wellness retreat centers on Maui?",
+      answer: "Maui is home to several renowned retreat centers offering immersive wellness experiences. These centers offer yoga retreats, healing workshops, and multi-day programs combining meditation, massage, and nutrition coaching. Many are located near beaches or in the serene upcountry, providing the perfect setting for deep healing work.",
+    },
+    {
+      question: "What's the difference between a spa and a wellness center?",
+      answer: "A spa typically focuses on relaxation treatments like massage, facials, and body treatments in a luxury setting. A wellness center takes a more holistic approach, offering modalities like yoga, acupuncture, counseling, and functional medicine consultations alongside bodywork. Wellness centers emphasize overall health improvement, while spas prioritize pampering and relaxation.",
+    },
+    {
+      question: "How do I book an appointment with a Maui wellness practitioner?",
+      answer: "Use our directory to find practitioners by location and modality. Many have websites and online booking systems. You can call directly, email, or use platforms like Acuity Scheduling or Mindbody. We recommend reading reviews and checking the practitioner's qualifications before booking your first session.",
+    },
+    {
+      question: "Are wellness services on Maui good for visitors?",
+      answer: "Yes! Maui welcomes visitors seeking wellness experiences. Many practitioners specialize in working with visitors and offer flexible scheduling. Popular options include daily yoga classes, massage sessions, and energy healing treatments. Booking in advance is recommended, especially during peak season.",
+    },
+  ],
 };
 
 export default function MauiHome() {

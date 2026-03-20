@@ -9,6 +9,10 @@
       "destination": "/api/center/[id]"
     },
     {
+      "source": "/api/offering/:id",
+      "destination": "/api/offering/[id]"
+    },
+    {
       "source": "/api/sitemap-practitioners.xml",
       "destination": "/api/sitemap-practitioners.xml"
     },

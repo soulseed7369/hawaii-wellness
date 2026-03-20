@@ -55,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       id, name, bio, modalities, city, island, address,
       website_url, external_booking_url,
       lat, lng, photo_url, tier, session_type,
-      accepts_new_clients
+      accepts_new_clients, testimonials
     `)
     .eq('id', id)
     .eq('status', 'published')
@@ -88,7 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   // MedicalBusiness schema (no telephone, no email)
-  const schema = {
+  const schema: any = {
     '@context': 'https://schema.org',
     '@type': ['MedicalBusiness', 'LocalBusiness'],
     name: p.name,
@@ -110,6 +110,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     knowsAbout: p.modalities ?? [],
     breadcrumb: breadcrumbSchema,
   };
+
+  // Testimonial/review enrichment
+  const testimonials = Array.isArray(p.testimonials) ? p.testimonials as Array<{ text: string; author: string; date?: string; rating?: number }> : [];
+  if (testimonials.length > 0) {
+    schema.review = testimonials.map(t => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: t.author || 'Anonymous' },
+      reviewBody: t.text,
+      ...(t.date ? { datePublished: t.date } : {}),
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: t.rating ?? 5,
+        bestRating: 5,
+      },
+    }));
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: String(
+        Math.round(testimonials.reduce((s, t) => s + (t.rating ?? 5), 0) / testimonials.length * 10) / 10
+      ),
+      reviewCount: String(testimonials.length),
+    };
+  }
 
   const html = `<!DOCTYPE html>
 <html lang="en">
