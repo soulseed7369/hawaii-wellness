@@ -251,12 +251,12 @@ function ArticleForm({
           <Input
             id="art-published-at"
             type="datetime-local"
-            value={form.published_at ? form.published_at.slice(0, 16) : ''}
-            onChange={e => set('published_at', e.target.value ? new Date(e.target.value).toISOString() : '')}
+            value={form.published_at}
+            onChange={e => set('published_at', e.target.value)}
           />
           <p className="text-xs text-gray-500 mt-1">
             {form.published_at && new Date(form.published_at) > new Date()
-              ? `Scheduled — will appear on ${new Date(form.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+              ? `Scheduled — will appear on ${new Date(form.published_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`
               : 'Leave empty for immediate. Set a future date to schedule.'}
           </p>
         </div>
@@ -299,6 +299,9 @@ export function AdminArticles() {
   const handleAdd = async (form: FormState) => {
     const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
     try {
+      const publishedAt = form.status === 'published'
+        ? (form.published_at ? new Date(form.published_at).toISOString() : new Date().toISOString())
+        : null;
       await insertArticle.mutateAsync({
         slug: form.slug || slugify(form.title),
         title: form.title,
@@ -309,9 +312,7 @@ export function AdminArticles() {
         tags,
         featured: form.featured,
         author: form.author || null,
-        published_at: form.status === 'published'
-          ? (form.published_at || new Date().toISOString())
-          : null,
+        published_at: publishedAt,
         status: form.status,
       });
       toast.success('Article created');
@@ -339,7 +340,7 @@ export function AdminArticles() {
           author: form.author || null,
           published_at:
             form.status === 'published'
-              ? (form.published_at || editingArticle.published_at || new Date().toISOString())
+              ? (form.published_at ? new Date(form.published_at).toISOString() : editingArticle.published_at || new Date().toISOString())
               : null,
           status: form.status,
         },
@@ -378,6 +379,15 @@ export function AdminArticles() {
   };
 
   // Map ArticleRow → ArticleForm initial state
+  // Convert ISO timestamp to datetime-local format (YYYY-MM-DDTHH:MM) in local timezone
+  const isoToLocal = (iso: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const rowToForm = (row: ArticleRow): FormState => ({
     title: row.title,
     slug: row.slug,
@@ -389,7 +399,7 @@ export function AdminArticles() {
     status: row.status === 'published' ? 'published' : 'draft',
     body: row.body || '',
     cover_image_url: row.cover_image_url,
-    published_at: row.published_at || '',
+    published_at: isoToLocal(row.published_at),
   });
 
   return (
