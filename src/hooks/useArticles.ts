@@ -17,6 +17,7 @@ export function useArticles() {
         .from('articles')
         .select('*')
         .eq('status', 'published')
+        .lte('published_at', new Date().toISOString())
         .order('featured', { ascending: false })
         .order('published_at', { ascending: false });
 
@@ -45,6 +46,7 @@ export function useArticleBySlug(slug: string) {
         .select('*')
         .eq('slug', slug)
         .eq('status', 'published')
+        .lte('published_at', new Date().toISOString())
         .single();
 
       if (error) {

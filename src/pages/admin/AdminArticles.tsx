@@ -55,6 +55,7 @@ const BLANK_FORM = {
   status: 'draft' as 'draft' | 'published',
   body: '',
   cover_image_url: null as string | null,
+  published_at: '' as string,  // ISO string or '' for immediate
 };
 
 type FormState = typeof BLANK_FORM;
@@ -243,6 +244,24 @@ function ArticleForm({
         </div>
       </div>
 
+      {/* Publish date (schedule) */}
+      {form.status === 'published' && (
+        <div>
+          <Label htmlFor="art-published-at">Publish Date</Label>
+          <Input
+            id="art-published-at"
+            type="datetime-local"
+            value={form.published_at ? form.published_at.slice(0, 16) : ''}
+            onChange={e => set('published_at', e.target.value ? new Date(e.target.value).toISOString() : '')}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {form.published_at && new Date(form.published_at) > new Date()
+              ? `Scheduled — will appear on ${new Date(form.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+              : 'Leave empty for immediate. Set a future date to schedule.'}
+          </p>
+        </div>
+      )}
+
       {/* Body */}
       <div>
         <Label>Body</Label>
@@ -290,7 +309,9 @@ export function AdminArticles() {
         tags,
         featured: form.featured,
         author: form.author || null,
-        published_at: form.status === 'published' ? new Date().toISOString() : null,
+        published_at: form.status === 'published'
+          ? (form.published_at || new Date().toISOString())
+          : null,
         status: form.status,
       });
       toast.success('Article created');
@@ -318,7 +339,7 @@ export function AdminArticles() {
           author: form.author || null,
           published_at:
             form.status === 'published'
-              ? editingArticle.published_at ?? new Date().toISOString()
+              ? (form.published_at || editingArticle.published_at || new Date().toISOString())
               : null,
           status: form.status,
         },
@@ -368,6 +389,7 @@ export function AdminArticles() {
     status: row.status === 'published' ? 'published' : 'draft',
     body: row.body || '',
     cover_image_url: row.cover_image_url,
+    published_at: row.published_at || '',
   });
 
   return (
@@ -448,7 +470,9 @@ export function AdminArticles() {
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Badge variant={article.status === 'published' ? 'default' : 'secondary'} className="text-xs">
-                      {article.status}
+                      {article.status === 'published' && article.published_at && new Date(article.published_at) > new Date()
+                        ? 'scheduled'
+                        : article.status}
                     </Badge>
                     <Button
                       variant="ghost"
