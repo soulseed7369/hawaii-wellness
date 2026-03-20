@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import DOMPurify from 'isomorphic-dompurify';
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,
@@ -19,11 +18,20 @@ function escapeHtml(str: string | null | undefined): string {
     .replace(/'/g, '&#039;');
 }
 
+// Strip all HTML tags — safe for SSR/crawler output (no DOM required)
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+// Allow only safe display tags, strip everything else
 function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p','br','strong','em','b','i','a','ul','ol','li','h2','h3','blockquote','code','pre'],
-    ALLOWED_ATTR: ['href','title','target','rel'],
-  });
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/\s*on\w+="[^"]*"/gi, '')
+    .replace(/\s*on\w+='[^']*'/gi, '')
+    .replace(/javascript:/gi, '');
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -41,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const articleUrl = `${SITE}/articles/${article.slug}`;
   const pubDate = article.published_at ? new Date(article.published_at).toISOString() : null;
-  const plainText = sanitizeHtml(article.body ?? '').replace(/<[^>]*>/g, '');
+  const plainText = stripHtml(article.body ?? '');
   const description = escapeHtml(plainText.substring(0, 155));
 
   const schema = {
@@ -68,6 +76,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   const sanitizedBody = sanitizeHtml(article.body ?? '');
+
   const pubFormatted = pubDate
     ? new Date(pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : '';
