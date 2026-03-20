@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Phone, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const REVEAL_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contact-reveal`;
+import { supabase } from '@/lib/supabase';
 
 interface Props {
   listingId: string;
@@ -14,34 +13,36 @@ interface Props {
 export function ContactReveal({ listingId, listingType, type, className }: Props) {
   const [value, setValue] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
   const [notAvailable, setNotAvailable] = useState(false);
 
-  // Auto-clear error after 1.5 s so button silently resets to "Show Phone"
-  useEffect(() => {
-    if (!error) return;
-    const t = setTimeout(() => setError(false), 1500);
-    return () => clearTimeout(t);
-  }, [error]);
-
   const reveal = async () => {
+    if (!supabase) return;
     setLoading(true);
-    setError(false);
     setNotAvailable(false);
     try {
-      const res = await fetch(
-        `${REVEAL_URL}?id=${listingId}&type=${type}&listing_type=${listingType}`
-      );
-      if (!res.ok) throw new Error(res.statusText);
-      const data = await res.json();
+      const table = listingType === 'center' ? 'centers' : 'practitioners';
+      const field = type === 'phone' ? 'phone' : 'email';
 
-      if (data.value === null || data.value === undefined) {
+      const { data, error } = await supabase
+        .from(table)
+        .select(field)
+        .eq('id', listingId)
+        .eq('status', 'published')
+        .single();
+
+      if (error || !data) {
         setNotAvailable(true);
+        return;
+      }
+
+      const val = (data as Record<string, string | null>)[field];
+      if (val) {
+        setValue(val);
       } else {
-        setValue(data.value);
+        setNotAvailable(true);
       }
     } catch {
-      setError(true);
+      setNotAvailable(true);
     } finally {
       setLoading(false);
     }
@@ -72,7 +73,7 @@ export function ContactReveal({ listingId, listingType, type, className }: Props
 
   return (
     <Button variant="ghost" size="sm" onClick={reveal} disabled={loading}
-      className={`gap-2 transition-opacity ${error ? 'opacity-50' : ''} text-primary ${className ?? ''}`}>
+      className={`gap-2 text-primary ${className ?? ''}`}>
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
       {label}
     </Button>
