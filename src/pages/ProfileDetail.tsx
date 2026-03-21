@@ -525,12 +525,20 @@ const ProfileDetail = () => {
               ) : (
                 <span className="text-xs text-muted-foreground">Free listing</span>
               )}
-              {lastUpdatedLabel && (
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CalendarClock className="h-3.5 w-3.5" />
-                  {isClaimed ? 'Managed by practitioner' : 'Profile updated'} · {lastUpdatedLabel}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {p.createdAt && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Member since {new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+                {lastUpdatedLabel && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CalendarClock className="h-3.5 w-3.5" />
+                    {isClaimed ? 'Managed by practitioner' : 'Profile updated'} · {lastUpdatedLabel}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -620,7 +628,7 @@ const ProfileDetail = () => {
               {p.about && (
                 <div>
                   <h2 className="mb-3 font-display text-xl font-bold">About</h2>
-                  <p className="leading-relaxed text-muted-foreground">
+                  <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
                     {isTiered ? p.about : p.about.slice(0, 250)}
                     {!isTiered && p.about.length > 250 && '…'}
                   </p>

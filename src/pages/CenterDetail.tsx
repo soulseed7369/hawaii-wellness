@@ -22,7 +22,7 @@ import {
 import {
   MapPin, Phone, Mail, Globe, ExternalLink,
   Quote, Flag, Instagram, Facebook, Linkedin, Clock,
-  Star, Users, CalendarDays, Repeat, ChevronLeft, ChevronRight,
+  Star, Users, CalendarDays, Repeat, ChevronLeft, ChevronRight, CheckCircle,
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { ContactReveal } from "@/components/ContactReveal";
@@ -510,12 +510,20 @@ export default function CenterDetail() {
               ) : (
                 <span className="text-xs text-muted-foreground">Free listing</span>
               )}
-              {c.updated_at && (
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  Updated · {new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {c.created_at && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Member since {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+                {c.updated_at && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    Updated · {new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -605,7 +613,7 @@ export default function CenterDetail() {
               {c.about && (
                 <div>
                   <h2 className="mb-3 font-display text-xl font-bold">About</h2>
-                  <p className="leading-relaxed text-muted-foreground">
+                  <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
                     {isTiered ? c.about : c.about.slice(0, 250)}
                     {!isTiered && c.about.length > 250 && '…'}
                   </p>
