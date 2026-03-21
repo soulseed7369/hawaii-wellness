@@ -82,12 +82,14 @@ export function SearchBar({
   const PLACEHOLDER_EXAMPLES = useMemo(() => [
     'yoga in Kona',
     'help with anxiety',
-    'prenatal massage',
-    'acupuncture near Hilo',
-    'stress relief',
-    'chiropractor accepting new clients',
-    'sound healing',
-    'back pain',
+    'deep tissue massage',
+    'lomilomi near Hilo',
+    'trauma-informed therapy',
+    'sleep issues',
+    'gentle energy healing',
+    'neck pain Waimea',
+    'pregnancy massage',
+    'holistic healing',
   ], []);
 
   const [placeholderText, setPlaceholderText] = useState('');
@@ -360,10 +362,10 @@ export function SearchBar({
                   <span
                     key={tab.value}
                     title="Coming soon"
-                    className="relative cursor-default select-none rounded-full px-4 py-1.5 text-sm font-medium text-primary-foreground/35"
+                    className="relative cursor-default select-none rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-primary-foreground/70"
                   >
                     {tab.label}
-                    <span className="ml-1 text-[10px] font-normal text-primary-foreground/30">soon</span>
+                    <span className="ml-1.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary-foreground/80">soon</span>
                   </span>
                 );
               }
