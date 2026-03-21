@@ -106,6 +106,13 @@ export function centerRowToCenter(row: CenterRow): Center {
     tier: (row.tier as 'free' | 'premium' | 'featured') ?? 'free',
     description: row.description ?? undefined,
     centerType: row.center_type ?? undefined,
+    centerTypeLabel: CENTER_TYPE_LABELS[row.center_type] ?? row.center_type ?? undefined,
+    island: row.island ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
+    photos: (row as any).photos ?? undefined,
+    bio: (row as any).bio ?? undefined,
+    workingHours: (row as any).working_hours ?? undefined,
+    verified: !!(row as any).email || !!(row as any).phone,
   };
 }
 

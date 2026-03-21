@@ -2,15 +2,23 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import { MapPin, ExternalLink, CheckCircle } from "lucide-react";
+import { MapPin, ExternalLink } from "lucide-react";
+import type { Provider } from "@/data/mockData";
+import { Link } from "react-router-dom";
+import { formatDistance } from "@/lib/geoUtils";
+import { TierBadge } from "@/components/TierBadge";
+import {
+  ISLAND_CFG,
+  GRADIENT_PAIRS,
+  modalityBadgeClass,
+  isRecentlyUpdated,
+  tierCardClasses,
+  avatarGradient,
+  isValidListingImage,
+  sortModalities,
+} from "@/lib/cardUtils";
 
 // ── Island badge (compact, for use in cards) ─────────────────────────────────
-const ISLAND_CFG: Record<string, { label: string; icon: string; color: string; bg: string }> = {
-  big_island: { label: "Big Island", icon: "🌋", color: "#7c3aed", bg: "#f5f3ff" },
-  maui:       { label: "Maui",       icon: "🌿", color: "#065f46", bg: "#ecfdf5" },
-  oahu:       { label: "Oʻahu",      icon: "🏙️",  color: "#1e40af", bg: "#eff6ff" },
-  kauai:      { label: "Kauaʻi",    icon: "🌺",  color: "#92400e", bg: "#fef3c7" },
-};
 function IslandPill({ island }: { island: string }) {
   const cfg = ISLAND_CFG[island];
   if (!cfg) return null;
@@ -23,20 +31,8 @@ function IslandPill({ island }: { island: string }) {
     </span>
   );
 }
-import type { Provider } from "@/data/mockData";
-import { Link } from "react-router-dom";
-import { formatDistance } from "@/lib/geoUtils";
-import { TierBadge } from "@/components/TierBadge";
 
 // ── Avatar fallback: initials on a gradient background ───────────────────────
-const GRADIENT_PAIRS = [
-  ["from-teal-400 to-cyan-500", "text-white"],
-  ["from-emerald-400 to-green-500", "text-white"],
-  ["from-violet-400 to-purple-500", "text-white"],
-  ["from-amber-400 to-orange-500", "text-white"],
-  ["from-rose-400 to-pink-500", "text-white"],
-];
-
 function AvatarFallback({ name, className }: { name: string; className?: string }) {
   const initials = name
     .split(" ")
@@ -44,53 +40,12 @@ function AvatarFallback({ name, className }: { name: string; className?: string 
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("");
-  const idx = name.charCodeAt(0) % GRADIENT_PAIRS.length;
-  const [gradient, textColor] = GRADIENT_PAIRS[idx];
+  const { gradient, textColor } = avatarGradient(name);
   return (
     <div className={`flex items-center justify-center bg-gradient-to-br ${gradient} font-semibold ${textColor} ${className}`}>
       {initials}
     </div>
   );
-}
-
-// ── Modality → colour class ───────────────────────────────────────────────────
-const MODALITY_SAGE = new Set([
-  "Massage","Craniosacral","Reiki","Energy Healing","Lomilomi / Hawaiian Healing",
-  "Hawaiian Healing","Watsu / Water Therapy","Physical Therapy","Osteopathic",
-  "Chiropractic","Network Chiropractic","Acupuncture","TCM (Traditional Chinese Medicine)",
-  "Ayurveda","Naturopathic","Functional Medicine","Herbalism","IV Therapy","Longevity",
-  "Dentistry","Nervous System Regulation",
-]);
-const MODALITY_OCEAN = new Set([
-  "Yoga","Breathwork","Meditation","Nature Therapy","Sound Healing","Art Therapy",
-]);
-const MODALITY_TERRA = new Set([
-  "Psychotherapy","Counseling","Life Coaching","Hypnotherapy","Family Constellation",
-  "Soul Guidance","Astrology","Psychic","Ritualist","Birth Doula","Midwife",
-  "Women's Health","Trauma-Informed Care","Somatic Therapy",
-]);
-
-/** Returns a Tailwind className string for a modality pill based on its category */
-function modalityBadgeClass(m: string): string {
-  if (MODALITY_SAGE.has(m))  return "bg-sage-light text-sage border border-sage/30";
-  if (MODALITY_OCEAN.has(m)) return "bg-ocean-light text-ocean border border-ocean/30";
-  if (MODALITY_TERRA.has(m)) return "bg-terracotta-light text-terracotta border border-terracotta/30";
-  return "bg-secondary text-secondary-foreground";
-}
-
-// ── Freshness: profile updated within 30 days ────────────────────────────────
-function isRecentlyUpdated(updatedAt?: string): boolean {
-  if (!updatedAt) return false;
-  try {
-    return (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24) <= 30;
-  } catch { return false; }
-}
-
-// ── Tier → border / shadow classes ───────────────────────────────────────────
-function tierCardClasses(tier?: string) {
-  if (tier === "featured") return "border-2 border-amber-300 shadow-lg bg-amber-50/30";
-  if (tier === "premium")  return "border border-sage/40 shadow";
-  return "border border-border shadow-sm";
 }
 
 const SESSION_TYPE_LABELS: Record<string, string> = {
@@ -110,21 +65,11 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
   const displayModalities = provider.modalities ?? (provider.modality ? [provider.modality] : []);
 
   // Bubble the searched/matched modality to the front
-  const sorted = highlightModality
-    ? [...displayModalities].sort((a, b) => {
-        const hl = highlightModality.toLowerCase();
-        const aMatch = a.toLowerCase().includes(hl) || hl.includes(a.toLowerCase());
-        const bMatch = b.toLowerCase().includes(hl) || hl.includes(b.toLowerCase());
-        return aMatch === bMatch ? 0 : aMatch ? -1 : 1;
-      })
-    : displayModalities;
+  const sorted = sortModalities(displayModalities, highlightModality);
 
   // Exclude missing images, the old hardcoded stock-photo placeholder, and ALL Unsplash URLs
   // (project images live in Supabase Storage, never on unsplash.com)
-  const hasImage = !!provider.image
-    && !provider.image.includes("no%20image")
-    && !provider.image.includes("no image")
-    && !provider.image.includes("unsplash.com");
+  const hasImage = isValidListingImage(provider.image);
 
   // ── Compact (directory list) layout ────────────────────────────────────────
   if (compact) {

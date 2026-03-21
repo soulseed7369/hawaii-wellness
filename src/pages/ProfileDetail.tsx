@@ -55,39 +55,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { modalityBadgeClass as modalityChipClass, ISLAND_CFG, islandHeaderGradient } from "@/lib/cardUtils";
 
-// ── Modality chip colour (matches ProviderCard logic) ────────────────────────
-const M_SAGE = new Set(["Massage","Craniosacral","Reiki","Energy Healing","Lomilomi / Hawaiian Healing","Hawaiian Healing","Watsu / Water Therapy","Physical Therapy","Osteopathic","Chiropractic","Network Chiropractic","Acupuncture","TCM (Traditional Chinese Medicine)","Ayurveda","Naturopathic","Functional Medicine","Herbalism","IV Therapy","Longevity","Dentistry","Nervous System Regulation"]);
-const M_OCEAN = new Set(["Yoga","Breathwork","Meditation","Nature Therapy","Sound Healing","Art Therapy"]);
-const M_TERRA = new Set(["Psychotherapy","Counseling","Life Coaching","Hypnotherapy","Family Constellation","Soul Guidance","Astrology","Psychic","Ritualist","Birth Doula","Midwife","Women's Health","Trauma-Informed Care","Somatic Therapy"]);
-
-function modalityChipClass(m: string): string {
-  if (M_SAGE.has(m))  return "bg-sage-light text-sage border border-sage/30";
-  if (M_OCEAN.has(m)) return "bg-ocean-light text-ocean border border-ocean/30";
-  if (M_TERRA.has(m)) return "bg-terracotta-light text-terracotta border border-terracotta/30";
-  return "bg-secondary text-secondary-foreground border border-border";
-}
-
-// ── Island display config ─────────────────────────────────────────────────────
-const ISLAND_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string; gradient: string }> = {
-  big_island: { label: "Big Island of Hawaiʻi", icon: "🌋", color: "#7c3aed", bg: "#f5f3ff", gradient: "linear-gradient(135deg, hsl(260,25%,96%), hsl(200,20%,96%))" },
-  maui:       { label: "Maui",                  icon: "🌿", color: "#065f46", bg: "#ecfdf5", gradient: "linear-gradient(135deg, hsl(143,25%,95%), hsl(160,20%,96%))" },
-  oahu:       { label: "Oʻahu",                 icon: "🏙️",  color: "#1e40af", bg: "#eff6ff", gradient: "linear-gradient(135deg, hsl(215,30%,96%), hsl(200,25%,96%))" },
-  kauai:      { label: "Kauaʻi",               icon: "🌺",  color: "#92400e", bg: "#fef3c7", gradient: "linear-gradient(135deg, hsl(35,30%,96%), hsl(25,25%,96%))" },
-};
-
-function islandHeaderGradient(island: string | null): string {
-  return ISLAND_CONFIG[island ?? '']?.gradient ?? "linear-gradient(135deg, hsl(143,15%,96%), hsl(200,15%,96%))";
-}
 
 function IslandBadge({ island }: { island: string }) {
-  const cfg = ISLAND_CONFIG[island] ?? ISLAND_CONFIG.big_island;
+  const cfg = ISLAND_CFG[island] ?? ISLAND_CFG.big_island;
   return (
     <span
       className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}30` }}
     >
-      {cfg.icon} {cfg.label}
+      {cfg.icon} {cfg.fullLabel}
     </span>
   );
 }

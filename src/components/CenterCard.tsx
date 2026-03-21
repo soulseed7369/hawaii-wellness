@@ -1,37 +1,50 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import { MapPin, Building2 } from "lucide-react";
+import { MapPin, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Center } from "@/data/mockData";
 import { Link } from "react-router-dom";
 import { formatDistance } from "@/lib/geoUtils";
 import { TierBadge } from "@/components/TierBadge";
+import {
+  modalityBadgeClass,
+  tierCardClasses,
+  isRecentlyUpdated,
+  isValidListingImage,
+  sortModalities,
+  ISLAND_CFG,
+  GRADIENT_PAIRS,
+  avatarGradient,
+  centerTypeLabel,
+  getOpenStatus,
+} from "@/lib/cardUtils";
 
-// ── Avatar fallback ──────────────────────────────────────────────────────────
-const GRADIENT_PAIRS = [
-  ["from-teal-400 to-cyan-500", "text-white"],
-  ["from-emerald-400 to-green-500", "text-white"],
-  ["from-violet-400 to-purple-500", "text-white"],
-  ["from-amber-400 to-orange-500", "text-white"],
-  ["from-rose-400 to-pink-500", "text-white"],
-];
-
-function AvatarFallback({ name, className }: { name: string; className?: string }) {
-  const idx = name.charCodeAt(0) % GRADIENT_PAIRS.length;
-  const [gradient, textColor] = GRADIENT_PAIRS[idx];
+// ── Island badge (compact, for use in cards) ─────────────────────────────────
+function IslandPill({ island }: { island: string }) {
+  const cfg = ISLAND_CFG[island];
+  if (!cfg) return null;
   return (
-    <div className={`flex items-center justify-center bg-gradient-to-br ${gradient} ${textColor} ${className}`}>
-      <Building2 className="h-8 w-8 opacity-80" />
-    </div>
+    <span
+      className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold flex-shrink-0"
+      style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}25` }}
+    >
+      {cfg.icon} {cfg.label}
+    </span>
   );
 }
 
-// ── Tier → border / shadow classes ───────────────────────────────────────────
-function tierCardClasses(tier?: string) {
-  if (tier === "featured") return "border-2 border-amber-300 shadow-lg bg-amber-50/30";
-  if (tier === "premium")  return "border border-sage/40 shadow";
-  return "border border-border shadow-sm";
+// ── Avatar fallback with Building2 icon ──────────────────────────────────────
+function AvatarFallback({ name, className }: { name: string; className?: string }) {
+  const { gradient, textColor } = avatarGradient(name);
+  return (
+    <div
+      className={`flex items-center justify-center bg-gradient-to-br ${gradient} ${textColor} ${className}`}
+    >
+      <Building2 className="h-8 w-8 opacity-80" />
+    </div>
+  );
 }
 
 interface CenterCardProps {
@@ -41,86 +54,136 @@ interface CenterCardProps {
   compact?: boolean;
 }
 
-export function CenterCard({ center, highlightModality, compact = false }: CenterCardProps) {
+export function CenterCard({
+  center,
+  highlightModality,
+  compact = false,
+}: CenterCardProps) {
   const displayModalities = center.modalities ?? (center.modality ? [center.modality] : []);
-
-  // Bubble the searched/matched modality to the front
-  const sorted = highlightModality
-    ? [...displayModalities].sort((a, b) => {
-        const hl = highlightModality.toLowerCase();
-        const aMatch = a.toLowerCase().includes(hl) || hl.includes(a.toLowerCase());
-        const bMatch = b.toLowerCase().includes(hl) || hl.includes(b.toLowerCase());
-        return aMatch === bMatch ? 0 : aMatch ? -1 : 1;
-      })
-    : displayModalities;
-
-  // Exclude missing images and all Unsplash stock photos (project images live in Supabase Storage)
-  const hasImage = !!center.image
-    && !center.image.includes("no%20image")
-    && !center.image.includes("no image")
-    && !center.image.includes("unsplash.com");
+  const sorted = sortModalities(displayModalities, highlightModality);
+  const hasImage = isValidListingImage(center.image);
 
   // ── Compact (directory list) layout ────────────────────────────────────────
   if (compact) {
     const visibleModalities = sorted.slice(0, 3);
     const extraCount = displayModalities.length - visibleModalities.length;
+
     return (
-      <Link to={`/center/${center.id}`} className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
-        <Card className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(center.tier)} ${center.tier === 'featured' ? 'border-l-4 border-l-amber-400' : ''}`}>
+      <Link
+        to={`/center/${center.id}`}
+        className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+      >
+        <Card
+          className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(center.tier)} ${center.tier === "featured" ? "border-l-4 border-l-amber-400" : ""}`}
+        >
           <div className="flex gap-4 p-4">
-            {/* Image / fallback */}
+            {/* Avatar — 72px, using OptimizedImage */}
             {hasImage ? (
               <OptimizedImage
                 src={center.image}
                 alt={`Photo of ${center.name}`}
-                width={64}
-                height={64}
-                className="h-16 w-16 flex-shrink-0 rounded-lg object-cover"
+                width={72}
+                height={72}
+                className="h-[72px] w-[72px] flex-shrink-0 rounded-lg object-cover"
                 loading="lazy"
               />
             ) : (
-              <AvatarFallback name={center.name} className="h-16 w-16 flex-shrink-0 rounded-lg" />
+              <AvatarFallback
+                name={center.name}
+                className="h-[72px] w-[72px] flex-shrink-0 rounded-lg"
+              />
             )}
 
             {/* Info */}
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors">
-                  {center.name}
-                </h3>
+                <div className="min-w-0">
+                  {/* Center name */}
+                  <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors leading-tight">
+                    {center.name}
+                  </h3>
+                  {/* Center type badge (teal-colored) */}
+                  {center.centerType && (
+                    <p className="mt-0.5 inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700 border border-teal-200">
+                      {centerTypeLabel(center.centerType)}
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-shrink-0 items-center gap-1">
                   {center.verified && center.tier === "featured" && (
                     <VerifiedBadge size="sm" />
+                  )}
+                  {isRecentlyUpdated(center.updatedAt) && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
+                      ✦ Updated
+                    </span>
                   )}
                   {center.tier && center.tier !== "free" && (
                     <TierBadge tier={center.tier} />
                   )}
                 </div>
               </div>
-              <div className="mb-1.5 flex items-center gap-1 text-sm text-muted-foreground">
+
+              {/* Bio excerpt — italic, truncated, for all tiers */}
+              {center.bio && (
+                <p className="mt-0.5 truncate text-xs text-muted-foreground/80 italic leading-snug">
+                  {center.bio}
+                </p>
+              )}
+
+              {/* Location row with IslandPill */}
+              <div className="mt-1 mb-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-                <span className="truncate">{center.location}</span>
+                <span className="truncate">{center.location?.split(",")[0]}</span>
                 {center.distanceMiles != null && (
-                  <span className="ml-1 flex-shrink-0 text-xs text-muted-foreground/70">
+                  <span className="flex-shrink-0 text-muted-foreground/70">
                     · {formatDistance(center.distanceMiles)}
                   </span>
                 )}
+                {center.island && <IslandPill island={center.island} />}
               </div>
-              <div className="flex flex-wrap gap-1" role="list" aria-label="Services">
-                {visibleModalities.map((m) => (
-                  <Badge key={m} variant="secondary" className="text-xs font-normal" role="listitem">{m}</Badge>
-                ))}
-                {extraCount > 0 && (
-                  <Badge variant="outline" className="text-xs font-normal">+{extraCount} more</Badge>
-                )}
-                {displayModalities.length === 0 && center.services.slice(0, 3).map((s) => (
-                  <Badge key={s} variant="secondary" className="text-xs font-normal" role="listitem">{s}</Badge>
-                ))}
-              </div>
-              {/* Description excerpt for featured tier */}
-              {center.tier === 'featured' && center.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-1.5">{center.description}</p>
+
+              {/* Color-coded modality chips */}
+              {visibleModalities.length > 0 && (
+                <div className="mb-1.5 flex flex-wrap gap-1" role="list" aria-label="Services">
+                  {visibleModalities.map((m) => (
+                    <span
+                      key={m}
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-normal ${modalityBadgeClass(m)}`}
+                      role="listitem"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                  {extraCount > 0 && (
+                    <Badge variant="outline" className="text-xs font-normal">
+                      +{extraCount} more
+                    </Badge>
+                  )}
+                </div>
               )}
+
+              {/* Description excerpt for featured tier */}
+              {center.tier === "featured" && center.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">
+                  {center.description}
+                </p>
+              )}
+
+              {/* Open/closed status indicator */}
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {getOpenStatus(center.workingHours) && getOpenStatus(center.workingHours)?.isOpen ? (
+                  <>
+                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-emerald-600 font-medium">Open now</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
+                    <span>Closed</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </Card>
@@ -129,13 +192,34 @@ export function CenterCard({ center, highlightModality, compact = false }: Cente
   }
 
   // ── Full (homepage) vertical card layout ───────────────────────────────────
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const showPhotoCarousel =
+    center.photos && center.photos.length > 0 && center.tier === "featured";
   const visibleModalities = sorted.slice(0, 2);
   const extraCount = displayModalities.length - visibleModalities.length;
-  const subtitle = visibleModalities[0] ?? center.services?.[0];
+
+  const handlePrevSlide = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentSlide((prev) =>
+      prev === 0 ? (center.photos?.length ?? 1) - 1 : prev - 1
+    );
+  };
+
+  const handleNextSlide = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentSlide((prev) => ((prev + 1) % (center.photos?.length ?? 1)));
+  };
 
   return (
-    <Link to={`/center/${center.id}`} className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
-      <Card className={`relative flex h-80 flex-col overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:-translate-y-0.5 ${tierCardClasses(center.tier)} ${center.tier === 'featured' ? 'border-l-4 border-l-amber-400' : ''}`}>
+    <Link
+      to={`/center/${center.id}`}
+      className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
+    >
+      <Card
+        className={`relative flex h-80 flex-col overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:-translate-y-0.5 ${tierCardClasses(center.tier)} ${center.tier === "featured" ? "border-l-4 border-l-amber-400" : ""}`}
+      >
         {/* Tier badge — top-right */}
         {center.tier && center.tier !== "free" && (
           <div className="absolute right-3 top-3 z-10">
@@ -143,23 +227,100 @@ export function CenterCard({ center, highlightModality, compact = false }: Cente
           </div>
         )}
 
-        {/* Avatar — centered at top */}
-        <div className="flex justify-center pt-5">
-          {hasImage ? (
-            <OptimizedImage
-              src={center.image}
-              alt={`Photo of ${center.name}`}
-              width={80}
-              height={80}
-              className="h-20 w-20 rounded-full object-cover ring-2 ring-background shadow"
-              loading="lazy"
-            />
-          ) : (
-            <AvatarFallback name={center.name} className="h-20 w-20 rounded-full ring-2 ring-background shadow" />
-          )}
-        </div>
+        {showPhotoCarousel ? (
+          <>
+            {/* Photo carousel for featured tier */}
+            <div className="relative h-[140px] w-full overflow-hidden bg-gray-100">
+              <div className="absolute inset-0 flex">
+                {center.photos?.map((photo, idx) => (
+                  <OptimizedImage
+                    key={idx}
+                    src={photo}
+                    alt={`${center.name} photo ${idx + 1}`}
+                    width={320}
+                    height={140}
+                    className={`h-[140px] w-full object-cover transition-opacity duration-300 ${
+                      idx === currentSlide ? "opacity-100" : "opacity-0 absolute"
+                    }`}
+                    loading={idx === currentSlide ? "eager" : "lazy"}
+                  />
+                ))}
+              </div>
 
-        {/* Info */}
+              {/* Center type label — top-left corner */}
+              {center.centerType && (
+                <div className="absolute top-2 left-2 z-[5] bg-black/60 backdrop-blur-sm rounded px-2 py-1 text-white text-[10px] font-medium">
+                  {centerTypeLabel(center.centerType)}
+                </div>
+              )}
+
+              {/* Prev/next buttons on hover */}
+              <button
+                onClick={handlePrevSlide}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-[6] opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 hover:bg-black/70 text-white rounded-full p-1"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                onClick={handleNextSlide}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-[6] opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 hover:bg-black/70 text-white rounded-full p-1"
+                aria-label="Next photo"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              {/* Dot indicators at bottom */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[5] flex gap-1">
+                {center.photos?.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCurrentSlide(idx);
+                    }}
+                    className={`h-1.5 w-1.5 rounded-full transition-all ${
+                      idx === currentSlide
+                        ? "bg-white w-3"
+                        : "bg-white/50 hover:bg-white/75"
+                    }`}
+                    aria-label={`Go to photo ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Avatar — centered at top for non-featured or featured without photos */}
+            <div className="flex justify-center pt-5 relative">
+              {hasImage ? (
+                <OptimizedImage
+                  src={center.image}
+                  alt={`Photo of ${center.name}`}
+                  width={80}
+                  height={80}
+                  className="h-20 w-20 rounded-full object-cover ring-2 ring-background shadow"
+                  loading="lazy"
+                />
+              ) : (
+                <AvatarFallback
+                  name={center.name}
+                  className="h-20 w-20 rounded-full ring-2 ring-background shadow"
+                />
+              )}
+              {/* Center type label in top-left corner */}
+              {center.centerType && (
+                <div className="absolute top-0 left-0 bg-black/60 backdrop-blur-sm rounded px-2 py-1 text-white text-[10px] font-medium">
+                  {centerTypeLabel(center.centerType)}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Info section */}
         <div className="flex flex-1 flex-col px-4 pt-3 pb-4 text-center">
           <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors leading-snug">
             {center.name}
@@ -168,9 +329,6 @@ export function CenterCard({ center, highlightModality, compact = false }: Cente
             <div className="flex justify-center mt-1">
               <VerifiedBadge size="sm" />
             </div>
-          )}
-          {subtitle && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>
           )}
           <div className="mt-1.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
@@ -182,20 +340,40 @@ export function CenterCard({ center, highlightModality, compact = false }: Cente
             )}
           </div>
           {center.description && (
-            <p className="mt-2 line-clamp-2 flex-1 text-xs text-muted-foreground">{center.description}</p>
+            <p className="mt-2 line-clamp-2 flex-1 text-xs text-muted-foreground">
+              {center.description}
+            </p>
           )}
           {!center.description && <div className="flex-1" />}
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-1" role="list" aria-label="Services">
-            {visibleModalities.length > 1 && visibleModalities.slice(1).map((m) => (
-              <Badge key={m} variant="secondary" className="text-[10px] font-normal py-0" role="listitem">{m}</Badge>
-            ))}
+
+          {/* Color-coded modality chips + open/closed status */}
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
+            {visibleModalities.length > 0 &&
+              visibleModalities.map((m) => (
+                <span
+                  key={m}
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-normal ${modalityBadgeClass(m)}`}
+                  role="listitem"
+                >
+                  {m}
+                </span>
+              ))}
             {extraCount > 0 && (
-              <Badge variant="outline" className="text-[10px] font-normal py-0">+{extraCount}</Badge>
+              <Badge variant="outline" className="text-[10px] font-normal py-0">
+                +{extraCount}
+              </Badge>
             )}
-            {displayModalities.length === 0 && center.services?.slice(0, 2).map((s) => (
-              <Badge key={s} variant="secondary" className="text-[10px] font-normal py-0" role="listitem">{s}</Badge>
-            ))}
+            {getOpenStatus(center.workingHours) &&
+              (getOpenStatus(center.workingHours)?.isOpen ? (
+                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Open
+                </span>
+              ) : (
+                <span className="text-[10px] text-muted-foreground/60">Closed</span>
+              ))}
           </div>
+
           <div className="mt-3 w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity group-hover:opacity-90">
             View Center →
           </div>

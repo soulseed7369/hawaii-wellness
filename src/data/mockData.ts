@@ -89,8 +89,20 @@ export interface Center {
   distanceMiles?: number;
   /** Raw center_type value from DB — used for directory filtering */
   centerType?: string;
+  /** Human-readable center type label (e.g. "Retreat Center") */
+  centerTypeLabel?: string;
   /** Whether the center has at least one verified contact channel (email or phone) */
   verified?: boolean;
+  /** Island key: 'big_island' | 'maui' | 'oahu' | 'kauai' */
+  island?: string;
+  /** ISO timestamp of last profile update — used for freshness badge */
+  updatedAt?: string;
+  /** Array of photo URLs (max 5) — used for featured card carousel */
+  photos?: string[];
+  /** Short bio / tagline shown on compact cards (maps to DB bio column) */
+  bio?: string;
+  /** Parsed working_hours from DB — keyed by day abbreviation */
+  workingHours?: Record<string, { open: string; close: string } | null>;
 }
 
 export interface RetreatEvent {

@@ -22,7 +22,7 @@ import {
 import {
   MapPin, Phone, Mail, Globe, ExternalLink,
   Quote, Flag, Instagram, Facebook, Linkedin, Clock,
-  Star, Users, CalendarDays, Repeat,
+  Star, Users, CalendarDays, Repeat, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { ContactReveal } from "@/components/ContactReveal";
@@ -33,6 +33,13 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { generateCenterBreadcrumb, breadcrumbSchema } from "@/hooks/useProfileBreadcrumb";
 import type { CenterLocationRow } from "@/types/database";
 import type { CenterEventRow } from "@/hooks/useCenterEvents";
+import {
+  modalityBadgeClass,
+  islandHeaderGradient,
+  ISLAND_CFG,
+  getOpenStatus,
+  isRecentlyUpdated,
+} from "@/lib/cardUtils";
 
 // ── Island labels ──────────────────────────────────────────────────────────────
 const ISLAND_LABELS: Record<string, string> = {
@@ -267,6 +274,7 @@ export default function CenterDetail() {
   const { data: locations = [] }       = usePublicCenterLocations(id);
   const { data: events = [] }          = usePublicCenterEvents(id);
   const [activeTab, setActiveTab] = useState<CenterTabType>('about');
+  const [galleryIdx, setGalleryIdx] = useState(0);
 
   useTrackView(id, 'center');
   const trackClick = useTrackClick(id, 'center');
@@ -424,61 +432,89 @@ export default function CenterDetail() {
         </Breadcrumb>
       </div>
 
-      {/* Hero */}
-      <section className="relative mt-4">
-        <div className="h-48 overflow-hidden md:h-64">
-          <OptimizedImage
-            src={c.photos?.[0] || PLACEHOLDER_COVER}
-            alt={`${c.name} cover`}
-            width={1200}
-            height={256}
-            className="h-full w-full object-cover"
-            loading="eager"
-            fetchPriority="high"
-            onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_COVER; }}
-          />
-        </div>
-        <div className="container relative">
-          <div className="flex flex-col items-start gap-4 pb-6 pt-0 md:flex-row md:items-end md:gap-6">
-            {c.profileImage ? (
-              <OptimizedImage
-                src={c.profileImage}
-                alt={c.name}
-                width={128}
-                height={128}
-                className="-mt-16 h-32 w-32 rounded-xl border-4 border-background object-cover shadow-lg"
-                loading="eager"
-              />
-            ) : (
-              <div className="-mt-16 h-32 w-32 rounded-xl border-4 border-background bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-3xl font-semibold text-white shadow-lg">
-                {c.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+      {/* Hero — island-gradient card with avatar + info */}
+      <section className="mt-4">
+        <div className="container">
+          <div
+            className="rounded-xl overflow-hidden border border-border"
+            style={{ background: islandHeaderGradient(c.island) }}
+          >
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5">
+              {/* Avatar — rounded-xl, not circle */}
+              {c.profileImage ? (
+                <OptimizedImage
+                  src={c.profileImage}
+                  alt={c.name}
+                  width={112}
+                  height={112}
+                  className="h-28 w-28 flex-shrink-0 rounded-xl border-4 border-background object-cover shadow-lg"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              ) : (
+                <div className="h-28 w-28 flex-shrink-0 rounded-xl border-4 border-background bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-2xl font-semibold text-white shadow-lg">
+                  {c.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+                </div>
+              )}
+
+              {/* Name + center type + location + modalities */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">{c.name}</h1>
+                  {c.verified && c.tier === 'featured' && (
+                    <VerifiedBadge />
+                  )}
+                </div>
+
+                {/* Center type label */}
+                <p className="mt-0.5 text-base font-medium text-muted-foreground">{c.centerTypeLabel}</p>
+
+                {/* Island + location row */}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {c.island && (
+                    <Badge variant="outline" className="text-xs gap-1">
+                      {ISLAND_CFG[c.island]?.icon} {ISLAND_CFG[c.island]?.label}
+                    </Badge>
+                  )}
+                  {c.location && (
+                    <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                      {c.location}
+                    </span>
+                  )}
+                  {hasMultipleLocations && (
+                    <Badge variant="secondary" className="text-xs gap-1">
+                      <MapPin className="h-3 w-3" /> {locations.length} locations
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Top 2 modality chips */}
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  {c.modalities.slice(0, 2).map((m) => (
+                    <span key={m} className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${modalityBadgeClass(m)}`}>
+                      {m}
+                    </span>
+                  ))}
+                </div>
               </div>
-            )}
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className="font-display text-2xl font-bold md:text-3xl">{c.name}</h1>
-                {c.verified && c.tier === 'featured' && (
-                  <VerifiedBadge size="sm" />
-                )}
-              </div>
-              <p className="mt-0.5 text-base font-medium text-muted-foreground">{c.centerTypeLabel}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {c.location && (
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5" /> {c.location}
-                  </span>
-                )}
-                {hasMultipleLocations && (
-                  <Badge variant="secondary" className="text-xs gap-1">
-                    <MapPin className="h-3 w-3" /> {locations.length} locations
-                  </Badge>
-                )}
-              </div>
-              {isTiered && (
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Share:</span>
+            </div>
+
+            {/* Footer strip — share + last updated */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 bg-background/40 px-5 py-2.5">
+              {isTiered ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Share:</span>
                   <ShareButtons title={`Check out ${c.name} on Hawaiʻi Wellness`} compact />
                 </div>
+              ) : (
+                <span className="text-xs text-muted-foreground">Free listing</span>
+              )}
+              {c.updated_at && (
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  Updated · {new Date(c.updated_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
               )}
             </div>
           </div>
@@ -576,28 +612,17 @@ export default function CenterDetail() {
                 </div>
               )}
 
-              {/* Services */}
+              {/* Services — flowing chips */}
               {c.modalities.length > 0 && (
                 <div>
                   <h2 className="mb-3 font-display text-xl font-bold">Services &amp; Modalities</h2>
-                  <ul className="grid gap-2 sm:grid-cols-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {c.modalities.map((m) => (
-                      <li key={m} className="flex items-center gap-2 text-sm">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      <span key={m} className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${modalityBadgeClass(m)}`}>
                         {m}
-                      </li>
+                      </span>
                     ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Hours — single location, or center root hours when no location records exist */}
-              {isTiered && locations.length <= 1 && hasHours && hoursSource && (
-                <div>
-                  <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-bold">
-                    <Clock className="h-5 w-5 text-primary" /> Hours
-                  </h2>
-                  <WorkingHoursTable hours={hoursSource as Record<string, { open: string; close: string } | null>} />
+                  </div>
                 </div>
               )}
 
@@ -615,26 +640,78 @@ export default function CenterDetail() {
                 </div>
               )}
 
-              {/* Photo gallery */}
-              {isTiered && c.photos && c.photos.length > 1 && (
-                <div>
-                  <h2 className="mb-3 font-display text-xl font-bold">Gallery</h2>
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                    {c.photos.slice(1).map((img, i) => (
-                      <OptimizedImage
-                        key={i}
-                        src={img}
-                        alt={`${c.name} photo ${i + 2}`}
-                        width={300}
-                        height={225}
-                        className="aspect-[4/3] rounded-lg object-cover"
-                        loading="lazy"
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                    ))}
+              {/* Photo gallery carousel */}
+              {isTiered && c.photos && c.photos.length > 1 && (() => {
+                const galleryPhotos = (c.photos ?? []).filter(p => p !== c.profileImage).slice(0, 5);
+                return galleryPhotos.length > 0 ? (
+                  <div>
+                    <h2 className="mb-3 font-display text-xl font-bold">Gallery</h2>
+                    <div className="relative rounded-xl overflow-hidden bg-black">
+                      {/* Carousel container — 16:9 aspect ratio */}
+                      <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
+                        {/* Track with carousel slides */}
+                        <div className="absolute inset-0 flex overflow-hidden">
+                          {galleryPhotos.map((photo, i) => (
+                            <div
+                              key={i}
+                              className="min-w-full transition-transform duration-300 ease-out"
+                              style={{ transform: `translateX(-${galleryIdx * 100}%)` }}
+                            >
+                              <OptimizedImage
+                                src={photo}
+                                alt={`${c.name} photo ${i + 1}`}
+                                width={1200}
+                                height={675}
+                                className="w-full h-full object-cover"
+                                loading={i === galleryIdx ? "eager" : "lazy"}
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Prev button */}
+                        <button
+                          onClick={() => setGalleryIdx((galleryIdx - 1 + galleryPhotos.length) % galleryPhotos.length)}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                          aria-label="Previous photo"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+
+                        {/* Next button */}
+                        <button
+                          onClick={() => setGalleryIdx((galleryIdx + 1) % galleryPhotos.length)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                          aria-label="Next photo"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+
+                        {/* Photo counter — top right */}
+                        <div className="absolute top-3 right-3 z-10 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded">
+                          {galleryIdx + 1} / {galleryPhotos.length}
+                        </div>
+
+                        {/* Dot indicators — bottom center */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+                          {galleryPhotos.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setGalleryIdx(i)}
+                              className={`h-2 w-2 rounded-full transition-all ${
+                                i === galleryIdx
+                                  ? 'bg-white w-4'
+                                  : 'bg-white/50 hover:bg-white/80'
+                              }`}
+                              aria-label={`Go to photo ${i + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
             </>
           )}
 
@@ -713,6 +790,39 @@ export default function CenterDetail() {
                     {locations.length} locations — see full list above
                   </p>
                 )}
+
+                {/* Open/Closed status indicator + hours */}
+                {hasHours && hoursSource && (() => {
+                  const statusInfo = getOpenStatus(hoursSource);
+                  return (
+                    <div className="space-y-2 border-t border-border/50 pt-3">
+                      {statusInfo && (
+                        <div className={`flex items-center gap-2 text-xs font-medium px-2 py-1 rounded-full ${
+                          statusInfo.isOpen
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          <span className={`inline-block h-1.5 w-1.5 rounded-full ${
+                            statusInfo.isOpen ? 'bg-emerald-500' : 'bg-muted-foreground'
+                          }`} />
+                          {statusInfo.isOpen && statusInfo.closesAt
+                            ? `Open · Closes at ${statusInfo.closesAt}`
+                            : 'Closed'
+                          }
+                        </div>
+                      )}
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-muted-foreground flex items-center gap-1 list-none font-medium">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>View hours</span>
+                        </summary>
+                        <div className="mt-2 pt-2 border-t border-border/50">
+                          <WorkingHoursTable hours={hoursSource as Record<string, { open: string; close: string } | null>} />
+                        </div>
+                      </details>
+                    </div>
+                  );
+                })()}
 
                 <div className="space-y-2 text-sm text-muted-foreground">
                   {contactPhone && (
