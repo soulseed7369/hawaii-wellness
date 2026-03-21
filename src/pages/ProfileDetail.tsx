@@ -294,7 +294,7 @@ const ProfileDetail = () => {
       ? p.about.slice(0, 155)
       : `${p.name} — ${p.services.slice(0, 3).join(', ')} practitioner in Hawaiʻi. View profile, services, and contact info.`
     : "View practitioner profile and services on Hawaiʻi Wellness.";
-  usePageMeta(p ? p.name : "Practitioner Profile", metaDesc, p?.avatar_url ?? null, 'profile');
+  usePageMeta(p ? p.name : "Practitioner Profile", metaDesc, p?.profileImage ?? null, 'profile');
 
   if (isLoading) {
     return (

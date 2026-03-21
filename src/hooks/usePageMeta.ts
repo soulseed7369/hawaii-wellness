@@ -76,13 +76,19 @@ export function usePageMeta(
     const twitterImage = document.querySelector<HTMLMetaElement>('meta[name="twitter:image"]');
     if (twitterImage) twitterImage.setAttribute('content', resolvedImage);
 
+    const ogTypeEl = document.querySelector<HTMLMetaElement>('meta[property="og:type"]');
+
     // ── Cleanup: restore defaults on unmount ───────────────────────────────
     return () => {
       document.title = `${SITE_NAME} — Holistic Health Directory`;
 
-      if (ogImage) ogImage.setAttribute('content', DEFAULT_OG_IMAGE);
-      if (twitterImage) twitterImage.setAttribute('content', DEFAULT_OG_IMAGE);
-      if (ogType) ogType.setAttribute('content', 'website');
+      const ogImageEl = document.querySelector<HTMLMetaElement>('meta[property="og:image"]');
+      if (ogImageEl) ogImageEl.setAttribute('content', DEFAULT_OG_IMAGE);
+
+      const twitterImageEl = document.querySelector<HTMLMetaElement>('meta[name="twitter:image"]');
+      if (twitterImageEl) twitterImageEl.setAttribute('content', DEFAULT_OG_IMAGE);
+
+      if (ogTypeEl) ogTypeEl.setAttribute('content', 'website');
     };
   }, [title, description, image, type]);
 }
