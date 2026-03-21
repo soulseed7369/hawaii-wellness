@@ -958,12 +958,28 @@ const AdminPanel = () => {
     }).map(f => f.label) };
   };
 
+  // ── Client-side quality sort (applies within the current page when quality_asc/desc selected) ─
+  const sortedPractitioners: PractitionerRow[] = (sort === 'quality_asc' || sort === 'quality_desc')
+    ? [...practitioners].sort((a, b) => {
+        const diff = getPractitionerQuality(a).filled - getPractitionerQuality(b).filled;
+        return sort === 'quality_asc' ? diff : -diff;
+      })
+    : practitioners;
+
+  const sortedCenters: CenterRow[] = (sort === 'quality_asc' || sort === 'quality_desc')
+    ? [...centers].sort((a, b) => {
+        const diff = getCenterQuality(a).filled - getCenterQuality(b).filled;
+        return sort === 'quality_asc' ? diff : -diff;
+      })
+    : centers;
+
   const renderCenterRow = (c: CenterRow) => {
     const quality = getCenterQuality(c);
+    const qualityPct = Math.round((quality.filled / quality.total) * 100);
     const qualityColor =
-      quality.filled >= 6 ? 'text-green-600 bg-green-50 border-green-200' :
-      quality.filled >= 4 ? 'text-yellow-600 bg-yellow-50 border-yellow-200' :
-                            'text-red-600 bg-red-50 border-red-200';
+      qualityPct >= 83 ? 'text-green-600 bg-green-50 border-green-200' :
+      qualityPct >= 57 ? 'text-yellow-600 bg-yellow-50 border-yellow-200' :
+                         'text-red-600 bg-red-50 border-red-200';
     return (
     <Card key={c.id} className={`mb-3 ${selectedCenters.has(c.id) ? 'ring-2 ring-blue-400' : ''}`}>
       <CardContent className="p-4">
@@ -996,12 +1012,12 @@ const AdminPanel = () => {
             </div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
-            {/* Quality score badge (Part 2) */}
+            {/* Quality score badge */}
             <span
-              className={`inline-flex items-center px-1.5 py-0.5 rounded border text-xs font-medium ${qualityColor}`}
-              title={quality.missing.length > 0 ? `Missing: ${quality.missing.join(', ')}` : 'Complete'}
+              className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${qualityColor}`}
+              title={quality.missing.length > 0 ? `Missing: ${quality.missing.join(', ')}` : 'Profile complete'}
             >
-              {quality.filled}/{quality.total}
+              {qualityPct}%
             </span>
             <Badge variant={c.status === 'published' ? 'default' : 'secondary'} className="text-xs">
               {c.status}
@@ -1132,6 +1148,10 @@ const AdminPanel = () => {
             <SelectItem value="updated_asc">Oldest first</SelectItem>
             <SelectItem value="name_asc">A → Z</SelectItem>
             <SelectItem value="name_desc">Z → A</SelectItem>
+            <SelectItem value="quality_asc">Quality: worst first</SelectItem>
+            <SelectItem value="quality_desc">Quality: best first</SelectItem>
+            <SelectItem value="completeness_asc">% Complete: low → high</SelectItem>
+            <SelectItem value="completeness_desc">% Complete: high → low</SelectItem>
           </SelectContent>
         </Select>
         <Select value={island} onValueChange={v => { setIsland(v); setPractitionerPage(0); setCenterPage(0); }}>
@@ -1725,7 +1745,7 @@ const AdminPanel = () => {
             ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>
             : practitioners && practitioners.length > 0
               ? <>
-                  {practitioners.map(renderPractitionerRow)}
+                  {sortedPractitioners.map(renderPractitionerRow)}
                   <div className="mt-4 flex items-center justify-between">
                     <p className="text-sm text-gray-600">{practitionerPageDisplay}</p>
                     <div className="flex gap-2">
@@ -1982,7 +2002,7 @@ const AdminPanel = () => {
             ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>
             : centers && centers.length > 0
               ? <>
-                  {centers.map(renderCenterRow)}
+                  {sortedCenters.map(renderCenterRow)}
                   <div className="mt-4 flex items-center justify-between">
                     <p className="text-sm text-gray-600">{centerPageDisplay}</p>
                     <div className="flex gap-2">

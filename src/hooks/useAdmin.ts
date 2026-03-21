@@ -13,7 +13,9 @@ function escapeLike(s: string) {
 
 export interface AdminQueryParams {
   search?: string;
-  sort?: 'updated_desc' | 'updated_asc' | 'name_asc' | 'name_desc';
+  sort?: 'updated_desc' | 'updated_asc' | 'name_asc' | 'name_desc'
+       | 'completeness_asc' | 'completeness_desc'
+       | 'quality_asc' | 'quality_desc';
   island?: string;
   status?: 'all' | 'published' | 'draft';
   modality?: string;
@@ -149,6 +151,15 @@ export const useAllPractitioners = (params: AdminQueryParams = {}) => {
         case 'name_desc':
           query = query.order('name', { ascending: false });
           break;
+        case 'completeness_asc':
+          query = query.order('profile_completeness', { ascending: true, nullsFirst: false });
+          break;
+        case 'completeness_desc':
+          query = query.order('profile_completeness', { ascending: false, nullsFirst: false });
+          break;
+        // quality_asc/desc: fetched with default order; AdminPanel sorts client-side
+        case 'quality_asc':
+        case 'quality_desc':
         case 'updated_desc':
         default:
           query = query.order('updated_at', { ascending: false });
@@ -313,6 +324,15 @@ export const useAllCenters = (params: AdminQueryParams = {}) => {
         case 'name_desc':
           query = query.order('name', { ascending: false });
           break;
+        case 'completeness_asc':
+          query = query.order('profile_completeness', { ascending: true, nullsFirst: false });
+          break;
+        case 'completeness_desc':
+          query = query.order('profile_completeness', { ascending: false, nullsFirst: false });
+          break;
+        // quality_asc/desc: fetched with default order; AdminPanel sorts client-side
+        case 'quality_asc':
+        case 'quality_desc':
         case 'updated_desc':
         default:
           query = query.order('updated_at', { ascending: false });

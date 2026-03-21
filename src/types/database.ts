@@ -152,6 +152,8 @@ export interface PractitionerRow {
   messaging_enabled: boolean;
   discovery_call_enabled: boolean;
   discovery_call_url: string | null;
+  // Search rebuild sprint — populated by pipeline/scripts/31_rebuild_search_docs.py
+  profile_completeness: number | null;
 }
 
 export interface CenterRow {
@@ -206,6 +208,8 @@ export interface CenterRow {
     sat?: { open: string; close: string } | null;
     sun?: { open: string; close: string } | null;
   };
+  // Search rebuild sprint — populated by pipeline/scripts/31_rebuild_search_docs.py
+  profile_completeness: number | null;
 }
 
 export interface ArticleRow {
