@@ -1,7 +1,5 @@
 import { useMemo } from "react";
 import { IslandHome } from "./IslandHome";
-import heroImage from "@/assets/hero-homepage.jpg";
-
 const HERO_VARIANTS = [
   { title: "Your Wellness Journey on the Big Island Starts Here", subtitle: "Connect with practitioners and wellness centers across the Big Island" },
   { title: "Discover Healing on the Big Island", subtitle: "Connect with practitioners and wellness centers across the Big Island" },
@@ -11,7 +9,7 @@ const HERO_VARIANTS = [
 const baseConfig = {
   island: 'big_island',
   displayName: "Big Island",
-  heroImageUrl: heroImage,
+  heroImageUrl: "/big_island_hero_mauna_kea.jpg",
   pageTitle: "Big Island Wellness Directory – Hawaiʻi Island",
   pageDescription: "Find acupuncture, massage, yoga, reiki & naturopathic practitioners in Kona, Hilo & Waimea. Hawaiʻi Island's largest holistic wellness directory — 500+ practitioners, 34 specialties.",
   faqItems: [
