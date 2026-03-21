@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,42 +13,43 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_EMAIL } from "@/lib/siteConfig";
+import { lazyWithRetry, clearChunkRetryFlag } from "@/lib/lazyWithRetry";
 
 
-// ── Lazy-loaded page bundles ──────────────────────────────────────────────────
-const Index             = lazy(() => import("./pages/Index"));
-const Directory         = lazy(() => import("./pages/Directory"));
-const Articles          = lazy(() => import("./pages/Articles"));
-const ArticleDetail     = lazy(() => import("./pages/ArticleDetail"));
-const ListYourPractice  = lazy(() => import("./pages/ListYourPractice"));
-const ProfileDetail     = lazy(() => import("./pages/ProfileDetail"));
-const CenterDetail      = lazy(() => import("./pages/CenterDetail"));
-const Concierge         = lazy(() => import("./pages/Concierge"));
-const NotFound          = lazy(() => import("./pages/NotFound"));
-const Auth              = lazy(() => import("./pages/Auth"));
-const AuthCallback      = lazy(() => import("./pages/AuthCallback"));
-const ClaimListing      = lazy(() => import("./pages/ClaimListing"));
-const BigIsland         = lazy(() => import("./pages/BigIsland"));
-const MauiHome          = lazy(() => import("./pages/MauiHome"));
-const OahuHome          = lazy(() => import("./pages/OahuHome"));
-const KauaiHome         = lazy(() => import("./pages/KauaiHome"));
-const PrivacyPolicy     = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsOfService    = lazy(() => import("./pages/TermsOfService"));
-const HelpCenter        = lazy(() => import("./pages/HelpCenter"));
-const About             = lazy(() => import("./pages/About"));
-const WebsitePackages   = lazy(() => import("./pages/WebsitePackages"));
+// ── Lazy-loaded page bundles (with auto-reload on stale chunks) ───────────────
+const Index             = lazyWithRetry(() => import("./pages/Index"));
+const Directory         = lazyWithRetry(() => import("./pages/Directory"));
+const Articles          = lazyWithRetry(() => import("./pages/Articles"));
+const ArticleDetail     = lazyWithRetry(() => import("./pages/ArticleDetail"));
+const ListYourPractice  = lazyWithRetry(() => import("./pages/ListYourPractice"));
+const ProfileDetail     = lazyWithRetry(() => import("./pages/ProfileDetail"));
+const CenterDetail      = lazyWithRetry(() => import("./pages/CenterDetail"));
+const Concierge         = lazyWithRetry(() => import("./pages/Concierge"));
+const NotFound          = lazyWithRetry(() => import("./pages/NotFound"));
+const Auth              = lazyWithRetry(() => import("./pages/Auth"));
+const AuthCallback      = lazyWithRetry(() => import("./pages/AuthCallback"));
+const ClaimListing      = lazyWithRetry(() => import("./pages/ClaimListing"));
+const BigIsland         = lazyWithRetry(() => import("./pages/BigIsland"));
+const MauiHome          = lazyWithRetry(() => import("./pages/MauiHome"));
+const OahuHome          = lazyWithRetry(() => import("./pages/OahuHome"));
+const KauaiHome         = lazyWithRetry(() => import("./pages/KauaiHome"));
+const PrivacyPolicy     = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
+const TermsOfService    = lazyWithRetry(() => import("./pages/TermsOfService"));
+const HelpCenter        = lazyWithRetry(() => import("./pages/HelpCenter"));
+const About             = lazyWithRetry(() => import("./pages/About"));
+const WebsitePackages   = lazyWithRetry(() => import("./pages/WebsitePackages"));
 
 // Dashboard pages (split separately — only loaded when user visits /dashboard)
-const AdminPanel        = lazy(() => import("./pages/admin/AdminPanel"));
-const DashboardHome     = lazy(() => import("./pages/dashboard/DashboardHome"));
-const DashboardProfile  = lazy(() => import("./pages/dashboard/DashboardProfile"));
-const DashboardCenters  = lazy(() => import("./pages/dashboard/DashboardCenters"));
-const DashboardOfferings    = lazy(() => import("./pages/dashboard/DashboardOfferings"));
-const DashboardClasses      = lazy(() => import("./pages/dashboard/DashboardClasses"));
-const DashboardTestimonials = lazy(() => import("./pages/dashboard/DashboardTestimonials"));
-const DashboardBilling      = lazy(() => import("./pages/dashboard/DashboardBilling"));
-const DashboardAnalytics    = lazy(() => import("./pages/dashboard/DashboardAnalytics"));
-const DashboardSettings     = lazy(() => import("./pages/dashboard/DashboardSettings"));
+const AdminPanel        = lazyWithRetry(() => import("./pages/admin/AdminPanel"));
+const DashboardHome     = lazyWithRetry(() => import("./pages/dashboard/DashboardHome"));
+const DashboardProfile  = lazyWithRetry(() => import("./pages/dashboard/DashboardProfile"));
+const DashboardCenters  = lazyWithRetry(() => import("./pages/dashboard/DashboardCenters"));
+const DashboardOfferings    = lazyWithRetry(() => import("./pages/dashboard/DashboardOfferings"));
+const DashboardClasses      = lazyWithRetry(() => import("./pages/dashboard/DashboardClasses"));
+const DashboardTestimonials = lazyWithRetry(() => import("./pages/dashboard/DashboardTestimonials"));
+const DashboardBilling      = lazyWithRetry(() => import("./pages/dashboard/DashboardBilling"));
+const DashboardAnalytics    = lazyWithRetry(() => import("./pages/dashboard/DashboardAnalytics"));
+const DashboardSettings     = lazyWithRetry(() => import("./pages/dashboard/DashboardSettings"));
 
 // ── Shared page-level loading fallback ───────────────────────────────────────
 function PageSpinner() {
@@ -80,6 +81,12 @@ function LocationAwareErrorBoundary({ children }: { children: React.ReactNode })
   return <ErrorBoundary resetKey={location.pathname}>{children}</ErrorBoundary>;
 }
 
+/** Clear stale-chunk retry flag on successful mount */
+function ChunkRetryReset() {
+  useEffect(() => { clearChunkRetryFlag(); }, []);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -87,6 +94,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <ChunkRetryReset />
         <AuthProvider>
           <LocationAwareErrorBoundary>
           <Suspense fallback={<PageSpinner />}>
