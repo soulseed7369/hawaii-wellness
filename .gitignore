@@ -53,3 +53,8 @@ tasks/lessons.md
 *.njsproj
 *.sln
 *.sw?
+
+# Temp files from sessions
+draft_audit_report.html
+profile-mockup.html
+sprint5_combined_migration.sql
