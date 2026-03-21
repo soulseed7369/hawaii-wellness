@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Phone, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { trackContactClick } from '@/hooks/useTrackEvent';
 
 interface Props {
   listingId: string;
@@ -38,6 +39,7 @@ export function ContactReveal({ listingId, listingType, type, className }: Props
       const val = (data as Record<string, string | null>)[field];
       if (val) {
         setValue(val);
+        trackContactClick(listingId, listingType, type); // log to analytics
       } else {
         setNotAvailable(true);
       }

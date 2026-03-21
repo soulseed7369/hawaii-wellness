@@ -303,7 +303,9 @@ export default function CenterDetail() {
   const metaDesc = c
     ? `${c.name} — ${c.centerTypeLabel} in Hawaiʻi. View services, hours, and contact info.`
     : 'Wellness Center Profile';
-  usePageMeta(c ? c.name : 'Wellness Center', metaDesc);
+  // Use first photo or avatar as OG image; falls back to site logo
+  const ogImage = c?.photos?.[0] || c?.profileImage || null;
+  usePageMeta(c ? c.name : 'Wellness Center', metaDesc, ogImage, 'profile');
 
   const isClaimed = !!c?.ownerId;
   const isTiered = c && (c.tier === 'premium' || c.tier === 'featured');

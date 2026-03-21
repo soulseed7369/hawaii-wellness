@@ -294,7 +294,7 @@ const ProfileDetail = () => {
       ? p.about.slice(0, 155)
       : `${p.name} — ${p.services.slice(0, 3).join(', ')} practitioner in Hawaiʻi. View profile, services, and contact info.`
     : "View practitioner profile and services on Hawaiʻi Wellness.";
-  usePageMeta(p ? p.name : "Practitioner Profile", metaDesc);
+  usePageMeta(p ? p.name : "Practitioner Profile", metaDesc, p?.avatar_url ?? null, 'profile');
 
   if (isLoading) {
     return (
@@ -532,6 +532,8 @@ const ProfileDetail = () => {
                   src={p.profileImage}
                   alt={p.name}
                   className="h-24 w-24 flex-shrink-0 rounded-full border-4 border-background object-cover shadow-lg sm:h-28 sm:w-28"
+                  loading="eager"
+                  fetchPriority="high"
                 />
               ) : (
                 <div className="h-24 w-24 flex-shrink-0 rounded-full border-4 border-background bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-2xl font-semibold text-white shadow-lg sm:h-28 sm:w-28">

@@ -11,49 +11,59 @@ function getSessionHash(): string {
   return hash;
 }
 
-async function trackEvent(payload: Record<string, unknown>) {
-  if (!supabase) return;
-  try {
-    await supabase.functions.invoke('track-event', {
-      body: payload,
-      headers: {}, // No auth needed — edge function uses service role
-    });
-  } catch {
-    // Silent fail — analytics should never break the app
-  }
-}
-
 /** Track a profile/center page view. Call once on mount. */
 export function useTrackView(listingId: string | undefined, listingType: 'practitioner' | 'center', referrer?: string) {
   const tracked = useRef(false);
   useEffect(() => {
-    if (!listingId || tracked.current) return;
+    if (!listingId || tracked.current || !supabase) return;
+
+    // Client-side dedup: skip if already counted this listing in this browser session
+    const dedupKey = `tracked_view_${listingId}`;
+    if (sessionStorage.getItem(dedupKey)) { tracked.current = true; return; }
+
     tracked.current = true;
-    trackEvent({
-      event_type: 'view',
+    sessionStorage.setItem(dedupKey, '1');
+
+    supabase.from('listing_views').insert({
       listing_id: listingId,
       listing_type: listingType,
       referrer: referrer || document.referrer || 'direct',
       session_hash: getSessionHash(),
-    });
+    }).then(() => {}); // fire and forget — analytics must never break the app
   }, [listingId, listingType, referrer]);
 }
 
-/** Returns a callback to track contact CTA clicks. */
+/** Returns a callback to track contact CTA clicks (website, booking, etc.). */
 export function useTrackClick(listingId: string | undefined, listingType: 'practitioner' | 'center') {
   return useCallback((clickType: 'phone' | 'email' | 'website' | 'booking' | 'discovery_call') => {
-    if (!listingId) return;
-    trackEvent({
-      event_type: 'click',
+    if (!listingId || !supabase) return;
+    supabase.from('contact_clicks').insert({
       listing_id: listingId,
       listing_type: listingType,
       click_type: clickType,
-    });
+    }).then(() => {}); // fire and forget
   }, [listingId, listingType]);
+}
+
+/**
+ * Standalone (non-hook) version for use inside async component handlers.
+ * Used by ContactReveal to log phone/email reveals.
+ */
+export function trackContactClick(
+  listingId: string,
+  listingType: 'practitioner' | 'center',
+  clickType: 'phone' | 'email' | 'website' | 'booking' | 'discovery_call',
+) {
+  if (!supabase) return;
+  supabase.from('contact_clicks').insert({
+    listing_id: listingId,
+    listing_type: listingType,
+    click_type: clickType,
+  }).then(() => {}); // fire and forget
 }
 
 /** Track batch impressions (for directory/homepage). */
 export function trackImpressions(items: Array<{ listing_id: string; listing_type: string; impression_type: string }>) {
-  if (items.length === 0) return;
-  trackEvent({ event_type: 'impressions', items });
+  if (!supabase || items.length === 0) return;
+  supabase.from('listing_impressions').insert(items).then(() => {}); // fire and forget
 }
