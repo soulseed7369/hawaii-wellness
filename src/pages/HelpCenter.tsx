@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Mail } from 'lucide-react';
+import { ChevronDown, Mail } from 'lucide-react';
 import { generateFAQSchema, type FAQItem, type FAQSection } from '@/lib/faqSchema';
 import { JsonLd } from '@/components/JsonLd';
 
@@ -14,16 +14,20 @@ function Accordion({ question, answer }: FAQItem) {
         aria-expanded={open}
       >
         <span>{question}</span>
-        {open
-          ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
-          : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-        }
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
       </button>
-      {open && (
-        <div className="pb-4 text-sm text-muted-foreground leading-relaxed">
-          {answer}
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="pb-4 text-sm text-muted-foreground leading-relaxed">
+            {answer}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
