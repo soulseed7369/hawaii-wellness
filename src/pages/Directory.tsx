@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, Suspense, lazy } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,10 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
-import { DirectoryMap } from "@/components/DirectoryMap";
+const DirectoryMap = lazy(() => import("@/components/DirectoryMap").then(m => ({ default: m.DirectoryMap })));
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePractitioners } from "@/hooks/usePractitioners";
-import { useCenters, useCentersAsProviders } from "@/hooks/useCenters";
+import { useCenters } from "@/hooks/useCenters";
 import { useDirectorySearch, DirectoryResult } from "@/hooks/useDirectorySearch";
 import { useSearchListings } from "@/hooks/useSearchListings";
 import type { Provider, Center } from "@/data/mockData";
@@ -572,11 +572,10 @@ const Directory = () => {
     return [...list].sort((a, b) => tierRank(a.tier) - tierRank(b.tier));
   }, [accumulatedResults, userLocation, sortByDistance, centerType]);
 
-  // ── OLD SEARCH PATH (fallback) ────────────────────────────────────────────
+  // ── OLD SEARCH PATH (fallback — only fetches when new search is disabled) ──
   const fetchIsland = island === 'all' ? 'big_island' : island;
-  const { data: oldPractitioners = [], isLoading: loadingOldP } = usePractitioners(fetchIsland);
-  const { data: oldCenters = [], isLoading: loadingOldC } = useCenters(fetchIsland);
-  const { data: centersAsProviders = [] } = useCentersAsProviders(fetchIsland);
+  const { data: oldPractitioners = [], isLoading: loadingOldP } = usePractitioners(fetchIsland, !USE_NEW_SEARCH);
+  const { data: oldCenters = [], isLoading: loadingOldC } = useCenters(fetchIsland, !USE_NEW_SEARCH);
 
   const oldFilteredPractitioners = useMemo(() => {
     if (USE_NEW_SEARCH) return [];
@@ -690,6 +689,7 @@ const Directory = () => {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input type="text" placeholder="Filter by name, modality, city…" value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                aria-label="Filter practitioners by name, modality, or city"
                 className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
             </div>
             <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
@@ -751,13 +751,14 @@ const Directory = () => {
           )}
 
           <div className="mb-4 flex items-center justify-between gap-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
               {isLoading ? "Loading…" : `${resultCount} result${resultCount !== 1 ? "s" : ""} found`}
             </p>
             {userLocation && !isLoading && resultCount > 0 && (
-              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors select-none">
+              <label htmlFor="sortByDistance" className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors select-none">
                 <Navigation className="h-3.5 w-3.5" />
                 <input
+                  id="sortByDistance"
                   type="checkbox"
                   className="accent-primary"
                   checked={sortByDistance}
@@ -819,12 +820,16 @@ const Directory = () => {
           )}
         </div>
 
-        {/* Map */}
-        <div className={`flex-1 lg:block ${showMap ? "block" : "hidden"}`} style={{ minHeight: showMap ? "calc(100vh - 8rem)" : undefined }}>
-          <div className="sticky top-0 h-[calc(100vh-8rem)]">
-            <DirectoryMap locations={mapLocations} visible={showMap} />
+        {/* Map — lazy-loaded, only mounts when visible */}
+        {showMap && (
+          <div className="flex-1" style={{ minHeight: "calc(100vh - 8rem)" }}>
+            <div className="sticky top-0 h-[calc(100vh-8rem)]">
+              <Suspense fallback={<div className="flex h-full items-center justify-center bg-muted"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
+                <DirectoryMap locations={mapLocations} visible={showMap} />
+              </Suspense>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );

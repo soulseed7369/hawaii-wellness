@@ -10,6 +10,11 @@ const baseConfig = {
   island: 'big_island',
   displayName: "Big Island",
   heroImageUrl: "/big_island_hero_mauna_kea.jpg",
+  heroImages: {
+    srcSet: "/big_island_hero-640w.webp 640w, /big_island_hero-1024w.webp 1024w, /big_island_hero-1920w.webp 1920w, /big_island_hero.webp 3840w",
+    sizes: "100vw",
+    src: "/big_island_hero.webp",
+  },
   pageTitle: "Big Island Wellness Directory – Hawaiʻi Island",
   pageDescription: "Find acupuncture, massage, yoga, reiki & naturopathic practitioners in Kona, Hilo & Waimea. Hawaiʻi Island's largest holistic wellness directory — 500+ practitioners, 34 specialties.",
   faqItems: [

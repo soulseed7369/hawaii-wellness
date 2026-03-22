@@ -17,7 +17,6 @@ import { lazyWithRetry, clearChunkRetryFlag } from "@/lib/lazyWithRetry";
 
 
 // ── Lazy-loaded page bundles (with auto-reload on stale chunks) ───────────────
-const Index             = lazyWithRetry(() => import("./pages/Index"));
 const Directory         = lazyWithRetry(() => import("./pages/Directory"));
 const Articles          = lazyWithRetry(() => import("./pages/Articles"));
 const ArticleDetail     = lazyWithRetry(() => import("./pages/ArticleDetail"));

@@ -4,6 +4,11 @@ const config = {
   island: 'kauai',
   displayName: "Kauai",
   heroImageUrl: "/kauai%20hero.jpg",
+  heroImages: {
+    srcSet: "/kauai_hero-640w.webp 640w, /kauai_hero-1024w.webp 1024w, /kauai_hero-1920w.webp 1920w, /kauai_hero.webp 4240w",
+    sizes: "100vw",
+    src: "/kauai_hero.webp",
+  },
   heroTitle: "Find a Wellness Practitioner on Kauai",
   heroSubtitle: "Browse holistic health providers in Hanalei, Kapaa, Poipu & across the Garden Isle",
   pageTitle: "Kauaʻi Holistic Health Practitioners & Centers | Hawaiʻi Wellness",

@@ -9,9 +9,10 @@ import { mockCenters, type Center, type Provider } from '@/data/mockData';
  *
  * Falls back to mockCenters when Supabase is not configured.
  */
-export function useCenters(island = 'big_island') {
+export function useCenters(island = 'big_island', enabled = true) {
   return useQuery<Center[]>({
     queryKey: ['centers', island],
+    enabled,
     queryFn: async () => {
       if (!supabase) return mockCenters;
 

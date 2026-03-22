@@ -4,6 +4,11 @@ const config = {
   island: 'oahu',
   displayName: "Oahu",
   heroImageUrl: "/oahu%20hero.jpg",
+  heroImages: {
+    srcSet: "/oahu_hero-640w.webp 640w, /oahu_hero-1024w.webp 1024w, /oahu_hero-1920w.webp 1920w, /oahu_hero.webp 4032w",
+    sizes: "100vw",
+    src: "/oahu_hero.webp",
+  },
   heroTitle: "Find a Wellness Practitioner on Oahu",
   heroSubtitle: "Browse holistic health providers in Honolulu, Kailua, Haleiwa & across the Gathering Place",
   pageTitle: "Oʻahu Wellness Directory — Honolulu, Kailua & More | Hawaiʻi Wellness",

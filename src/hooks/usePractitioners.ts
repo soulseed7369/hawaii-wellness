@@ -9,9 +9,10 @@ import { mockPractitioners, type Provider } from '@/data/mockData';
  *
  * Falls back to mockPractitioners when Supabase is not configured.
  */
-export function usePractitioners(island = 'big_island') {
+export function usePractitioners(island = 'big_island', enabled = true) {
   return useQuery<Provider[]>({
     queryKey: ['practitioners', island],
+    enabled,
     queryFn: async () => {
       if (!supabase) return mockPractitioners;
 

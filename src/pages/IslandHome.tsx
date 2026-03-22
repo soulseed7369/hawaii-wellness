@@ -73,7 +73,9 @@ function shuffledTierSort(items: Array<{ tier?: string; [key: string]: unknown }
 export interface IslandConfig {
   island: string;            // DB key: 'big_island' | 'maui' | 'oahu' | 'kauai'
   displayName: string;       // e.g. 'Maui'
-  heroImageUrl: string;      // full URL or local import path
+  heroImageUrl: string;      // full URL or local import path (fallback)
+  /** Responsive hero images (WebP srcSet + sizes + fallback src) */
+  heroImages?: { srcSet: string; sizes: string; src: string };
   heroTitle: string;
   heroSubtitle: string;
   pageTitle: string;
@@ -174,6 +176,7 @@ export function IslandHome({ config }: IslandHomeProps) {
       <SearchBar
         island={config.island}
         heroImageUrl={config.heroImageUrl}
+        heroImages={config.heroImages}
         heroTitle={config.heroTitle}
         heroSubtitle={config.heroSubtitle}
         trustBadge={undefined}

@@ -4,6 +4,11 @@ const config = {
   island: 'maui',
   displayName: "Maui",
   heroImageUrl: "/maui%20hero.jpg",
+  heroImages: {
+    srcSet: "/maui_hero-640w.webp 640w, /maui_hero-1024w.webp 1024w, /maui_hero-1920w.webp 1920w, /maui_hero.webp 4240w",
+    sizes: "100vw",
+    src: "/maui_hero.webp",
+  },
   heroTitle: "Find a Wellness Practitioner on Maui",
   heroSubtitle: "Browse holistic health providers in Lahaina, Kihei, Makawao & across the Valley Isle",
   pageTitle: "Maui Wellness Practitioners & Holistic Health | Hawaiʻi Wellness",

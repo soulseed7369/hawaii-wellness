@@ -57,9 +57,20 @@ interface Suggestion {
   axis: string;
 }
 
+interface HeroImageSet {
+  /** WebP srcSet string, e.g. "/hero-640w.webp 640w, /hero-1024w.webp 1024w" */
+  srcSet: string;
+  /** Sizes attribute for responsive loading */
+  sizes: string;
+  /** Fallback src (full-size WebP or original JPEG) */
+  src: string;
+}
+
 interface SearchBarProps {
   island?: string;
   heroImageUrl?: string;
+  /** Responsive hero images — when provided, overrides heroImageUrl with srcSet */
+  heroImages?: HeroImageSet;
   heroTitle?: string;
   heroSubtitle?: string;
   /** Short trust/count badge rendered inside the hero above the search card, e.g. "120+ practitioners · Free to browse" */
@@ -69,6 +80,7 @@ interface SearchBarProps {
 export function SearchBar({
   island: initialIsland = 'big_island',
   heroImageUrl,
+  heroImages,
   heroTitle = "Find Your Path to Wellness",
   heroSubtitle = "Discover holistic practitioners & wellness centers across Hawai'i",
   trustBadge,
@@ -351,11 +363,30 @@ export function SearchBar({
 
   return (
     <section className="relative overflow-x-hidden py-20 md:py-28">
-      <img
-        src={bgImage}
-        alt="Hawaii wellness"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      {heroImages ? (
+        <picture>
+          <source
+            type="image/webp"
+            srcSet={heroImages.srcSet}
+            sizes={heroImages.sizes}
+          />
+          <img
+            src={heroImages.src}
+            alt="Hawaii wellness"
+            className="absolute inset-0 h-full w-full object-cover"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
+      ) : (
+        <img
+          src={bgImage}
+          alt="Hawaii wellness"
+          className="absolute inset-0 h-full w-full object-cover"
+          fetchPriority="high"
+          decoding="async"
+        />
+      )}
       <div className="absolute inset-0 bg-foreground/45" />
       <div className="container relative z-10">
         <h1 className="mb-2 text-center font-display text-2xl font-bold text-primary-foreground md:text-4xl">
