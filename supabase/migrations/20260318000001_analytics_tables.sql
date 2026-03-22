@@ -41,10 +41,14 @@ ALTER TABLE listing_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE listing_impressions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_clicks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can insert views" ON listing_views;
 CREATE POLICY "Anyone can insert views" ON listing_views FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Anyone can insert impressions" ON listing_impressions;
 CREATE POLICY "Anyone can insert impressions" ON listing_impressions FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Anyone can insert clicks" ON contact_clicks;
 CREATE POLICY "Anyone can insert clicks" ON contact_clicks FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can read own listing views" ON listing_views;
 CREATE POLICY "Authenticated users can read own listing views" ON listing_views
   FOR SELECT USING (
     listing_id IN (
@@ -54,6 +58,7 @@ CREATE POLICY "Authenticated users can read own listing views" ON listing_views
     )
   );
 
+DROP POLICY IF EXISTS "Authenticated users can read own listing impressions" ON listing_impressions;
 CREATE POLICY "Authenticated users can read own listing impressions" ON listing_impressions
   FOR SELECT USING (
     listing_id IN (
@@ -63,6 +68,7 @@ CREATE POLICY "Authenticated users can read own listing impressions" ON listing_
     )
   );
 
+DROP POLICY IF EXISTS "Authenticated users can read own listing clicks" ON contact_clicks;
 CREATE POLICY "Authenticated users can read own listing clicks" ON contact_clicks
   FOR SELECT USING (
     listing_id IN (

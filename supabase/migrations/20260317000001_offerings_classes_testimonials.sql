@@ -114,14 +114,17 @@ BEGIN
   END IF;
 END $$;
 
+DROP TRIGGER IF EXISTS offerings_updated_at ON offerings;
 CREATE TRIGGER offerings_updated_at
   BEFORE UPDATE ON offerings
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+DROP TRIGGER IF EXISTS classes_updated_at ON classes;
 CREATE TRIGGER classes_updated_at
   BEFORE UPDATE ON classes
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+DROP TRIGGER IF EXISTS practitioner_testimonials_updated_at ON practitioner_testimonials;
 CREATE TRIGGER practitioner_testimonials_updated_at
   BEFORE UPDATE ON practitioner_testimonials
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -133,19 +136,23 @@ ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE practitioner_testimonials ENABLE ROW LEVEL SECURITY;
 
 -- Public can read published records
+DROP POLICY IF EXISTS "offerings_public_read" ON offerings;
 CREATE POLICY "offerings_public_read"
   ON offerings FOR SELECT
   USING (status = 'published');
 
+DROP POLICY IF EXISTS "classes_public_read" ON classes;
 CREATE POLICY "classes_public_read"
   ON classes FOR SELECT
   USING (status = 'published');
 
+DROP POLICY IF EXISTS "prac_testimonials_public_read" ON practitioner_testimonials;
 CREATE POLICY "prac_testimonials_public_read"
   ON practitioner_testimonials FOR SELECT
   USING (status = 'published');
 
 -- Owners can do full CRUD on their own records (matched via practitioners.owner_id)
+DROP POLICY IF EXISTS "offerings_owner_all" ON offerings;
 CREATE POLICY "offerings_owner_all"
   ON offerings FOR ALL
   USING (
@@ -159,6 +166,7 @@ CREATE POLICY "offerings_owner_all"
     )
   );
 
+DROP POLICY IF EXISTS "classes_owner_all" ON classes;
 CREATE POLICY "classes_owner_all"
   ON classes FOR ALL
   USING (
@@ -172,6 +180,7 @@ CREATE POLICY "classes_owner_all"
     )
   );
 
+DROP POLICY IF EXISTS "prac_testimonials_owner_all" ON practitioner_testimonials;
 CREATE POLICY "prac_testimonials_owner_all"
   ON practitioner_testimonials FOR ALL
   USING (

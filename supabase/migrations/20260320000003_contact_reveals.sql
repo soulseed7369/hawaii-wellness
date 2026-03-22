@@ -1,5 +1,5 @@
 -- Track contact info reveals for analytics + rate limiting
-CREATE TABLE contact_reveals (
+CREATE TABLE IF NOT EXISTS contact_reveals (
   id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   listing_id  uuid NOT NULL,
   listing_type text NOT NULL CHECK (listing_type IN ('practitioner', 'center')),
@@ -8,12 +8,13 @@ CREATE TABLE contact_reveals (
   created_at  timestamptz DEFAULT now()
 );
 
-CREATE INDEX idx_reveals_listing ON contact_reveals (listing_id);
-CREATE INDEX idx_reveals_rate ON contact_reveals (ip_hash, created_at);
+CREATE INDEX IF NOT EXISTS idx_reveals_listing ON contact_reveals (listing_id);
+CREATE INDEX IF NOT EXISTS idx_reveals_rate ON contact_reveals (ip_hash, created_at);
 
 -- Enable RLS
 ALTER TABLE contact_reveals ENABLE ROW LEVEL SECURITY;
 
 -- Only service role can insert (Edge Function uses service role)
+DROP POLICY IF EXISTS "service_insert" ON contact_reveals;
 CREATE POLICY "service_insert" ON contact_reveals
   FOR INSERT WITH CHECK (auth.role() = 'service_role');

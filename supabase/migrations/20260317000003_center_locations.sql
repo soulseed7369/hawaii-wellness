@@ -44,6 +44,7 @@ CREATE INDEX IF NOT EXISTS idx_center_locations_center
   ON center_locations (center_id, sort_order);
 
 -- updated_at trigger
+DROP TRIGGER IF EXISTS center_locations_updated_at ON center_locations;
 CREATE TRIGGER center_locations_updated_at
   BEFORE UPDATE ON center_locations
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -53,10 +54,12 @@ CREATE TRIGGER center_locations_updated_at
 ALTER TABLE center_locations ENABLE ROW LEVEL SECURITY;
 
 -- Public can read all locations (no status gate — locations are always visible)
+DROP POLICY IF EXISTS "center_locations_public_read" ON center_locations;
 CREATE POLICY "center_locations_public_read"
   ON center_locations FOR SELECT USING (true);
 
 -- Owners can manage their own center's locations
+DROP POLICY IF EXISTS "center_locations_owner_all" ON center_locations;
 CREATE POLICY "center_locations_owner_all"
   ON center_locations FOR ALL
   USING  (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()))

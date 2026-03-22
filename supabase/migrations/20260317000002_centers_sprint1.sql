@@ -82,10 +82,12 @@ CREATE INDEX IF NOT EXISTS idx_center_practitioners_prac
 
 -- ─── 5. updated_at triggers ──────────────────────────────────────────────────
 
+DROP TRIGGER IF EXISTS center_events_updated_at ON center_events;
 CREATE TRIGGER center_events_updated_at
   BEFORE UPDATE ON center_events
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+DROP TRIGGER IF EXISTS center_testimonials_updated_at ON center_testimonials;
 CREATE TRIGGER center_testimonials_updated_at
   BEFORE UPDATE ON center_testimonials
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -97,33 +99,40 @@ ALTER TABLE center_testimonials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE center_practitioners ENABLE ROW LEVEL SECURITY;
 
 -- Public read of published records
+DROP POLICY IF EXISTS "center_events_public_read" ON center_events;
 CREATE POLICY "center_events_public_read"
   ON center_events FOR SELECT USING (status = 'published');
 
+DROP POLICY IF EXISTS "center_testimonials_public_read" ON center_testimonials;
 CREATE POLICY "center_testimonials_public_read"
   ON center_testimonials FOR SELECT USING (status = 'published');
 
 -- Approved roster members are public
+DROP POLICY IF EXISTS "center_practitioners_public_read" ON center_practitioners;
 CREATE POLICY "center_practitioners_public_read"
   ON center_practitioners FOR SELECT USING (approved = true);
 
 -- Owners can do full CRUD
+DROP POLICY IF EXISTS "center_events_owner_all" ON center_events;
 CREATE POLICY "center_events_owner_all"
   ON center_events FOR ALL
   USING (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()))
   WITH CHECK (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()));
 
+DROP POLICY IF EXISTS "center_testimonials_owner_all" ON center_testimonials;
 CREATE POLICY "center_testimonials_owner_all"
   ON center_testimonials FOR ALL
   USING (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()))
   WITH CHECK (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()));
 
+DROP POLICY IF EXISTS "center_practitioners_owner_all" ON center_practitioners;
 CREATE POLICY "center_practitioners_owner_all"
   ON center_practitioners FOR ALL
   USING (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()))
   WITH CHECK (center_id IN (SELECT id FROM centers WHERE owner_id = auth.uid()));
 
 -- Practitioners can see their own pending invites and approve/deny them
+DROP POLICY IF EXISTS "center_practitioners_self_manage" ON center_practitioners;
 CREATE POLICY "center_practitioners_self_manage"
   ON center_practitioners FOR UPDATE
   USING (practitioner_id IN (SELECT id FROM practitioners WHERE owner_id = auth.uid()));

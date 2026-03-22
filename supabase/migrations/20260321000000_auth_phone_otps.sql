@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS auth_phone_otps (
   created_at  timestamptz DEFAULT now()
 );
 
-CREATE INDEX idx_auth_phone_otps_phone ON auth_phone_otps (phone);
-CREATE INDEX idx_auth_phone_otps_expires ON auth_phone_otps (expires_at);
+CREATE INDEX IF NOT EXISTS idx_auth_phone_otps_phone ON auth_phone_otps (phone);
+CREATE INDEX IF NOT EXISTS idx_auth_phone_otps_expires ON auth_phone_otps (expires_at);
 
 -- RLS: only service role can access this table (edge functions use service role key)
 ALTER TABLE auth_phone_otps ENABLE ROW LEVEL SECURITY;
@@ -26,6 +26,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_cleanup_auth_phone_otps ON auth_phone_otps;
 CREATE TRIGGER trg_cleanup_auth_phone_otps
   AFTER INSERT ON auth_phone_otps
   FOR EACH STATEMENT

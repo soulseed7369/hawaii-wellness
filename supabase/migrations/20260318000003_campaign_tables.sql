@@ -77,12 +77,12 @@ CREATE TABLE IF NOT EXISTS campaign_outreach (
   UNIQUE(listing_id, listing_type)
 );
 
-CREATE INDEX idx_campaign_outreach_segment ON campaign_outreach(segment);
-CREATE INDEX idx_campaign_outreach_status ON campaign_outreach(status);
-CREATE INDEX idx_campaign_outreach_island ON campaign_outreach(island);
-CREATE INDEX idx_campaign_outreach_listing ON campaign_outreach(listing_id);
-CREATE INDEX idx_campaign_outreach_phase ON campaign_outreach(phase);
-CREATE INDEX idx_campaign_outreach_batch ON campaign_outreach(batch_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_outreach_segment ON campaign_outreach(segment);
+CREATE INDEX IF NOT EXISTS idx_campaign_outreach_status ON campaign_outreach(status);
+CREATE INDEX IF NOT EXISTS idx_campaign_outreach_island ON campaign_outreach(island);
+CREATE INDEX IF NOT EXISTS idx_campaign_outreach_listing ON campaign_outreach(listing_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_outreach_phase ON campaign_outreach(phase);
+CREATE INDEX IF NOT EXISTS idx_campaign_outreach_batch ON campaign_outreach(batch_id);
 
 -- Trigger to auto-update updated_at
 CREATE OR REPLACE FUNCTION update_campaign_outreach_timestamp()
@@ -93,6 +93,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS campaign_outreach_updated_at ON campaign_outreach;
 CREATE TRIGGER campaign_outreach_updated_at
   BEFORE UPDATE ON campaign_outreach
   FOR EACH ROW EXECUTE FUNCTION update_campaign_outreach_timestamp();
@@ -119,7 +120,7 @@ CREATE TABLE IF NOT EXISTS campaign_emails (
   bounce_reason   text
 );
 
-CREATE INDEX idx_campaign_emails_outreach ON campaign_emails(outreach_id);
-CREATE INDEX idx_campaign_emails_resend ON campaign_emails(resend_id);
-CREATE INDEX idx_campaign_emails_template ON campaign_emails(template);
-CREATE INDEX idx_campaign_emails_status ON campaign_emails(status);
+CREATE INDEX IF NOT EXISTS idx_campaign_emails_outreach ON campaign_emails(outreach_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_emails_resend ON campaign_emails(resend_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_emails_template ON campaign_emails(template);
+CREATE INDEX IF NOT EXISTS idx_campaign_emails_status ON campaign_emails(status);

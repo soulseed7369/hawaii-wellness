@@ -42,17 +42,20 @@ CREATE INDEX IF NOT EXISTS idx_verification_codes_listing
 ALTER TABLE public.verification_codes ENABLE ROW LEVEL SECURITY;
 
 -- Authenticated users can read their own codes (via listing ownership check)
-CREATE POLICY "verification_codes_select_own" ON public.verification_codes
-  FOR SELECT TO authenticated
-  USING (
-    (listing_type = 'practitioner' AND listing_id IN (
-      SELECT id FROM practitioners WHERE owner_id = auth.uid()
-    ))
-    OR
-    (listing_type = 'center' AND listing_id IN (
-      SELECT id FROM centers WHERE owner_id = auth.uid()
-    ))
-  );
+DO $$ BEGIN
+  CREATE POLICY "verification_codes_select_own" ON public.verification_codes
+    FOR SELECT TO authenticated
+    USING (
+      (listing_type = 'practitioner' AND listing_id IN (
+        SELECT id FROM practitioners WHERE owner_id = auth.uid()
+      ))
+      OR
+      (listing_type = 'center' AND listing_id IN (
+        SELECT id FROM centers WHERE owner_id = auth.uid()
+      ))
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Only service_role can insert/update (via Edge Functions)
 -- No insert/update policies for authenticated — all writes go through Edge Functions
@@ -262,15 +265,21 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER trg_practitioners_clear_verification
-  BEFORE UPDATE ON practitioners
-  FOR EACH ROW
-  EXECUTE FUNCTION clear_verification_on_contact_change();
+DO $$ BEGIN
+  CREATE TRIGGER trg_practitioners_clear_verification
+    BEFORE UPDATE ON practitioners
+    FOR EACH ROW
+    EXECUTE FUNCTION clear_verification_on_contact_change();
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TRIGGER trg_centers_clear_verification
-  BEFORE UPDATE ON centers
-  FOR EACH ROW
-  EXECUTE FUNCTION clear_verification_on_contact_change();
+DO $$ BEGIN
+  CREATE TRIGGER trg_centers_clear_verification
+    BEFORE UPDATE ON centers
+    FOR EACH ROW
+    EXECUTE FUNCTION clear_verification_on_contact_change();
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ── 11. Update claim_listing() to also set email_verified_at ────────────────
 --    When Tier 1 claim succeeds (email match + OTP), the email is proven valid.

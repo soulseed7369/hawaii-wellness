@@ -8,7 +8,7 @@ INSERT INTO taxonomy_terms (axis_id, slug, label, sort_order)
 SELECT a.id, 'movement-and-fitness', 'Movement & Fitness', 10
 FROM taxonomy_axes a
 WHERE a.slug = 'modality'
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (axis_id, slug) DO NOTHING;
 
 -- ── 2. Add 'Fitness' as child term ───────────────────────────────────────────
 INSERT INTO taxonomy_terms (axis_id, slug, label, parent_id, sort_order)
@@ -16,7 +16,7 @@ SELECT a.id, 'fitness', 'Fitness', p.id, 1
 FROM taxonomy_axes a
 JOIN taxonomy_terms p ON p.slug = 'movement-and-fitness' AND p.axis_id = a.id
 WHERE a.slug = 'modality'
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (axis_id, slug) DO NOTHING;
 
 -- ── 3. Aliases for 'Fitness' ─────────────────────────────────────────────────
 INSERT INTO taxonomy_aliases (term_id, alias)

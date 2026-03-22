@@ -7,12 +7,14 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- Practitioners: owner can read their own row regardless of status
+DROP POLICY IF EXISTS "owner_read_own_practitioner" ON practitioners;
 CREATE POLICY "owner_read_own_practitioner"
   ON practitioners FOR SELECT
   TO authenticated
   USING (owner_id = auth.uid());
 
 -- Centers: owner can read their own row regardless of status
+DROP POLICY IF EXISTS "owner_read_own_center" ON centers;
 CREATE POLICY "owner_read_own_center"
   ON centers FOR SELECT
   TO authenticated

@@ -7,12 +7,14 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- Admin can read all user profiles (for accounts tab)
+DROP POLICY IF EXISTS "admin_read_all_user_profiles" ON user_profiles;
 CREATE POLICY "admin_read_all_user_profiles"
   ON user_profiles FOR SELECT
   TO authenticated
   USING (is_admin());
 
 -- Admin can update any user profile (tier override)
+DROP POLICY IF EXISTS "admin_update_all_user_profiles" ON user_profiles;
 CREATE POLICY "admin_update_all_user_profiles"
   ON user_profiles FOR UPDATE
   TO authenticated
@@ -20,12 +22,14 @@ CREATE POLICY "admin_update_all_user_profiles"
   WITH CHECK (is_admin());
 
 -- Admin can insert user profiles (upsert for users who don't have one yet)
+DROP POLICY IF EXISTS "admin_insert_user_profiles" ON user_profiles;
 CREATE POLICY "admin_insert_user_profiles"
   ON user_profiles FOR INSERT
   TO authenticated
   WITH CHECK (is_admin());
 
 -- Users can insert their own profile (fallback if signup trigger missed it)
+DROP POLICY IF EXISTS "users_insert_own_profile" ON user_profiles;
 CREATE POLICY "users_insert_own_profile"
   ON user_profiles FOR INSERT
   TO authenticated
