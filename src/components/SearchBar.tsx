@@ -8,10 +8,11 @@ import { useAliasMap } from "@/hooks/useSearchListings";
 
 // Island tabs — Big Island live, others coming soon
 const ISLAND_TABS = [
-  { value: 'big_island', label: 'Big Island', comingSoon: false },
-  { value: 'maui',       label: 'Maui',       comingSoon: true  },
-  { value: 'oahu',       label: 'Oahu',       comingSoon: true  },
-  { value: 'kauai',      label: 'Kauai',      comingSoon: true  },
+  { value: 'all',         label: 'All Islands', comingSoon: true  },
+  { value: 'big_island',  label: 'Big Island',  comingSoon: false },
+  { value: 'maui',        label: 'Maui',        comingSoon: true  },
+  { value: 'oahu',        label: 'Oahu',        comingSoon: true  },
+  { value: 'kauai',       label: 'Kauai',       comingSoon: true  },
 ];
 
 /** Map lat/lng to a Hawaii island DB key, or null if outside all islands. */
@@ -354,7 +355,7 @@ export function SearchBar({
           )}
 
           {/* ── Island tabs ──────────────────────────────────────── */}
-          <div className="mb-3 flex items-center justify-center gap-1.5">
+          <div className="mb-3 flex items-center justify-center gap-1 sm:gap-1.5">
             {ISLAND_TABS.map(tab => {
               const isActive = island === tab.value;
               if (tab.comingSoon) {
@@ -362,7 +363,7 @@ export function SearchBar({
                   <span
                     key={tab.value}
                     title="Coming soon"
-                    className="cursor-default select-none rounded-full px-4 py-1.5 text-sm font-medium text-primary-foreground/40"
+                    className="cursor-default select-none rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-medium text-primary-foreground/50 sm:px-4 sm:py-1.5 sm:text-sm"
                   >
                     {tab.label}
                   </span>
@@ -373,7 +374,7 @@ export function SearchBar({
                   key={tab.value}
                   type="button"
                   onClick={() => setIsland(tab.value)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all sm:px-4 sm:py-1.5 sm:text-sm ${
                     isActive
                       ? 'bg-white text-primary shadow-sm'
                       : 'text-primary-foreground/80 hover:bg-white/20 hover:text-primary-foreground'
