@@ -5,8 +5,7 @@ import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePractitioners } from "@/hooks/usePractitioners";
-import { useCenters } from "@/hooks/useCenters";
+import { useHomePractitioners, useHomeCenters } from "@/hooks/useFeaturedListings";
 import { useArticles } from "@/hooks/useArticles";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { JsonLd } from "@/components/JsonLd";
@@ -122,8 +121,8 @@ export function IslandHome({ config }: IslandHomeProps) {
     })),
   } : null;
 
-  const { data: practitioners = [], isLoading: loadingPractitioners } = usePractitioners(config.island);
-  const { data: centers = [], isLoading: loadingCenters } = useCenters(config.island);
+  const { data: practitioners, isLoading: loadingPractitioners, totalCount: practitionerCount } = useHomePractitioners(config.island);
+  const { data: centers, isLoading: loadingCenters, totalCount: centerCount } = useHomeCenters(config.island);
   const { data: articles = [], isLoading: loadingArticles } = useArticles();
 
   const handleWaitlist = async (e: React.FormEvent) => {
@@ -141,19 +140,20 @@ export function IslandHome({ config }: IslandHomeProps) {
   };
 
   // Tier-grouped random order: featured first, then premium, then free (each group shuffled)
+  // The hook already filters to the right pool; shuffledTierSort randomizes within tiers
   const homePractitioners = shuffledTierSort(practitioners).slice(0, 4);
   const homeCenters = shuffledTierSort(centers).slice(0, 4);
   // Prefer an article with featured=true; fallback to the most recent article
   const featuredArticle = articles.find(a => a.featured) ?? articles[0] ?? null;
 
   // ── ItemList schema for practitioner listings ────────────────────────────
-  const itemListSchema = practitioners.length > 0
+  const itemListSchema = practitionerCount > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
         name: `${config.displayName} Wellness Practitioners`,
         url: `${SITE_URL}/${config.island === 'big_island' ? 'big-island' : config.island}`,
-        numberOfItems: practitioners.length,
+        numberOfItems: practitionerCount,
         itemListElement: practitioners.slice(0, 10).map((p, i) => ({
           '@type': 'ListItem',
           position: i + 1,
@@ -183,21 +183,21 @@ export function IslandHome({ config }: IslandHomeProps) {
       />
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      {(practitioners.length > 0 || centers.length > 0) && (
+      {(practitionerCount > 0 || centerCount > 0) && (
         <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 py-6">
           <div className="container">
             <div className="mx-auto flex max-w-3xl items-center justify-evenly gap-4">
-              {practitioners.length > 0 && (
+              {practitionerCount > 0 && (
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary md:text-3xl">{practitioners.length}+</div>
+                  <div className="text-2xl font-bold text-primary md:text-3xl">{practitionerCount}+</div>
                   <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Practitioners</div>
                 </div>
               )}
               <div className="h-8 w-px bg-border" aria-hidden="true" />
-              {centers.length > 0 && (
+              {centerCount > 0 && (
                 <>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary md:text-3xl">{centers.length}</div>
+                    <div className="text-2xl font-bold text-primary md:text-3xl">{centerCount}</div>
                     <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Wellness Centers</div>
                   </div>
                   <div className="h-8 w-px bg-border" aria-hidden="true" />
@@ -232,7 +232,7 @@ export function IslandHome({ config }: IslandHomeProps) {
             to={`/directory?island=${config.island}`}
             className="flex-shrink-0 text-sm text-primary hover:underline"
           >
-            View all {practitioners.length > 0 ? `${practitioners.length} ` : ""}→
+            View all {practitionerCount > 0 ? `${practitionerCount} ` : ""}→
           </Link>
         </div>
 
@@ -264,7 +264,7 @@ export function IslandHome({ config }: IslandHomeProps) {
               to={`/directory?island=${config.island}`}
               className="text-sm text-primary hover:underline"
             >
-              View all {centers.length > 0 ? `${centers.length} ` : ""}→
+              View all {centerCount > 0 ? `${centerCount} ` : ""}→
             </Link>
           </div>
 
