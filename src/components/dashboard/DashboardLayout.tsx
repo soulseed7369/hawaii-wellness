@@ -1,13 +1,15 @@
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
-import { Home, User, Building, CalendarDays, Sparkles, CreditCard, Settings, LogOut, Menu, X, ShieldCheck, BarChart3, Quote } from "lucide-react";
+import { Home, User, Building, CalendarDays, Sparkles, CreditCard, Settings, LogOut, Menu, X, ShieldCheck, BarChart3, Quote, ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAdmin } from "@/lib/admin";
-import { useAccountType } from "@/hooks/useAccountType";
+import { useAccountType, useSetAccountType } from "@/hooks/useAccountType";
 import { useMyBillingProfile } from "@/hooks/useStripe";
+import { useOwnsListingTypes } from "@/hooks/useOwnsListingTypes";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 // Links for practitioners
 const practitionerLinks = [
@@ -35,10 +37,30 @@ export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: accountType, isLoading: accountTypeLoading } = useAccountType();
   const { data: billing, isLoading: billingLoading } = useMyBillingProfile();
+  const { data: ownership } = useOwnsListingTypes();
+  const setAccountType = useSetAccountType();
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleSwitchAccountType = () => {
+    const newType = accountType === 'center' ? 'practitioner' : 'center';
+    setAccountType.mutate(newType, {
+      onSuccess: () => {
+        // Navigate to the appropriate home after switching
+        if (newType === 'center') {
+          navigate('/dashboard/centers', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
+        toast.success(`Switched to ${newType === 'center' ? 'Center' : 'Practitioner'} dashboard`);
+      },
+      onError: () => {
+        toast.error('Failed to switch account type');
+      },
+    });
   };
 
   // Display name: email local part or fallback
@@ -108,6 +130,20 @@ export function DashboardLayout() {
             </button>
           </div>
         </div>
+
+        {/* Account type switcher — only visible when user owns both types */}
+        {ownership?.hasBoth && !accountTypeLoading && (
+          <button
+            onClick={handleSwitchAccountType}
+            disabled={setAccountType.isPending}
+            className="mx-3 mt-3 flex items-center gap-2.5 rounded-lg border border-sidebar-border px-3 py-2 text-xs font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground disabled:opacity-50"
+          >
+            <ArrowLeftRight className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="flex-1 text-left">
+              Switch to {accountType === 'center' ? 'Practitioner' : 'Center'}
+            </span>
+          </button>
+        )}
 
         {/* Nav links */}
         <nav className="flex-1 space-y-1 p-3">
