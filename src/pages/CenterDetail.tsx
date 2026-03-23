@@ -619,7 +619,24 @@ export default function CenterDetail() {
                 </div>
               )}
 
-              {/* Services & Modalities moved to right sidebar */}
+              {/* Services & Modalities — visible on mobile only, sidebar has desktop version */}
+              {c.modalities.length > 0 && (
+                <div className="lg:hidden">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Services &amp; Modalities
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {c.modalities.map((m) => (
+                      <span
+                        key={m}
+                        className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                      >
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Amenities */}
               {isTiered && c.amenities.length > 0 && (
@@ -870,9 +887,9 @@ export default function CenterDetail() {
             </CardContent>
           </Card>
 
-          {/* Services & Modalities — clean muted pills */}
+          {/* Services & Modalities — desktop sidebar only (mobile version is in main content) */}
           {c.modalities.length > 0 && (
-            <div>
+            <div className="hidden lg:block">
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Services &amp; Modalities
               </h3>

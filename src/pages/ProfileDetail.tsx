@@ -690,7 +690,24 @@ const ProfileDetail = () => {
 
               {/* "Get in Touch" removed — redundant with sidebar CTA + booking embed */}
 
-              {/* Services & Modalities moved to right sidebar */}
+              {/* Services & Modalities — visible on mobile only, sidebar has desktop version */}
+              {p.services.length > 0 && (
+                <div className="lg:hidden">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Services &amp; Modalities
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {p.services.map((service) => (
+                      <span
+                        key={service}
+                        className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                      >
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {isTiered && p.whatToExpect && (
                 <div>
@@ -1301,9 +1318,9 @@ const ProfileDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Services & Modalities — clean muted pills */}
+          {/* Services & Modalities — desktop sidebar only (mobile version is in main content) */}
           {p.services.length > 0 && (
-            <div>
+            <div className="hidden lg:block">
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Services &amp; Modalities
               </h3>
