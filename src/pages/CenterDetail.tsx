@@ -34,7 +34,6 @@ import { generateCenterBreadcrumb, breadcrumbSchema } from "@/hooks/useProfileBr
 import type { CenterLocationRow } from "@/types/database";
 import type { CenterEventRow } from "@/hooks/useCenterEvents";
 import {
-  modalityBadgeClass,
   islandHeaderGradient,
   ISLAND_CFG,
   getOpenStatus,
@@ -492,7 +491,7 @@ export default function CenterDetail() {
                 {/* Top 2 modality chips */}
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   {c.modalities.slice(0, 2).map((m) => (
-                    <span key={m} className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${modalityBadgeClass(m)}`}>
+                    <span key={m} className="inline-flex items-center rounded-md bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                       {m}
                     </span>
                   ))}
@@ -620,19 +619,7 @@ export default function CenterDetail() {
                 </div>
               )}
 
-              {/* Services — flowing chips */}
-              {c.modalities.length > 0 && (
-                <div>
-                  <h2 className="mb-3 font-display text-xl font-bold">Services &amp; Modalities</h2>
-                  <div className="flex flex-wrap gap-1.5">
-                    {c.modalities.map((m) => (
-                      <span key={m} className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${modalityBadgeClass(m)}`}>
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Services & Modalities moved to right sidebar */}
 
               {/* Amenities */}
               {isTiered && c.amenities.length > 0 && (
@@ -882,6 +869,25 @@ export default function CenterDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Services & Modalities — clean muted pills */}
+          {c.modalities.length > 0 && (
+            <div>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Services &amp; Modalities
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {c.modalities.map((m) => (
+                  <span
+                    key={m}
+                    className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Book CTA */}
           {c.externalBookingUrl && (
