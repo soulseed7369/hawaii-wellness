@@ -2039,7 +2039,7 @@ const AdminPanel = () => {
                       <SelectItem value="featured">👑 Featured</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground mt-1">Featured claims one of 5 island slots.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Admin override — no slot cap enforced.</p>
                 </div>
               </div>
 

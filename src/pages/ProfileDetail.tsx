@@ -532,7 +532,7 @@ const ProfileDetail = () => {
 
                 {/* Status + top modalities */}
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  {p.verified && p.tier === 'featured' && (
+                  {p.verified && (p.tier === 'premium' || p.tier === 'featured') && (
                     <VerifiedBadge />
                   )}
                   {p.acceptingClients && (
@@ -702,8 +702,8 @@ const ProfileDetail = () => {
                 </div>
               )}
 
-              {/* Verified testimonials preview — latest 2, with link to full tab */}
-              {isTiered && verifiedTestimonials && verifiedTestimonials.length > 0 && (
+              {/* Verified testimonials preview — latest 2, with link to full tab (featured only) */}
+              {p.tier === 'featured' && verifiedTestimonials && verifiedTestimonials.length > 0 && (
                 <div>
                   <h2 className="mb-3 font-display text-xl font-bold">What Clients Say</h2>
                   <div className="space-y-4">
