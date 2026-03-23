@@ -78,7 +78,12 @@ function rowToProfile(row: PractitionerRow): PractitionerProfile {
     whatToExpect: row.what_to_expect ?? null,
     services: row.modalities,
     modalities: row.modalities,
-    gallery: (row.photos ?? []).filter(Boolean),
+    gallery: (() => {
+      const allPhotos = (row.photos ?? []).filter(Boolean);
+      const profileIdx = row.profile_photo_index ?? 0;
+      // Exclude the profile photo from the gallery
+      return allPhotos.filter((_, i) => i !== profileIdx);
+    })(),
     tier: row.tier,
     ownerId: row.owner_id,
     createdAt: row.created_at ?? null,

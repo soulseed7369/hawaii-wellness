@@ -32,6 +32,7 @@ import {
 import { FlagListingButton } from "@/components/FlagListingButton";
 import { RequestInfoModal } from "@/components/RequestInfoModal";
 import { BookingEmbed } from "@/components/BookingEmbed";
+import { GalleryLightbox } from "@/components/GalleryLightbox";
 import { ContactReveal } from "@/components/ContactReveal";
 import { ShareButtons } from "@/components/ShareButtons";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -687,89 +688,7 @@ const ProfileDetail = () => {
                 </div>
               )}
 
-              {/* CTA Block for tiered listings */}
-              {isTiered && (
-                <div className="border border-teal-200 bg-teal-50 rounded-lg p-5">
-                  <h3 className="mb-3 font-semibold text-sm text-teal-900">Connect with {p.name}</h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {p.externalBookingUrl && (
-                      <Button
-                        className="gap-2 bg-teal-600 text-white hover:bg-teal-700"
-                        asChild
-                      >
-                        <a href={p.externalBookingUrl} onClick={() => trackClick('booking')} target="_blank" rel="noopener noreferrer">
-                          {p.bookingLabel || 'Book a Session'}
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    )}
-                    {p.discoveryCallUrl && (
-                      <Button
-                        variant="outline"
-                        className="gap-2 bg-teal-50 text-teal-800 border-teal-200 hover:bg-teal-100"
-                        asChild
-                      >
-                        <a href={p.discoveryCallUrl} onClick={() => trackClick('discovery_call')} target="_blank" rel="noopener noreferrer">
-                          Discovery Call
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    )}
-                    {!p.externalBookingUrl && p.email && (
-                      <RequestInfoModal
-                        practitionerName={p.name}
-                        practitionerEmail={p.email}
-                        practitionerWebsite={p.website}
-                      />
-                    )}
-                  </div>
-
-                  {/* Teasers for classes and offerings */}
-                  {(showClassesTab || showOfferingsTab) && (
-                    <div className="space-y-2 pt-3 border-t border-teal-200/50">
-                      <p className="text-xs font-medium text-teal-900">Featured</p>
-                      <div className="flex flex-wrap gap-2">
-                        {showClassesTab && classes && classes.slice(0, 3).map((cls) => (
-                          <button
-                            key={cls.id}
-                            onClick={() => setActiveTab('classes')}
-                            className="inline-flex items-center gap-1 text-xs bg-white border border-teal-200 rounded px-2 py-1 text-teal-700 hover:bg-teal-50 transition-colors"
-                          >
-                            {cls.title}
-                            <span className="text-teal-500">→</span>
-                          </button>
-                        ))}
-                        {showOfferingsTab && offerings && offerings.slice(0, 2).map((off) => (
-                          <button
-                            key={off.id}
-                            onClick={() => setActiveTab('offerings')}
-                            className="inline-flex items-center gap-1 text-xs bg-white border border-teal-200 rounded px-2 py-1 text-teal-700 hover:bg-teal-50 transition-colors"
-                          >
-                            {off.title}
-                            <span className="text-teal-500">→</span>
-                          </button>
-                        ))}
-                        {showClassesTab && classes && classes.length > 3 && (
-                          <button
-                            onClick={() => setActiveTab('classes')}
-                            className="text-xs text-teal-600 hover:text-teal-700 font-medium"
-                          >
-                            View all classes →
-                          </button>
-                        )}
-                        {showOfferingsTab && offerings && offerings.length > 2 && (
-                          <button
-                            onClick={() => setActiveTab('offerings')}
-                            className="text-xs text-teal-600 hover:text-teal-700 font-medium"
-                          >
-                            View all offerings →
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* "Get in Touch" removed — redundant with sidebar CTA + booking embed */}
 
               {p.services.length > 0 && (
                 <div>
@@ -799,32 +718,24 @@ const ProfileDetail = () => {
                 <WorkingHours hours={workingHours} />
               )}
 
-              {isTiered && p.gallery.length > 0 && (
+              {isTiered && p.gallery.length > 0 && (() => {
+                const maxPhotos = p.tier === 'featured' ? 10 : 5;
+                const galleryPhotos = p.gallery.slice(0, maxPhotos);
+                return (
                 <div>
                   <h2 className="mb-3 font-display text-xl font-bold">Gallery</h2>
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    {p.gallery.map((img, i) => (
-                      <OptimizedImage
-                        key={i}
-                        src={img}
-                        alt={`Gallery ${i + 1}`}
-                        width={300}
-                        height={225}
-                        className="aspect-[4/3] rounded-lg object-cover"
-                        loading="lazy"
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                      />
-                    ))}
-                  </div>
+                  <GalleryLightbox images={galleryPhotos} alt={`${p.name} gallery`} />
                 </div>
-              )}
+                );
+              })()}
 
-              {/* Booking calendar embed — premium/featured only */}
-              {p.externalBookingUrl && (p.tier === 'premium' || p.tier === 'featured') && (
+              {/* Booking calendar embed — Calendly/Google Cal inline, fallback button for others */}
+              {p.externalBookingUrl && (
                 <BookingEmbed
                   bookingUrl={p.externalBookingUrl}
                   practitionerName={p.name}
                   tier={p.tier}
+                  bookingLabel={p.bookingLabel}
                 />
               )}
 

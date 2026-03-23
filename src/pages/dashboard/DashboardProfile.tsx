@@ -226,12 +226,12 @@ export default function DashboardProfile() {
         <CardContent className="space-y-4">
           {/* Photo upload — up to 3 photos with profile designation */}
           <div>
-            <Label className="mb-2 block">Photos {isPremiumOrFeatured ? '(up to 3)' : '(1 photo)'}</Label>
+            <Label className="mb-2 block">Photos {tier === 'featured' ? '(up to 10)' : tier === 'premium' ? '(up to 5)' : '(1 photo)'}</Label>
             <MultiPhotoUpload
               key={photoKey}
               photos={initialPhotos}
               profileIndex={initialProfileIdx}
-              maxPhotos={isPremiumOrFeatured ? 3 : 1}
+              maxPhotos={tier === 'featured' ? 10 : tier === 'premium' ? 5 : 1}
               onChange={handlePhotosChange}
               disabled={uploading}
             />

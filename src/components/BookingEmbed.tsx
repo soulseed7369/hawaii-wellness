@@ -3,11 +3,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarClock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// ── Provider detection ────────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────────
 
-type BookingProvider = "calendly" | "acuity" | "generic";
+/** Compact height — shows week + 3-4 time slots without dominating the page */
+const EMBED_HEIGHT = 350;
 
-/** Validates that a URL is safe http(s) before rendering. */
+// ── Provider detection ───────────────────────────────────────────────────────
+
+type BookingProvider = "calendly" | "google_cal" | "acuity" | "unsupported";
+
 function isValidHttpUrl(raw: string): boolean {
   try {
     const { protocol } = new URL(raw);
@@ -19,59 +23,52 @@ function isValidHttpUrl(raw: string): boolean {
 
 function detectProvider(url: string): BookingProvider {
   try {
-    const { hostname } = new URL(url);
-    if (hostname.includes("calendly.com")) return "calendly";
-    if (hostname.includes("acuityscheduling.com")) return "acuity";
+    const u = new URL(url);
+    if (u.hostname.includes("calendly.com")) return "calendly";
+    if (
+      u.hostname.includes("calendar.google.com") &&
+      u.pathname.includes("/appointments/")
+    )
+      return "google_cal";
+    if (u.hostname.includes("acuityscheduling.com")) return "acuity";
   } catch {
     // fall through
   }
-  return "generic";
+  return "unsupported";
 }
 
-// ── Calendly widget type ──────────────────────────────────────────────────────
+// ── Calendly widget type ─────────────────────────────────────────────────────
 
 interface CalendlyAPI {
   initInlineWidget?: (opts: { url: string; parentElement: HTMLElement }) => void;
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
 interface BookingEmbedProps {
   bookingUrl: string;
   practitionerName: string;
   tier: string;
+  /** Custom CTA label — e.g. "Schedule a Discovery Call", "Book an Appointment" */
+  bookingLabel?: string | null;
 }
 
-// ── Error fallback ────────────────────────────────────────────────────────────
+// ── Calendly inline widget ───────────────────────────────────────────────────
 
-function EmbedError({ url, label }: { url: string; label: string }) {
-  return (
-    <div className="flex h-40 flex-col items-center justify-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 text-center">
-      <p className="text-sm text-muted-foreground">Could not load the booking calendar.</p>
-      <Button variant="outline" size="sm" asChild>
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {label} <ExternalLink className="ml-1.5 h-3 w-3" />
-        </a>
-      </Button>
-    </div>
-  );
-}
-
-// ── Calendly inline widget ────────────────────────────────────────────────────
-
-function CalendlyEmbed({ url }: { url: string }) {
+function CalendlyEmbed({ url, onFail }: { url: string; onFail: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (error) onFail();
+  }, [error, onFail]);
+
+  useEffect(() => {
     let cancelled = false;
     const SCRIPT_SRC = "https://assets.calendly.com/assets/external/widget.js";
 
-    // Clear the container whenever url changes (prevents double-widget on re-render)
-    if (containerRef.current) {
-      containerRef.current.innerHTML = "";
-    }
+    if (containerRef.current) containerRef.current.innerHTML = "";
     setLoaded(false);
     setError(false);
 
@@ -82,13 +79,13 @@ function CalendlyEmbed({ url }: { url: string }) {
         calendly.initInlineWidget({ url, parentElement: containerRef.current });
         setLoaded(true);
       } else if (!cancelled) {
-        // Script tag exists but Calendly API not available — show error
         setError(true);
       }
     };
 
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`);
-    // Only reuse existing script if the Calendly API actually loaded successfully
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${SCRIPT_SRC}"]`
+    );
     if (existing && (window as unknown as { Calendly?: CalendlyAPI }).Calendly) {
       initWidget();
       return () => { cancelled = true; };
@@ -101,78 +98,87 @@ function CalendlyEmbed({ url }: { url: string }) {
     script.onerror = () => { if (!cancelled) setError(true); };
     document.head.appendChild(script);
 
-    // Cleanup: flag as cancelled + clear container so stale widget doesn't linger
     return () => {
       cancelled = true;
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [url]);
 
-  if (error) {
-    return <EmbedError url={url} label="Open booking page" />;
-  }
+  if (error) return null;
 
   return (
     <div className="relative w-full">
-      {!loaded && <Skeleton className="absolute inset-0 rounded-xl" style={{ height: "700px" }} />}
+      {!loaded && (
+        <Skeleton
+          className="absolute inset-0 rounded-xl"
+          style={{ height: `${EMBED_HEIGHT}px` }}
+        />
+      )}
       <div
         ref={containerRef}
         className="w-full overflow-hidden rounded-xl"
-        style={{ minWidth: "320px", height: "700px" }}
+        style={{ minWidth: "320px", height: `${EMBED_HEIGHT}px` }}
       />
     </div>
   );
 }
 
-// ── Iframe embed (Acuity + generic) ──────────────────────────────────────────
+// ── Iframe embed (Google Calendar Appointments, Acuity) ─────────────────────
 
 function IframeEmbed({
   url,
   practitionerName,
+  onFail,
 }: {
   url: string;
   practitionerName: string;
+  onFail: () => void;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
-  // Ref tracks actual loaded state so the timeout closure is never stale
   const loadedRef = useRef(false);
 
-  // Reset state when URL changes (e.g. navigating between practitioners)
+  useEffect(() => {
+    if (error) onFail();
+  }, [error, onFail]);
+
   useEffect(() => {
     setLoaded(false);
     setError(false);
     loadedRef.current = false;
   }, [url]);
 
-  // Keep ref in sync with state
   useEffect(() => {
     loadedRef.current = loaded;
   }, [loaded]);
 
-  // Fallback timeout: fires once per mount/URL-change; uses ref to avoid stale closure
+  // If the iframe doesn't fire onLoad within 12s, consider it failed
   useEffect(() => {
     const id = setTimeout(() => {
       if (!loadedRef.current) setError(true);
-    }, 15_000);
+    }, 12_000);
     return () => clearTimeout(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]); // reset timer on URL change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
 
-  if (error) {
-    return <EmbedError url={url} label="Open booking page" />;
-  }
+  if (error) return null;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl border border-border bg-card">
-      {!loaded && <Skeleton className="absolute inset-0" style={{ height: "700px" }} />}
+    <div
+      className="relative w-full overflow-hidden rounded-xl border border-border bg-card"
+    >
+      {!loaded && (
+        <Skeleton
+          className="absolute inset-0"
+          style={{ height: `${EMBED_HEIGHT}px` }}
+        />
+      )}
       <iframe
         src={url}
         title={`Book an appointment with ${practitionerName || "this practitioner"}`}
         className="w-full"
-        style={{ minHeight: "700px", display: "block" }}
+        style={{ height: `${EMBED_HEIGHT}px`, display: "block" }}
         frameBorder="0"
-        // allow-same-origin: needed so the booking service can access its own resources
         sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
         loading="lazy"
         onLoad={() => setLoaded(true)}
@@ -181,43 +187,101 @@ function IframeEmbed({
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Website booking button (unsupported providers or embed failure) ──────────
+
+function WebsiteBookingButton({
+  url,
+  practitionerName,
+}: {
+  url: string;
+  practitionerName: string;
+}) {
+  // Extract display domain for the button
+  let domain = "";
+  try {
+    domain = new URL(url).hostname.replace(/^www\./, "");
+  } catch { /* ignore */ }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <p className="text-sm text-muted-foreground mb-4">
+        Book directly through {practitionerName ? `${practitionerName}'s` : "their"} website.
+      </p>
+      <Button className="gap-2" asChild>
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          Book on {domain || "their website"}
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      </Button>
+    </div>
+  );
+}
+
+// ── Inner embed that reports failure upward via callback ─────────────────────
+
+function EmbedInner({
+  provider,
+  bookingUrl,
+  practitionerName,
+  onFail,
+}: {
+  provider: BookingProvider;
+  bookingUrl: string;
+  practitionerName: string;
+  onFail: () => void;
+}) {
+  if (provider === "calendly") {
+    return <CalendlyEmbed url={bookingUrl} onFail={onFail} />;
+  }
+  // google_cal + acuity use iframe
+  return <IframeEmbed url={bookingUrl} practitionerName={practitionerName} onFail={onFail} />;
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 
 export function BookingEmbed({
   bookingUrl,
   practitionerName,
   tier,
+  bookingLabel,
 }: BookingEmbedProps) {
-  // Premium+ gating — free tier falls back to the external link button in the sidebar
+  const [embedFailed, setEmbedFailed] = useState(false);
+
+  // Premium+ gating
   if (tier !== "premium" && tier !== "featured") return null;
-
-  // Reject invalid / non-http(s) URLs silently
   if (!isValidHttpUrl(bookingUrl)) return null;
-
-  // Guard against missing name
   if (!practitionerName?.trim()) return null;
 
   const provider = detectProvider(bookingUrl);
+  const isEmbeddable = provider !== "unsupported";
+  const heading = bookingLabel || "Book an Appointment";
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-2">
-        <CalendarClock className="h-5 w-5 text-primary" />
-        <h2 className="font-display text-xl font-bold">Book an Appointment</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="h-5 w-5 text-primary" />
+          <h2 className="font-display text-xl font-bold">{heading}</h2>
+        </div>
         <a
           href={bookingUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
+          className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
         >
           Open in new tab <ExternalLink className="h-3 w-3" />
         </a>
       </div>
 
-      {provider === "calendly" ? (
-        <CalendlyEmbed url={bookingUrl} />
+      {isEmbeddable && !embedFailed ? (
+        <EmbedInner
+          provider={provider}
+          bookingUrl={bookingUrl}
+          practitionerName={practitionerName}
+          onFail={() => setEmbedFailed(true)}
+        />
       ) : (
-        <IframeEmbed url={bookingUrl} practitionerName={practitionerName} />
+        <WebsiteBookingButton url={bookingUrl} practitionerName={practitionerName} />
       )}
     </div>
   );
