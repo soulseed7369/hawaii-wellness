@@ -59,7 +59,7 @@ export function useSimilarPractitioners(
         .eq('island', island)
         .eq('status', 'published')
         .neq('id', excludeId)
-        .limit(20);
+        .limit(100);
 
       if (error) throw error;
 
