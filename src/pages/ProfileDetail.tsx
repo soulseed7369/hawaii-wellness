@@ -542,18 +542,18 @@ const ProfileDetail = () => {
                     </Badge>
                   )}
                   {p.modalities.slice(0, 5).map((m) => (
-                    <span key={m} className="inline-flex items-center rounded-md bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">{m}</span>
+                    <Link key={m} to={`/directory?island=${encodeURIComponent(p.island ?? 'big_island')}&modality=${encodeURIComponent(m)}`} className="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700 hover:bg-teal-100 hover:border-teal-300 transition-colors">{m}</Link>
                   ))}
                   {p.modalities.length > 5 && !showAllModalities && (
                     <button
                       onClick={() => setShowAllModalities(true)}
-                      className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-muted transition-colors"
+                      className="inline-flex items-center rounded-md bg-teal-50/60 border border-teal-200/60 px-2.5 py-0.5 text-xs font-medium text-teal-600 hover:bg-teal-100 transition-colors"
                     >
                       +{p.modalities.length - 5} more
                     </button>
                   )}
                   {showAllModalities && p.modalities.slice(5).map((m) => (
-                    <span key={m} className="inline-flex items-center rounded-md bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">{m}</span>
+                    <Link key={m} to={`/directory?island=${encodeURIComponent(p.island ?? 'big_island')}&modality=${encodeURIComponent(m)}`} className="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700 hover:bg-teal-100 hover:border-teal-300 transition-colors">{m}</Link>
                   ))}
                 </div>
               </div>
@@ -562,30 +562,30 @@ const ProfileDetail = () => {
             {/* Social links + last-updated footer strip */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 bg-background/40 px-5 py-2.5">
               {isTiered && p.socialLinks && Object.values(p.socialLinks).some(Boolean) ? (
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   {p.socialLinks.instagram && (
-                    <a href={p.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Instagram">
-                      <Instagram className="h-3.5 w-3.5" />
+                    <a href={p.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:text-pink-700 transition-colors" title="Instagram" aria-label="Instagram">
+                      <Instagram className="h-4 w-4" />
                     </a>
                   )}
                   {p.socialLinks.facebook && (
-                    <a href={p.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Facebook">
-                      <Facebook className="h-3.5 w-3.5" />
+                    <a href={p.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 transition-colors" title="Facebook" aria-label="Facebook">
+                      <Facebook className="h-4 w-4" />
                     </a>
                   )}
                   {p.socialLinks.linkedin && (
-                    <a href={p.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
-                      <Linkedin className="h-3.5 w-3.5" />
+                    <a href={p.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:text-sky-700 transition-colors" title="LinkedIn" aria-label="LinkedIn">
+                      <Linkedin className="h-4 w-4" />
                     </a>
                   )}
                   {p.socialLinks.x && (
-                    <a href={p.socialLinks.x} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="X">
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <a href={p.socialLinks.x} target="_blank" rel="noopener noreferrer" className="text-gray-800 hover:text-black transition-colors" title="X" aria-label="X">
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     </a>
                   )}
                   {p.socialLinks.substack && (
-                    <a href={p.socialLinks.substack} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Substack">
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 17.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                    <a href={p.socialLinks.substack} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 transition-colors" title="Substack" aria-label="Substack">
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 17.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
                     </a>
                   )}
                 </div>
@@ -738,33 +738,7 @@ const ProfileDetail = () => {
 
               {/* "Get in Touch" removed — redundant with sidebar CTA + booking embed */}
 
-              {/* Services & Modalities — visible on mobile only, sidebar has desktop version */}
-              {p.services.length > 0 && (
-                <div className="lg:hidden">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    Services &amp; Modalities
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {p.services.map((service) => (
-                      <span
-                        key={service}
-                        className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
-                      >
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {isTiered && p.whatToExpect && (
-                <div>
-                  <h2 className="mb-3 font-display text-xl font-bold">What to Expect</h2>
-                  <p className="leading-relaxed text-muted-foreground">{p.whatToExpect}</p>
-                </div>
-              )}
-
-              {/* Structured services */}
+              {/* Structured services — shown before What to Expect */}
               {p.servicesList && p.servicesList.length > 0 && (
                 <div>
                   <h2 className="mb-3 font-display text-xl font-bold">Services</h2>
@@ -783,6 +757,13 @@ const ProfileDetail = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {isTiered && p.whatToExpect && (
+                <div>
+                  <h2 className="mb-3 font-display text-xl font-bold">What to Expect</h2>
+                  <p className="leading-relaxed text-muted-foreground">{p.whatToExpect}</p>
                 </div>
               )}
 
@@ -836,9 +817,9 @@ const ProfileDetail = () => {
                 </Card>
               )}
 
-              {/* Share this profile */}
+              {/* Share this listing */}
               <div className="flex items-center gap-2 pt-2">
-                <span className="text-xs text-muted-foreground">Share:</span>
+                <span className="text-xs text-muted-foreground">Share this listing:</span>
                 <ShareButtons title={`Check out ${p.name} on Hawaiʻi Wellness`} compact />
               </div>
 
@@ -1363,24 +1344,6 @@ const ProfileDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Services & Modalities — desktop sidebar only (mobile version is in main content) */}
-          {p.services.length > 0 && (
-            <div className="hidden lg:block">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Services &amp; Modalities
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {p.services.map((service) => (
-                  <span
-                    key={service}
-                    className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
-                  >
-                    {service}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
         </div>
         )}

@@ -419,6 +419,110 @@ export default function DashboardProfile() {
         </CardContent>
       </Card>
 
+      {/* Services — Premium / Featured only (mirrors listing detail order) */}
+      <Card className={isPremiumOrFeatured ? "border-primary/30 bg-terracotta-light/30" : "border-border"}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            {isPremiumOrFeatured
+              ? <ExternalLink className="h-4 w-4 text-primary" />
+              : <Lock className="h-4 w-4 text-muted-foreground" />}
+            Services
+            {!isPremiumOrFeatured && (
+              <span className="ml-auto flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                <Crown className="h-3 w-3" /> Premium
+              </span>
+            )}
+          </CardTitle>
+          <CardDescription>
+            {isPremiumOrFeatured
+              ? "List specific services you offer — shown on your public profile before \"What to Expect\"."
+              : "Upgrade to list your specific services with descriptions and pricing."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isPremiumOrFeatured ? (
+            <div className="space-y-2">
+              {form.services_list?.map((svc, idx) => (
+                <div key={idx} className="flex items-start gap-2 rounded-lg border border-border p-2.5">
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Service name (e.g. Lomilomi Massage)"
+                        value={svc.name}
+                        onChange={e => {
+                          const updated = [...(form.services_list || [])];
+                          updated[idx] = { ...svc, name: e.target.value };
+                          setForm(p => ({ ...p, services_list: updated }));
+                        }}
+                        className="flex-1 h-8 text-sm"
+                      />
+                      <Input
+                        placeholder="Price"
+                        value={svc.price ?? ''}
+                        onChange={e => {
+                          const updated = [...(form.services_list || [])];
+                          updated[idx] = { ...svc, price: e.target.value };
+                          setForm(p => ({ ...p, services_list: updated }));
+                        }}
+                        className="w-28 h-8 text-sm"
+                      />
+                    </div>
+                    <Input
+                      placeholder="Brief description (optional)"
+                      value={svc.description ?? ''}
+                      onChange={e => {
+                        const updated = [...(form.services_list || [])];
+                        updated[idx] = { ...svc, description: e.target.value };
+                        setForm(p => ({ ...p, services_list: updated }));
+                      }}
+                      className="h-8 text-sm text-muted-foreground"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(p => ({
+                        ...p,
+                        services_list: (p.services_list || []).filter((_, i) => i !== idx),
+                      }));
+                    }}
+                    className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 mt-1.5"
+                    aria-label="Remove service"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setForm(p => ({
+                    ...p,
+                    services_list: [...(p.services_list || []), { name: '', description: '', price: '' }],
+                  }));
+                }}
+              >
+                + Add a service
+              </Button>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center">
+              <p className="mb-3 text-sm text-muted-foreground">
+                List your specific services with descriptions and optional pricing. Available on Premium and Featured plans.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/list-your-practice">
+                  <Crown className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                  Upgrade to Premium
+                </Link>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* What to Expect — Premium / Featured only */}
       <Card className={isPremiumOrFeatured ? "border-primary/30 bg-terracotta-light/30" : "border-border bg-muted/40"}>
         <CardHeader>
@@ -580,39 +684,38 @@ export default function DashboardProfile() {
         </CardHeader>
         <CardContent>
           {isPremiumOrFeatured ? (
-            <div className="space-y-3">
+            <div className="space-y-1">
               {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(day => {
                 const dayLabel: Record<string, string> = {
-                  mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
-                  fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
+                  mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu',
+                  fri: 'Fri', sat: 'Sat', sun: 'Sun',
                 };
                 const slots = form.working_hours?.[day];
                 const isOpen = slots !== null && slots !== undefined && slots.length > 0;
                 return (
-                  <div key={day} className="pb-2 border-b border-border last:border-0">
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={isOpen}
-                        onCheckedChange={checked => {
-                          setForm(p => ({
-                            ...p,
-                            working_hours: {
-                              ...p.working_hours,
-                              [day]: checked ? [{ open: '09:00', close: '17:00' }] : null,
-                            },
-                          }));
-                        }}
-                      />
-                      <span className="w-24 text-sm font-medium">{dayLabel[day]}</span>
-                      {!isOpen && <span className="text-sm text-muted-foreground">Closed</span>}
-                    </div>
+                  <div key={day} className="flex items-center gap-2 py-1.5 border-b border-border/50 last:border-0">
+                    <Switch
+                      checked={isOpen}
+                      onCheckedChange={checked => {
+                        setForm(p => ({
+                          ...p,
+                          working_hours: {
+                            ...p.working_hours,
+                            [day]: checked ? [{ open: '09:00', close: '17:00' }] : null,
+                          },
+                        }));
+                      }}
+                      className="scale-90"
+                    />
+                    <span className="w-10 text-sm font-medium">{dayLabel[day]}</span>
+                    {!isOpen && <span className="text-xs text-muted-foreground">Closed</span>}
                     {isOpen && slots && (
-                      <div className="mt-2 ml-14 space-y-1.5">
+                      <div className="flex-1 flex flex-wrap items-center gap-1.5">
                         {slots.map((slot, idx) => (
-                          <div key={idx} className="flex items-center gap-2">
+                          <div key={idx} className="flex items-center gap-1">
                             <Input
                               type="time"
-                              className="w-28 h-8 text-sm"
+                              className="w-[6.5rem] h-7 text-xs"
                               value={slot.open}
                               onChange={e => {
                                 const updated = [...slots];
@@ -623,10 +726,10 @@ export default function DashboardProfile() {
                                 }));
                               }}
                             />
-                            <span className="text-xs text-muted-foreground">to</span>
+                            <span className="text-xs text-muted-foreground">–</span>
                             <Input
                               type="time"
-                              className="w-28 h-8 text-sm"
+                              className="w-[6.5rem] h-7 text-xs"
                               value={slot.close}
                               onChange={e => {
                                 const updated = [...slots];
@@ -650,9 +753,10 @@ export default function DashboardProfile() {
                                 className="text-muted-foreground hover:text-destructive transition-colors"
                                 aria-label="Remove time slot"
                               >
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                               </button>
                             )}
+                            {idx < slots.length - 1 && <span className="text-xs text-muted-foreground">,</span>}
                           </div>
                         ))}
                         <button
@@ -668,7 +772,7 @@ export default function DashboardProfile() {
                           }}
                           className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
                         >
-                          + Add hours
+                          +
                         </button>
                       </div>
                     )}
@@ -751,109 +855,6 @@ export default function DashboardProfile() {
             <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center">
               <p className="mb-3 text-sm text-muted-foreground">
                 Upgrade to Premium to add a direct booking link and custom button label to your profile.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/list-your-practice">
-                  <Crown className="mr-1.5 h-3.5 w-3.5 text-primary" />
-                  Upgrade to Premium
-                </Link>
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Services — Premium / Featured only */}
-      <Card className={isPremiumOrFeatured ? "border-primary/30 bg-terracotta-light/30" : "border-border"}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            {isPremiumOrFeatured
-              ? <ExternalLink className="h-4 w-4 text-primary" />
-              : <Lock className="h-4 w-4 text-muted-foreground" />}
-            Services
-            {!isPremiumOrFeatured && (
-              <span className="ml-auto flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                <Crown className="h-3 w-3" /> Premium
-              </span>
-            )}
-          </CardTitle>
-          <CardDescription>
-            {isPremiumOrFeatured
-              ? "List specific services you offer. These are shown on your public profile."
-              : "Upgrade to list your specific services with descriptions and pricing."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isPremiumOrFeatured ? (
-            <div className="space-y-3">
-              {form.services_list?.map((svc, idx) => (
-                <div key={idx} className="rounded-lg border border-border p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="Service name (e.g. Lomilomi Massage)"
-                      value={svc.name}
-                      onChange={e => {
-                        const updated = [...(form.services_list || [])];
-                        updated[idx] = { ...svc, name: e.target.value };
-                        setForm(p => ({ ...p, services_list: updated }));
-                      }}
-                      className="flex-1 h-8 text-sm"
-                    />
-                    <Input
-                      placeholder="Price (optional)"
-                      value={svc.price ?? ''}
-                      onChange={e => {
-                        const updated = [...(form.services_list || [])];
-                        updated[idx] = { ...svc, price: e.target.value };
-                        setForm(p => ({ ...p, services_list: updated }));
-                      }}
-                      className="w-32 h-8 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setForm(p => ({
-                          ...p,
-                          services_list: (p.services_list || []).filter((_, i) => i !== idx),
-                        }));
-                      }}
-                      className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
-                      aria-label="Remove service"
-                    >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  </div>
-                  <Textarea
-                    placeholder="Brief description (optional)"
-                    value={svc.description ?? ''}
-                    onChange={e => {
-                      const updated = [...(form.services_list || [])];
-                      updated[idx] = { ...svc, description: e.target.value };
-                      setForm(p => ({ ...p, services_list: updated }));
-                    }}
-                    className="text-sm min-h-[60px]"
-                    rows={2}
-                  />
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setForm(p => ({
-                    ...p,
-                    services_list: [...(p.services_list || []), { name: '', description: '', price: '' }],
-                  }));
-                }}
-              >
-                + Add a service
-              </Button>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center">
-              <p className="mb-3 text-sm text-muted-foreground">
-                List your specific services with descriptions and optional pricing. Available on Premium and Featured plans.
               </p>
               <Button asChild variant="outline" size="sm">
                 <Link to="/list-your-practice">
