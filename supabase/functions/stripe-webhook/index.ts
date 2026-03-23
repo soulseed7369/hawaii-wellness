@@ -232,8 +232,9 @@ async function getUserByCustomerId(customerId: string): Promise<string | null> {
 }
 
 async function syncTierToListings(userId: string, tier: string) {
-  await supabase.from('practitioners').update({ tier }).eq('owner_id', userId);
-  await supabase.from('centers').update({ tier }).eq('owner_id', userId);
+  const is_featured = tier === 'featured';
+  await supabase.from('practitioners').update({ tier, is_featured }).eq('owner_id', userId);
+  await supabase.from('centers').update({ tier, is_featured }).eq('owner_id', userId);
 
   if (tier === 'featured') {
     // Upsert featured_slots for all listings owned by this user

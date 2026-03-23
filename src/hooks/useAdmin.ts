@@ -753,7 +753,7 @@ export const useSetListingTier = () => {
         const table = listingType === 'practitioner' ? 'practitioners' : 'centers';
         const { error } = await supabase
           .from(table)
-          .update({ tier })
+          .update({ tier, is_featured: tier === 'featured' })
           .eq('id', listingId);
         if (error) throw error;
 

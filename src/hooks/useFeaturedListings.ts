@@ -10,11 +10,6 @@ import { mockPractitioners, mockCenters, type Provider, type Center } from '@/da
  */
 const DISPLAY_SLOTS = 4;
 
-/**
- * Max listings to fetch. Covers the case where an island has many
- * premium/featured subscribers while keeping the query lightweight.
- */
-const FETCH_CAP = 30;
 
 /**
  * Returns practitioners for the island homepage cards, fetching only
@@ -30,36 +25,45 @@ export function useHomePractitioners(island: string) {
     queryFn: async () => {
       if (!supabase) return mockPractitioners;
 
-      // Fetch featured + premium + enough free to fill slots.
-      // Sort by is_featured first (boolean, reliable) then tier descending.
-      // Note: tier is text so alphabetical desc = premium > free > featured —
-      // the client-side filter below handles correct priority regardless.
-      const { data, error } = await supabase
+      // Two-query strategy: first grab all paid listings (guaranteed small set),
+      // then backfill with free listings only if needed.
+      // This avoids the broken alphabetical sort on `tier` text column
+      // (where 'featured' < 'free' < 'premium') and the unreliable `is_featured`
+      // boolean which is never set to true by any code path.
+
+      // Query 1: All featured + premium listings for this island
+      const { data: paidData, error: paidError } = await supabase
         .from('practitioners')
         .select('*, business:centers!practitioners_business_id_fkey(id,name)')
         .eq('island', island)
         .eq('status', 'published')
-        .order('is_featured', { ascending: false })
-        .order('tier', { ascending: false })
+        .in('tier', ['featured', 'premium'])
+        .order('name');
+
+      if (paidError) throw paidError;
+
+      const paid = (paidData ?? []).map(practitionerRowToProvider);
+      const featured = paid.filter(p => p.tier === 'featured');
+      const premium = paid.filter(p => p.tier === 'premium');
+      const prioritized = [...featured, ...premium];
+
+      // If paid listings already fill the display, no need for free
+      if (prioritized.length >= DISPLAY_SLOTS) return prioritized;
+
+      // Query 2: Free listings to pad remaining slots
+      const { data: freeData, error: freeError } = await supabase
+        .from('practitioners')
+        .select('*, business:centers!practitioners_business_id_fkey(id,name)')
+        .eq('island', island)
+        .eq('status', 'published')
+        .or('tier.eq.free,tier.is.null')
         .order('name')
-        .limit(FETCH_CAP);
+        .limit(DISPLAY_SLOTS - prioritized.length);
 
-      if (error) throw error;
+      if (freeError) throw freeError;
 
-      const all = (data ?? []).map(practitionerRowToProvider);
-
-      // If we have enough featured to fill all slots, only return featured
-      const featured = all.filter(p => p.tier === 'featured');
-      if (featured.length >= DISPLAY_SLOTS) return featured;
-
-      // Otherwise add premium to fill remaining
-      const premium = all.filter(p => p.tier === 'premium');
-      const paid = [...featured, ...premium];
-      if (paid.length >= DISPLAY_SLOTS) return paid;
-
-      // Still not enough — pad with free listings
-      const free = all.filter(p => !p.tier || p.tier === 'free');
-      return [...paid, ...free.slice(0, DISPLAY_SLOTS - paid.length)];
+      const free = (freeData ?? []).map(practitionerRowToProvider);
+      return [...prioritized, ...free];
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -97,29 +101,40 @@ export function useHomeCenters(island: string) {
     queryFn: async () => {
       if (!supabase) return mockCenters;
 
-      const { data, error } = await supabase
+      // Same two-query strategy as practitioners — see comments above.
+
+      // Query 1: All featured + premium centers
+      const { data: paidData, error: paidError } = await supabase
         .from('centers')
         .select('*')
         .eq('island', island)
         .eq('status', 'published')
-        .order('is_featured', { ascending: false })
-        .order('tier', { ascending: false })
+        .in('tier', ['featured', 'premium'])
+        .order('name');
+
+      if (paidError) throw paidError;
+
+      const paid = (paidData ?? []).map(centerRowToCenter);
+      const featured = paid.filter(c => c.tier === 'featured');
+      const premium = paid.filter(c => c.tier === 'premium');
+      const prioritized = [...featured, ...premium];
+
+      if (prioritized.length >= DISPLAY_SLOTS) return prioritized;
+
+      // Query 2: Free centers to pad remaining slots
+      const { data: freeData, error: freeError } = await supabase
+        .from('centers')
+        .select('*')
+        .eq('island', island)
+        .eq('status', 'published')
+        .or('tier.eq.free,tier.is.null')
         .order('name')
-        .limit(FETCH_CAP);
+        .limit(DISPLAY_SLOTS - prioritized.length);
 
-      if (error) throw error;
+      if (freeError) throw freeError;
 
-      const all = (data ?? []).map(centerRowToCenter);
-
-      const featured = all.filter(c => c.tier === 'featured');
-      if (featured.length >= DISPLAY_SLOTS) return featured;
-
-      const premium = all.filter(c => c.tier === 'premium');
-      const paid = [...featured, ...premium];
-      if (paid.length >= DISPLAY_SLOTS) return paid;
-
-      const free = all.filter(c => !c.tier || c.tier === 'free');
-      return [...paid, ...free.slice(0, DISPLAY_SLOTS - paid.length)];
+      const free = (freeData ?? []).map(centerRowToCenter);
+      return [...prioritized, ...free];
     },
     staleTime: 1000 * 60 * 5,
   });
