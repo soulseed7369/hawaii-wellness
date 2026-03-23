@@ -15,6 +15,7 @@ export default function DashboardHome() {
   const { data: billing } = useMyBillingProfile();
   const { data: accountType, isLoading: accountTypeLoading } = useAccountType();
   const checkout = useCreateCheckoutSession();
+  const [guideOpen, setGuideOpen] = useState(true);
 
   // Route based on account type on first load
   useEffect(() => {
@@ -54,8 +55,6 @@ export default function DashboardHome() {
       </div>
     );
   }
-
-  const [guideOpen, setGuideOpen] = useState(true);
 
   const hasProfile = !!practitioner?.name;
   const hasPaidPlan = billing?.tier === 'premium' || billing?.tier === 'featured';

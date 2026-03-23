@@ -102,41 +102,45 @@ export default function AuthCallback() {
     const { data: sessionData } = await supabase.auth.getSession();
     const userEmail = sessionData.session?.user?.email;
 
+    // Determine the target route
+    let target = '/dashboard';
+
     if (isAdmin(userEmail)) {
-      navigate('/admin', { replace: true });
-      return;
-    }
-
-    // Check for pending claim (set before OAuth redirect)
-    const pendingClaimId = localStorage.getItem('pendingClaimId');
-    localStorage.removeItem('pendingClaimId');
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (pendingClaimId && UUID_RE.test(pendingClaimId)) {
-      navigate(`/claim/${pendingClaimId}`, { replace: true });
-      return;
-    }
-
-    // Check for pending redirect (set before OAuth redirect)
-    const pendingRedirect = localStorage.getItem('pendingRedirect');
-    localStorage.removeItem('pendingRedirect');
-    if (pendingRedirect && typeof pendingRedirect === 'string' && pendingRedirect.startsWith('/')) {
-      navigate(pendingRedirect, { replace: true });
-      return;
-    }
-
-    const pending = localStorage.getItem('pendingPlan');
-    const validPlans = [
-      'free',
-      'price_1TCo3PAmznBlrx8spOgZD1VC',
-      'price_1T7loEAmznBlrx8s5j92qxX8',
-      'price_1TCA70AmznBlrx8sSVyl2HtA',
-      'price_1TCA7KAmznBlrx8s2IOtOThI',
-    ];
-    if (pending && validPlans.includes(pending) && pending !== 'free') {
-      navigate('/dashboard/billing', { replace: true });
+      target = '/admin';
     } else {
-      navigate('/dashboard', { replace: true });
+      // Check for pending claim (set before OAuth redirect)
+      const pendingClaimId = localStorage.getItem('pendingClaimId');
+      localStorage.removeItem('pendingClaimId');
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (pendingClaimId && UUID_RE.test(pendingClaimId)) {
+        target = `/claim/${pendingClaimId}`;
+      } else {
+        // Check for pending redirect (set before OAuth redirect)
+        const pendingRedirect = localStorage.getItem('pendingRedirect');
+        localStorage.removeItem('pendingRedirect');
+        if (pendingRedirect && typeof pendingRedirect === 'string' && pendingRedirect.startsWith('/')) {
+          target = pendingRedirect;
+        } else {
+          const pending = localStorage.getItem('pendingPlan');
+          const validPlans = [
+            'free',
+            'price_1TCo3PAmznBlrx8spOgZD1VC',
+            'price_1T7loEAmznBlrx8s5j92qxX8',
+            'price_1TCA70AmznBlrx8sSVyl2HtA',
+            'price_1TCA7KAmznBlrx8s2IOtOThI',
+          ];
+          if (pending && validPlans.includes(pending) && pending !== 'free') {
+            target = '/dashboard/billing';
+          }
+        }
+      }
     }
+
+    // Use full-page navigation instead of React Router navigate() to avoid a
+    // race condition where ProtectedRoute checks AuthContext before the new
+    // session has propagated via onAuthStateChange. A full reload lets
+    // AuthProvider call getSession() fresh and find the established session.
+    window.location.replace(target);
   }
 
   if (error) {
