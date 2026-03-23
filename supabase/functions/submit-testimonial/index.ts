@@ -199,11 +199,11 @@ Deno.serve(async (req) => {
       return json({ error: 'Testimonial content cannot be empty' }, 400);
     }
 
-    // ── Use first sentence as immediate highlight, AI refines later ────
-    const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const quickHighlight = sentences[0]?.trim() || fullText;
+    // ── Generate AI highlight (with first-sentence fallback) ──────────
+    const highlight = await generateHighlight(fullText);
+    console.log('Highlight generated:', { length: highlight.length, isFirstSentence: highlight === fullText.split(/[.!?]+/)[0]?.trim() });
 
-    // ── Update the row — instant, no waiting for AI ──────────────────
+    // ── Update the row ──────────────────────────────────────────────
     const { error: updateErr } = await supabaseAdmin
       .from('verified_testimonials')
       .update({
@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
         prompt_sessions: mode === 'guided' ? promptSessions : null,
         prompt_what_changed: mode === 'guided' ? promptWhatChanged : null,
         full_text: fullText,
-        highlight: quickHighlight,
+        highlight,
         invite_status: 'published',
         submitted_at: new Date().toISOString(),
         published_at: new Date().toISOString(),
@@ -225,24 +225,6 @@ Deno.serve(async (req) => {
       console.error('Update failed:', updateErr);
       return json({ error: 'Failed to submit testimonial' }, 500);
     }
-
-    // ── Fire-and-forget: generate AI highlight in background ─────────
-    // Don't await — client gets instant response, highlight updates async
-    generateHighlight(fullText).then(async (aiHighlight) => {
-      if (aiHighlight && aiHighlight !== quickHighlight) {
-        const { error: hlErr } = await supabaseAdmin
-          .from('verified_testimonials')
-          .update({ highlight: aiHighlight, updated_at: new Date().toISOString() })
-          .eq('invite_token', inviteToken);
-        if (hlErr) {
-          console.error('Background highlight update failed:', hlErr);
-        } else {
-          console.log('AI highlight updated successfully');
-        }
-      }
-    }).catch((err) => {
-      console.error('Background highlight generation failed:', err);
-    });
 
     return json({
       success: true,
