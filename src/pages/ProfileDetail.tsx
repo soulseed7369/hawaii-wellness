@@ -702,37 +702,53 @@ const ProfileDetail = () => {
                 </div>
               )}
 
-              {/* Verified testimonials teaser — Featured tier only */}
-              {p.tier === 'featured' && verifiedTestimonials && verifiedTestimonials.length > 0 && (
-                <div className="border border-amber-200 bg-amber-50/50 rounded-lg p-4">
-                  <h3 className="mb-3 font-semibold text-sm text-amber-900">Client Testimonials</h3>
-                  <div className="space-y-3 mb-3">
+              {/* Verified testimonials preview — latest 2, with link to full tab */}
+              {isTiered && verifiedTestimonials && verifiedTestimonials.length > 0 && (
+                <div>
+                  <h2 className="mb-3 font-display text-xl font-bold">What Clients Say</h2>
+                  <div className="space-y-4">
                     {verifiedTestimonials.slice(0, 2).map((t) => (
-                      <div key={t.id} className="text-sm">
-                        <p className="italic text-amber-900 leading-relaxed mb-1">
-                          "{t.highlight || t.full_text?.slice(0, 100)}"
-                        </p>
-                        <div className="text-xs text-amber-800">
-                          {t.client_display_name && (
-                            <>
-                              <span className="font-medium">{t.client_display_name}</span>
-                              {t.client_island && <span> · {ISLAND_CFG[t.client_island]?.label ?? t.client_island}</span>}
-                              <span className="inline-flex items-center gap-1 ml-2">
-                                <CheckCircle className="h-3 w-3 text-green-600" />
-                                Verified client
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      <Card key={t.id} className="border border-border bg-card shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="pl-3 border-l-3 border-amber-300 mb-3">
+                            <p className="text-base italic text-foreground leading-relaxed">
+                              "{t.highlight || t.full_text?.slice(0, 120)}"
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-sm">
+                              {t.client_display_name && (
+                                <span className="font-semibold text-foreground">{t.client_display_name}</span>
+                              )}
+                              {t.client_island && (
+                                <span className="text-xs text-muted-foreground ml-1">· {ISLAND_CFG[t.client_island]?.label ?? t.client_island}</span>
+                              )}
+                            </div>
+                            <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded text-xs text-green-700">
+                              <CheckCircle className="h-3 w-3" />
+                              <span>Verified</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
-                  <button
-                    onClick={() => setActiveTab('testimonials')}
-                    className="text-xs text-amber-700 hover:text-amber-800 font-medium"
-                  >
-                    Read all {verifiedTestimonials.length} client testimonials →
-                  </button>
+                  {verifiedTestimonials.length > 2 && (
+                    <button
+                      onClick={() => setActiveTab('testimonials')}
+                      className="mt-3 text-sm text-teal-600 hover:text-teal-700 font-medium"
+                    >
+                      Read all {verifiedTestimonials.length} testimonials →
+                    </button>
+                  )}
+                  {verifiedTestimonials.length <= 2 && showTestimonialsTab && (
+                    <button
+                      onClick={() => setActiveTab('testimonials')}
+                      className="mt-3 text-sm text-teal-600 hover:text-teal-700 font-medium"
+                    >
+                      View testimonials →
+                    </button>
+                  )}
                 </div>
               )}
 
