@@ -512,14 +512,19 @@ const ProfileDetail = () => {
 
               {/* Name + business + location + badges */}
               <div className="flex-1 min-w-0">
-                {/* Personal name is always the primary identity */}
-                <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">{p.name}</h1>
+                {/* Row 1: Name + verified badge inline */}
+                <div className="flex items-center gap-2">
+                  <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">{p.name}</h1>
+                  {(p.tier === 'premium' || p.tier === 'featured') && (
+                    <VerifiedBadge />
+                  )}
+                </div>
                 {/* Business name always muted subtitle — never primary */}
                 {p.businessName && (
                   <p className="mt-0.5 text-sm font-medium text-muted-foreground">{p.businessName}</p>
                 )}
 
-                {/* Island + location row */}
+                {/* Row 2: Island + location */}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {p.island && <IslandBadge island={p.island} />}
                   {p.location && (
@@ -530,32 +535,35 @@ const ProfileDetail = () => {
                   )}
                 </div>
 
-                {/* Status + top modalities */}
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  {(p.tier === 'premium' || p.tier === 'featured') && (
-                    <VerifiedBadge />
-                  )}
-                  {p.acceptingClients && (
+                {/* Row 3: Status badges */}
+                {p.acceptingClients && (
+                  <div className="mt-2">
                     <Badge className="gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200">
                       <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
                       Accepting New Clients
                     </Badge>
-                  )}
-                  {p.modalities.slice(0, 5).map((m) => (
-                    <Link key={m} to={`/directory?island=${encodeURIComponent(p.island ?? 'big_island')}&modality=${encodeURIComponent(m)}`} className="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700 hover:bg-teal-100 hover:border-teal-300 transition-colors">{m}</Link>
-                  ))}
-                  {p.modalities.length > 5 && !showAllModalities && (
-                    <button
-                      onClick={() => setShowAllModalities(true)}
-                      className="inline-flex items-center rounded-md bg-teal-50/60 border border-teal-200/60 px-2.5 py-0.5 text-xs font-medium text-teal-600 hover:bg-teal-100 transition-colors"
-                    >
-                      +{p.modalities.length - 5} more
-                    </button>
-                  )}
-                  {showAllModalities && p.modalities.slice(5).map((m) => (
-                    <Link key={m} to={`/directory?island=${encodeURIComponent(p.island ?? 'big_island')}&modality=${encodeURIComponent(m)}`} className="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700 hover:bg-teal-100 hover:border-teal-300 transition-colors">{m}</Link>
-                  ))}
-                </div>
+                  </div>
+                )}
+
+                {/* Row 4: Modality pills — neutral gray, visually distinct from status badges */}
+                {p.modalities.length > 0 && (
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                    {p.modalities.slice(0, 5).map((m) => (
+                      <Link key={m} to={`/directory?island=${encodeURIComponent(p.island ?? 'big_island')}&modality=${encodeURIComponent(m)}`} className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-700 transition-colors">{m}</Link>
+                    ))}
+                    {p.modalities.length > 5 && !showAllModalities && (
+                      <button
+                        onClick={() => setShowAllModalities(true)}
+                        className="inline-flex items-center rounded-full bg-slate-50 border border-slate-200/60 px-2.5 py-0.5 text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                      >
+                        +{p.modalities.length - 5} more
+                      </button>
+                    )}
+                    {showAllModalities && p.modalities.slice(5).map((m) => (
+                      <Link key={m} to={`/directory?island=${encodeURIComponent(p.island ?? 'big_island')}&modality=${encodeURIComponent(m)}`} className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-700 transition-colors">{m}</Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

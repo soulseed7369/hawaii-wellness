@@ -107,16 +107,11 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                   )}
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-1">
-                  {(provider.tier === "premium" || provider.tier === "featured") && (
-                    <VerifiedBadge size="sm" />
-                  )}
-                  {isRecentlyUpdated(provider.updatedAt) && (
-                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
-                      ✦ Updated
-                    </span>
-                  )}
                   {provider.tier && provider.tier !== "free" && (
                     <TierBadge tier={provider.tier} />
+                  )}
+                  {(provider.tier === "premium" || provider.tier === "featured") && (
+                    <VerifiedBadge size="sm" />
                   )}
                 </div>
               </div>
@@ -202,10 +197,11 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
   return (
     <Link to={`/profile/${provider.id}`} className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
       <Card className={`relative flex h-80 flex-col overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:-translate-y-0.5 ${tierCardClasses(provider.tier)} ${provider.tier === 'featured' ? 'border-l-4 border-l-amber-400' : ''}`}>
-        {/* Tier badge — top-right */}
+        {/* Tier + verified badges — top-right, stacked */}
         {provider.tier && provider.tier !== "free" && (
-          <div className="absolute right-3 top-3 z-10">
+          <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
             <TierBadge tier={provider.tier} />
+            <VerifiedBadge size="sm" />
           </div>
         )}
 
@@ -231,11 +227,6 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
           <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors leading-snug">
             {provider.name}
           </h3>
-          {(provider.tier === "premium" || provider.tier === "featured") && (
-            <div className="flex justify-center mt-1">
-              <VerifiedBadge size="sm" />
-            </div>
-          )}
           {/* Business name always a separate muted subtitle — never replaces personal name */}
           {provider.businessName && (
             <p className="truncate text-xs text-muted-foreground">{provider.businessName}</p>
@@ -283,11 +274,6 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
               </span>
             )}
           </div>
-          {isRecentlyUpdated(provider.updatedAt) && (
-            <span className="mt-1.5 inline-flex items-center self-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
-              ✦ Updated
-            </span>
-          )}
           <div className="mt-2 w-full rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity group-hover:opacity-90">
             View Profile →
           </div>

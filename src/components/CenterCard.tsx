@@ -110,16 +110,11 @@ export function CenterCard({
                   )}
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-1">
-                  {(center.tier === "premium" || center.tier === "featured") && (
-                    <VerifiedBadge size="sm" />
-                  )}
-                  {isRecentlyUpdated(center.updatedAt) && (
-                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
-                      ✦ Updated
-                    </span>
-                  )}
                   {center.tier && center.tier !== "free" && (
                     <TierBadge tier={center.tier} />
+                  )}
+                  {(center.tier === "premium" || center.tier === "featured") && (
+                    <VerifiedBadge size="sm" />
                   )}
                 </div>
               </div>
@@ -220,10 +215,11 @@ export function CenterCard({
       <Card
         className={`relative flex h-80 flex-col overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:-translate-y-0.5 ${tierCardClasses(center.tier)} ${center.tier === "featured" ? "border-l-4 border-l-amber-400" : ""}`}
       >
-        {/* Tier badge — top-right */}
+        {/* Tier + verified badges — top-right, stacked */}
         {center.tier && center.tier !== "free" && (
-          <div className="absolute right-3 top-3 z-10">
+          <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
             <TierBadge tier={center.tier} />
+            <VerifiedBadge size="sm" />
           </div>
         )}
 
@@ -325,11 +321,6 @@ export function CenterCard({
           <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors leading-snug">
             {center.name}
           </h3>
-          {(center.tier === "premium" || center.tier === "featured") && (
-            <div className="flex justify-center mt-1">
-              <VerifiedBadge size="sm" />
-            </div>
-          )}
           <div className="mt-1.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">{center.location}</span>
