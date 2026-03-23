@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Leaf, AlertCircle, Mail, Lock, User, Building2, Smartphone, ArrowLeft, Chrome } from 'lucide-react';
+import { Leaf, AlertCircle, Mail, Lock, User, Building2, Smartphone, ArrowLeft } from 'lucide-react';
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useAuth } from '@/contexts/AuthContext';
 import { useSetAccountType } from '@/hooks/useAccountType';
