@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, CheckCircle, Circle, ArrowRight, Star, Loader2, Globe, Clock } from "lucide-react";
+import { User, CheckCircle, Circle, ArrowRight, Star, Loader2, Globe, Clock, Eye, Search, MessageCircle, Mail, ChevronDown, ChevronUp, Camera, FileText, Heart, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useMyPractitioner } from "@/hooks/useMyPractitioner";
@@ -55,6 +55,8 @@ export default function DashboardHome() {
       </div>
     );
   }
+
+  const [guideOpen, setGuideOpen] = useState(true);
 
   const hasProfile = !!practitioner?.name;
   const hasPaidPlan = billing?.tier === 'premium' || billing?.tier === 'featured';
@@ -224,6 +226,152 @@ export default function DashboardHome() {
             <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white flex-shrink-0">
               <Link to="/dashboard/billing">Upgrade</Link>
             </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── How your listing works — adaptive guide ─────────────────────── */}
+      {hasProfile && (
+        <Card className="border-border">
+          <CardContent className="p-0">
+            <button
+              onClick={() => setGuideOpen(!guideOpen)}
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors rounded-t-lg"
+            >
+              <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-primary" />
+                <h2 className="font-semibold text-base">How your listing works</h2>
+              </div>
+              {guideOpen
+                ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+            </button>
+
+            {guideOpen && (
+              <div className="px-5 pb-5 space-y-5 border-t border-border/50">
+
+                {/* How people find you */}
+                <div className="pt-4">
+                  <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
+                    <Search className="h-3.5 w-3.5 text-teal-600" />
+                    How people find you
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Your listing appears in the directory when someone searches your island or modalities.
+                    It also shows up in the "Similar practitioners" section on other profiles that share your specialties.
+                    A complete profile with a photo and detailed bio ranks higher in results.
+                  </p>
+                  {practitioner?.id && (
+                    <Link
+                      to={`/profile/${practitioner.id}`}
+                      className="inline-flex items-center gap-1 mt-2 text-sm text-primary hover:underline font-medium"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      Preview your listing as visitors see it
+                    </Link>
+                  )}
+                </div>
+
+                {/* Getting the most out of your listing */}
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                    Tips to stand out
+                  </p>
+                  <div className="space-y-2">
+                    {[
+                      { icon: Camera, text: 'Add a clear, friendly photo — listings with photos get significantly more clicks.', done: !!practitioner?.avatar_url },
+                      { icon: FileText, text: 'Write a detailed bio that tells people who you are, what you do, and what to expect.', done: (practitioner?.bio?.length ?? 0) > 50 },
+                      { icon: Heart, text: 'Pick accurate modalities so the right clients find you through search.', done: (practitioner?.modalities?.length ?? 0) >= 2 },
+                      { icon: Mail, text: 'Add your email and phone so people can reach you directly from your listing.', done: !!practitioner?.email && !!practitioner?.phone },
+                    ].map((tip, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
+                        {tip.done
+                          ? <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                          : <tip.icon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />}
+                        <p className={`text-sm leading-relaxed ${tip.done ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}>
+                          {tip.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {!hasProfile && (
+                    <Button asChild size="sm" variant="outline" className="mt-3">
+                      <Link to="/dashboard/profile">Edit your profile</Link>
+                    </Button>
+                  )}
+                </div>
+
+                {/* What you can do with your current plan */}
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
+                    <Star className="h-3.5 w-3.5 text-primary" />
+                    {billing?.tier === 'featured' ? 'Your Featured plan includes'
+                      : billing?.tier === 'premium' ? 'Your Premium plan includes'
+                      : 'What\'s included on your plan'}
+                  </p>
+
+                  {billing?.tier === 'featured' ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Everything in Premium, plus homepage rotation, a Featured badge on your card, and priority placement at the top of search results on your island.
+                      </p>
+                      {[
+                        { text: 'Collect verified testimonials from your clients', to: '/dashboard/testimonials' },
+                        { text: 'Add offerings and class schedules', to: '/dashboard/offerings' },
+                        { text: 'Set your working hours and social links', to: '/dashboard/profile' },
+                      ].map((item, i) => (
+                        <Link key={i} to={item.to} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                          <ArrowRight className="h-3 w-3" />
+                          {item.text}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : billing?.tier === 'premium' ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Your listing shows a verified badge, social links, and working hours. You can also collect verified testimonials from clients and add offerings.
+                      </p>
+                      {[
+                        { text: 'Invite clients to leave a verified testimonial', to: '/dashboard/testimonials' },
+                        { text: 'Add offerings and class schedules', to: '/dashboard/offerings' },
+                        { text: 'Set your working hours and social links', to: '/dashboard/profile' },
+                      ].map((item, i) => (
+                        <Link key={i} to={item.to} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                          <ArrowRight className="h-3 w-3" />
+                          {item.text}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Your free listing includes your name, bio, location, modalities, and contact info. People can find you through search and reach out directly.
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Want to add testimonials, social links, working hours, and get a verified badge?
+                      </p>
+                      <Link to="/dashboard/billing" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+                        <ArrowRight className="h-3 w-3" />
+                        See what Premium and Featured unlock
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Help */}
+                <div className="flex items-center gap-4 pt-2 border-t border-border/50">
+                  <Link to="/help" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Help Center
+                  </Link>
+                  <a href="mailto:aloha@hawaiiwellness.net" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Mail className="h-3.5 w-3.5" />
+                    aloha@hawaiiwellness.net
+                  </a>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

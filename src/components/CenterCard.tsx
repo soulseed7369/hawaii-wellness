@@ -246,7 +246,7 @@ export function CenterCard({
 
               {/* Center type label — top-left corner */}
               {center.centerType && (
-                <div className="absolute top-2 left-2 z-[5] bg-black/60 backdrop-blur-sm rounded px-2 py-1 text-white text-[10px] font-medium">
+                <div className="absolute top-2 left-2 z-[5] bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-0.5 text-teal-700 text-[10px] font-medium border border-teal-200/60">
                   {centerTypeLabel(center.centerType)}
                 </div>
               )}
@@ -309,7 +309,7 @@ export function CenterCard({
               )}
               {/* Center type label in top-left corner */}
               {center.centerType && (
-                <div className="absolute top-0 left-0 bg-black/60 backdrop-blur-sm rounded px-2 py-1 text-white text-[10px] font-medium">
+                <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-0.5 text-teal-700 text-[10px] font-medium border border-teal-200/60">
                   {centerTypeLabel(center.centerType)}
                 </div>
               )}
