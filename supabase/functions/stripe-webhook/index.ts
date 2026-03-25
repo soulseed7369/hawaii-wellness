@@ -149,7 +149,24 @@ Deno.serve(async (req) => {
         const userId = await getUserByCustomerId(customerId);
         if (!userId) break;
 
-        await upsertProfile(userId, {
+        // Determine whether the other listing type still has a paid tier.
+        // A user can hold a practitioner plan AND a center plan simultaneously.
+        // Canceling one should not reset user_profiles.tier if the other is still active.
+        const otherTable = listingType === 'practitioner' ? 'centers' : 'practitioners';
+        const { data: otherListings } = await supabase
+          .from(otherTable)
+          .select('tier')
+          .eq('owner_id', userId)
+          .in('tier', ['premium', 'featured']);
+        const otherStillPaid = (otherListings ?? []).length > 0;
+        const otherTier = otherStillPaid
+          ? ((otherListings ?? []).some(l => l.tier === 'featured') ? 'featured' : 'premium')
+          : null;
+
+        await upsertProfile(userId, otherStillPaid ? {
+          // Other listing type still has an active subscription — preserve its tier
+          subscription_status:     'canceled', // reflects this specific sub that ended
+        } : {
           tier:                    'free',
           subscription_status:     'canceled',
           subscription_period_end: null,
@@ -157,16 +174,15 @@ Deno.serve(async (req) => {
           stripe_price_id:         null,
         });
 
+        // If the other plan is still paid, update user_profiles.tier to the other tier
+        if (otherStillPaid && otherTier) {
+          await upsertProfile(userId, { tier: otherTier });
+        }
+
         await syncTierToListings(userId, 'free', listingType);
 
-        // Enter 90-day grace period instead of immediate deletion
-        const graceUntil = new Date();
-        graceUntil.setDate(graceUntil.getDate() + 90);
-        await supabase
-          .from('featured_slots')
-          .update({ grace_until: graceUntil.toISOString() })
-          .eq('owner_id', userId)
-          .is('grace_until', null); // only update slots not already in grace
+        // Note: 90-day grace period for featured_slots is handled inside syncTierToListings,
+        // scoped to the correct listing_type. No additional update needed here.
 
         // Record billing event
         await supabase.from('billing_events').insert({
@@ -276,13 +292,16 @@ async function syncTierToListings(userId: string, tier: string, listingType: 'pr
       if (error) console.error('Error upserting featured_slots:', error);
     }
   } else {
-    // Enter 90-day grace period when downgrading from featured instead of immediate deletion
+    // Enter 90-day grace period when downgrading from featured instead of immediate deletion.
+    // Must filter by listing_type so that downgrading one plan (e.g. practitioner)
+    // does not accidentally enter the other plan type's (e.g. center) featured slot into grace.
     const graceUntil = new Date();
     graceUntil.setDate(graceUntil.getDate() + 90);
     const { error } = await supabase
       .from('featured_slots')
       .update({ grace_until: graceUntil.toISOString() })
       .eq('owner_id', userId)
+      .eq('listing_type', listingType)
       .is('grace_until', null); // only update slots not already in grace
     if (error) console.error('Error updating featured_slots grace period:', error);
   }
