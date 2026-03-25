@@ -42,6 +42,16 @@ const PRICE_TIER_MAP: Record<string, 'premium' | 'featured'> = {
   'price_1TEszAAmznBlrx8sDwkodC8z': 'featured',  // Center $109/mo
 };
 
+// Price → listing type mapping — ensures a practitioner plan only upgrades
+// practitioner listings, and a center plan only upgrades center listings.
+// Without this, buying a practitioner plan would also free-upgrade linked centers.
+const PRICE_LISTING_TYPE_MAP: Record<string, 'practitioner' | 'center'> = {
+  'price_1TCo3PAmznBlrx8spOgZD1VC': 'practitioner',
+  'price_1TErgTAmznBlrx8scCN6CsNa': 'practitioner',
+  'price_1TErf1AmznBlrx8suRd3ARgM': 'center',
+  'price_1TEszAAmznBlrx8sDwkodC8z': 'center',
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204 });
@@ -79,6 +89,7 @@ Deno.serve(async (req) => {
         const sub = await stripe.subscriptions.retrieve(subscriptionId);
         const priceId = sub.items.data[0]?.price.id ?? '';
         const tier = PRICE_TIER_MAP[priceId] ?? 'premium';
+        const listingType = PRICE_LISTING_TYPE_MAP[priceId] ?? 'practitioner';
 
         await upsertProfile(userId, {
           tier,
@@ -89,7 +100,7 @@ Deno.serve(async (req) => {
           subscription_period_end: new Date(sub.current_period_end * 1000).toISOString(),
         });
 
-        await syncTierToListings(userId, tier);
+        await syncTierToListings(userId, tier, listingType);
         break;
       }
 
@@ -99,6 +110,7 @@ Deno.serve(async (req) => {
         const customerId = sub.customer as string;
         const priceId    = sub.items.data[0]?.price.id ?? '';
         const tier = PRICE_TIER_MAP[priceId] ?? 'premium';
+        const listingType = PRICE_LISTING_TYPE_MAP[priceId] ?? 'practitioner';
 
         // Look up user by stripe_customer_id
         const userId = await getUserByCustomerId(customerId);
@@ -111,7 +123,7 @@ Deno.serve(async (req) => {
           subscription_period_end: new Date(sub.current_period_end * 1000).toISOString(),
         });
 
-        await syncTierToListings(userId, tier);
+        await syncTierToListings(userId, tier, listingType);
 
         // Record billing event
         await supabase.from('billing_events').insert({
@@ -131,6 +143,8 @@ Deno.serve(async (req) => {
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
+        const canceledPriceId = sub.items.data[0]?.price.id ?? '';
+        const listingType = PRICE_LISTING_TYPE_MAP[canceledPriceId] ?? 'practitioner';
 
         const userId = await getUserByCustomerId(customerId);
         if (!userId) break;
@@ -143,7 +157,7 @@ Deno.serve(async (req) => {
           stripe_price_id:         null,
         });
 
-        await syncTierToListings(userId, 'free');
+        await syncTierToListings(userId, 'free', listingType);
 
         // Enter 90-day grace period instead of immediate deletion
         const graceUntil = new Date();
@@ -230,32 +244,30 @@ async function getUserByCustomerId(customerId: string): Promise<string | null> {
   return data.id;
 }
 
-async function syncTierToListings(userId: string, tier: string) {
+async function syncTierToListings(userId: string, tier: string, listingType: 'practitioner' | 'center') {
   const is_featured = tier === 'featured';
-  await supabase.from('practitioners').update({ tier, is_featured }).eq('owner_id', userId);
-  await supabase.from('centers').update({ tier, is_featured }).eq('owner_id', userId);
+
+  // Only update the table that matches the purchased plan.
+  // A practitioner plan must never auto-upgrade a linked center (and vice versa).
+  if (listingType === 'practitioner') {
+    await supabase.from('practitioners').update({ tier, is_featured }).eq('owner_id', userId);
+  } else {
+    await supabase.from('centers').update({ tier, is_featured }).eq('owner_id', userId);
+  }
 
   if (tier === 'featured') {
-    // Upsert featured_slots for all listings owned by this user
-    const [{ data: practitioners }, { data: centers }] = await Promise.all([
-      supabase.from('practitioners').select('id, island').eq('owner_id', userId),
-      supabase.from('centers').select('id, island').eq('owner_id', userId),
-    ]);
+    // Upsert featured_slots only for the listing type that was upgraded
+    const isPractitioner = listingType === 'practitioner';
+    const { data: listings } = isPractitioner
+      ? await supabase.from('practitioners').select('id, island').eq('owner_id', userId)
+      : await supabase.from('centers').select('id, island').eq('owner_id', userId);
 
-    const slots = [
-      ...(practitioners ?? []).map(p => ({
-        listing_id: p.id,
-        listing_type: 'practitioner' as const,
-        island: p.island ?? 'big_island',
-        owner_id: userId,
-      })),
-      ...(centers ?? []).map(c => ({
-        listing_id: c.id,
-        listing_type: 'center' as const,
-        island: c.island ?? 'big_island',
-        owner_id: userId,
-      })),
-    ];
+    const slots = (listings ?? []).map(l => ({
+      listing_id: l.id,
+      listing_type: listingType,
+      island: l.island ?? 'big_island',
+      owner_id: userId,
+    }));
 
     if (slots.length > 0) {
       const { error } = await supabase
