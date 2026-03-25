@@ -89,7 +89,7 @@ export default function DashboardClasses() {
   const [form, setForm] = useState<ClassFormData>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const isPremium = practitioner?.tier === 'premium' || practitioner?.tier === 'featured';
+  const isFeatured = practitioner?.tier === 'featured';
 
   const handleChange = (field: keyof ClassFormData, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -228,15 +228,15 @@ export default function DashboardClasses() {
     );
   }
 
-  if (!isPremium) {
+  if (!isFeatured) {
     return (
       <div className="mx-auto max-w-2xl">
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Lock className="mb-3 h-10 w-10 text-amber-600" />
-            <p className="font-medium text-amber-900">Premium Feature</p>
+            <p className="font-medium text-amber-900">Featured Plan Feature</p>
             <p className="mt-2 text-sm text-amber-800">
-              Classes are available on the Premium plan. Upgrade to list your recurring yoga, breathwork, or sound bath classes.
+              Classes are available on the Featured plan. Upgrade to list your recurring yoga, breathwork, or sound bath classes.
             </p>
           </CardContent>
         </Card>

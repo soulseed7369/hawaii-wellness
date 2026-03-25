@@ -82,7 +82,7 @@ export default function DashboardOfferings() {
   const isLoading = practitionerLoading || offeringsLoading;
 
   // Check if premium tier
-  const isPremium = practitioner?.tier === 'premium' || practitioner?.tier === 'featured';
+  const isFeatured = practitioner?.tier === 'featured';
 
   const handleChange = (field: keyof OfferingFormData, value: any) => {
     if (field === 'no_fixed_date' && value) {
@@ -230,15 +230,15 @@ export default function DashboardOfferings() {
     );
   }
 
-  if (!isPremium) {
+  if (!isFeatured) {
     return (
       <div className="mx-auto max-w-2xl">
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Lock className="mb-3 h-10 w-10 text-amber-600" />
-            <p className="font-medium text-amber-900">Premium Feature</p>
+            <p className="font-medium text-amber-900">Featured Plan Feature</p>
             <p className="mt-2 text-sm text-amber-800">
-              Offerings are available on the Premium plan. Upgrade to list your retreats, workshops, and events.
+              Offerings are available on the Featured plan. Upgrade to list your retreats, workshops, and events.
             </p>
           </CardContent>
         </Card>

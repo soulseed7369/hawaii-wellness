@@ -305,8 +305,9 @@ const ProfileDetail = () => {
   const isTiered = p.tier === 'premium' || p.tier === 'featured';
 
   // ── Tab visibility ───────────────────────────────────────────────────────
-  const showClassesTab = isTiered && (classes?.length ?? 0) > 0;
-  const showOfferingsTab = isTiered && (offerings?.length ?? 0) > 0;
+  const isFeatured = p.tier === 'featured';
+  const showClassesTab = isFeatured && (classes?.length ?? 0) > 0;
+  const showOfferingsTab = isFeatured && (offerings?.length ?? 0) > 0;
   // Hide testimonials tab when no verified, practitioner, or legacy testimonials exist.
   // verifiedTestimonials, newTestimonials are undefined while loading; fall back to p.testimonials to avoid flickering the tab away on load.
   const showTestimonialsTab = isTiered && (verifiedTestimonials != null || newTestimonials != null

@@ -48,6 +48,7 @@ const CENTER_FREE_FEATURES = [
   "Contact info & website link",
   "1 profile photo",
   "Description (up to 500 characters)",
+  "Single location",
 ];
 
 const CENTER_PREMIUM_FEATURES = [
@@ -60,6 +61,7 @@ const CENTER_PREMIUM_FEATURES = [
   "Direct booking link",
   "Center analytics",
   "Priority placement in search results",
+  "Up to 3 locations",
 ];
 
 const CENTER_FEATURED_FEATURES = [
@@ -71,6 +73,7 @@ const CENTER_FEATURED_FEATURES = [
   "Rich directory card with description preview",
   "Enhanced Google search visibility",
   "Advanced analytics & monthly reports",
+  "Up to 6 locations",
 ];
 
 // ─── Pricing data ─────────────────────────────────────────────────────────────
