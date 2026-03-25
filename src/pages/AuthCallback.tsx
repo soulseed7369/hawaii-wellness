@@ -103,35 +103,35 @@ export default function AuthCallback() {
     const userEmail = sessionData.session?.user?.email;
 
     // Determine the target route
+    // Priority: pendingClaimId > pendingRedirect > pendingPlan > isAdmin > default dashboard
     let target = '/dashboard';
 
-    if (isAdmin(userEmail)) {
+    // Check for pending claim FIRST (set before OAuth redirect)
+    // Claiming takes precedence over role-based redirects
+    const pendingClaimId = localStorage.getItem('pendingClaimId');
+    localStorage.removeItem('pendingClaimId');
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (pendingClaimId && UUID_RE.test(pendingClaimId)) {
+      target = `/claim/${pendingClaimId}`;
+    } else if (isAdmin(userEmail)) {
       target = '/admin';
     } else {
-      // Check for pending claim (set before OAuth redirect)
-      const pendingClaimId = localStorage.getItem('pendingClaimId');
-      localStorage.removeItem('pendingClaimId');
-      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (pendingClaimId && UUID_RE.test(pendingClaimId)) {
-        target = `/claim/${pendingClaimId}`;
+      // Check for pending redirect (set before OAuth redirect)
+      const pendingRedirect = localStorage.getItem('pendingRedirect');
+      localStorage.removeItem('pendingRedirect');
+      if (pendingRedirect && typeof pendingRedirect === 'string' && pendingRedirect.startsWith('/')) {
+        target = pendingRedirect;
       } else {
-        // Check for pending redirect (set before OAuth redirect)
-        const pendingRedirect = localStorage.getItem('pendingRedirect');
-        localStorage.removeItem('pendingRedirect');
-        if (pendingRedirect && typeof pendingRedirect === 'string' && pendingRedirect.startsWith('/')) {
-          target = pendingRedirect;
-        } else {
-          const pending = localStorage.getItem('pendingPlan');
-          const validPlans = [
-            'free',
-            'price_1TCo3PAmznBlrx8spOgZD1VC',
-            'price_1TErgTAmznBlrx8scCN6CsNa',
-            'price_1TErf1AmznBlrx8suRd3ARgM',
-            'price_1TEszAAmznBlrx8sDwkodC8z',
-          ];
-          if (pending && validPlans.includes(pending) && pending !== 'free') {
-            target = '/dashboard/billing';
-          }
+        const pending = localStorage.getItem('pendingPlan');
+        const validPlans = [
+          'free',
+          'price_1TCo3PAmznBlrx8spOgZD1VC',
+          'price_1TErgTAmznBlrx8scCN6CsNa',
+          'price_1TErf1AmznBlrx8suRd3ARgM',
+          'price_1TEszAAmznBlrx8sDwkodC8z',
+        ];
+        if (pending && validPlans.includes(pending) && pending !== 'free') {
+          target = '/dashboard/billing';
         }
       }
     }

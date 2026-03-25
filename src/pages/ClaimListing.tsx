@@ -92,6 +92,10 @@ export default function ClaimListing() {
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
+      // Persist the claim ID to localStorage so OAuth flows can resume after auth
+      if (id) {
+        localStorage.setItem('pendingClaimId', id);
+      }
       navigate(`/auth?claim=${id}`);
     }
   }, [user, authLoading, id, navigate]);
