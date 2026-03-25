@@ -112,9 +112,9 @@ Deno.serve(async (req) => {
     // so checkout falls through to full price gracefully.
     const KAMAAINA_COUPONS: Record<string, string> = {
       'price_1TCo3PAmznBlrx8spOgZD1VC': 'BBcPxrKU',  // Practitioner Premium — $10 off · first 20 (Kamaʻāina Rate)
-      'price_1TErgTAmznBlrx8scCN6CsNa': 'UeVQl6gU',  // Practitioner Featured — first 5
-      'price_1TErf1AmznBlrx8suRd3ARgM': 'VePaXQxy',  // Center Premium — first 5
-      'price_1TEszAAmznBlrx8sDwkodC8z': 'nxaOxE61',  // Center Featured — first 5
+      'price_1TErgTAmznBlrx8scCN6CsNa': 'KQ8aQgwd',  // Practitioner Featured — $20 off (Kamaʻāina Rate)
+      'price_1TErf1AmznBlrx8suRd3ARgM': 'VePaXQxy',  // Center Premium — $20 off (Kamaʻāina Rate)
+      'price_1TEszAAmznBlrx8sDwkodC8z': '8Pmea0QT',  // Center Featured — $30 off (Kamaʻāina Rate)
     };
     const kamaalainaCoupon = KAMAAINA_COUPONS[priceId] ?? null;
 

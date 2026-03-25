@@ -6,15 +6,29 @@ const HERO_VARIANTS = [
   { title: "Your Path to Wellness on the Big Island", subtitle: "From Kona to Hilo, find the right healer for your journey" },
 ];
 
+// Day (6am–6pm HST): Pololū Valley · Night (6pm–6am): Mauna Kea
+const HERO_DAY = {
+  srcSet: "/big_island_pololu-640w.webp 640w, /big_island_pololu-1024w.webp 1024w, /big_island_pololu-1920w.webp 1920w, /big_island_pololu.webp 2560w",
+  sizes: "100vw",
+  src: "/big_island_pololu.webp",
+};
+const HERO_NIGHT = {
+  srcSet: "/big_island_mauna_kea-640w.webp 640w, /big_island_mauna_kea-1024w.webp 1024w, /big_island_mauna_kea-1920w.webp 1920w, /big_island_mauna_kea.webp 3840w",
+  sizes: "100vw",
+  src: "/big_island_mauna_kea.webp",
+};
+
+function getHeroForTimeOfDay() {
+  // Use Hawaii Standard Time (UTC-10, no DST)
+  const hstHour = new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'Pacific/Honolulu' });
+  const h = parseInt(hstHour, 10);
+  return (h >= 6 && h < 18) ? HERO_DAY : HERO_NIGHT;
+}
+
 const baseConfig = {
   island: 'big_island',
   displayName: "Big Island",
-  heroImageUrl: "/big_island_hero_mauna_kea.jpg",
-  heroImages: {
-    srcSet: "/big_island_hero-640w.webp 640w, /big_island_hero-1024w.webp 1024w, /big_island_hero-1920w.webp 1920w, /big_island_hero.webp 3840w",
-    sizes: "100vw",
-    src: "/big_island_hero.webp",
-  },
+  heroImageUrl: "/big_island_pololu.webp",
   pageTitle: "Big Island Wellness Directory – Hawaiʻi Island",
   pageDescription: "Find acupuncture, massage, yoga, reiki & naturopathic practitioners in Kona, Hilo & Waimea. Hawaiʻi Island's largest holistic wellness directory — 500+ practitioners, 34 specialties.",
   faqItems: [
@@ -43,6 +57,7 @@ const baseConfig = {
 
 export default function BigIsland() {
   const hero = useMemo(() => HERO_VARIANTS[Math.floor(Math.random() * HERO_VARIANTS.length)], []);
-  const config = { ...baseConfig, heroTitle: hero.title, heroSubtitle: hero.subtitle };
+  const heroImages = useMemo(() => getHeroForTimeOfDay(), []);
+  const config = { ...baseConfig, heroTitle: hero.title, heroSubtitle: hero.subtitle, heroImages };
   return <IslandHome config={config} />;
 }
