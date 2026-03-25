@@ -11,15 +11,15 @@
 
 export const STRIPE_PRICES = {
   // ── Practitioners ────────────────────────────────────────────────────────
-  /** Practitioner Premium: $39 / month */
+  /** Practitioner Premium: $39/mo (kamaaina $29/mo) */
   PREMIUM_MONTHLY:         'price_1TCo3PAmznBlrx8spOgZD1VC',
-  /** Practitioner Featured: $129 / month */
+  /** Practitioner Featured: $69/mo (kamaaina $49/mo) */
   FEATURED_MONTHLY:        'price_1T7loEAmznBlrx8s5j92qxX8',
 
   // ── Wellness Centers ─────────────────────────────────────────────────────
-  /** Center Premium: $79 / month */
+  /** Center Premium: $69/mo (kamaaina $49/mo) */
   CENTER_PREMIUM_MONTHLY:  'price_1TCA70AmznBlrx8sSVyl2HtA',
-  /** Center Featured: $199 / month */
+  /** Center Featured: $129/mo (kamaaina $99/mo) */
   CENTER_FEATURED_MONTHLY: 'price_1TCA7KAmznBlrx8s2IOtOThI',
 } as const;
 

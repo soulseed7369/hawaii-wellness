@@ -14,10 +14,9 @@ import { supabase } from "@/lib/supabase";
 // ─── Feature lists ────────────────────────────────────────────────────────────
 
 const FREE_FEATURES = [
-  "Basic directory listing",
-  "Name, location & modalities",
-  "Contact information & website",
-  "Photo upload (1 profile photo)",
+  "Directory listing with name, location & modalities",
+  "Contact info & website link",
+  "1 profile photo",
   "About section (up to 500 characters)",
 ];
 
@@ -25,66 +24,53 @@ const PRAC_PREMIUM_FEATURES = [
   "Everything in Free, plus:",
   '"Verified Practitioner" badge',
   "Verified client testimonials",
-  "Unlimited bio & 'What to Expect' section",
-  "Structured services display",
-  "Social media links on your profile",
+  "Expanded listing details (bio, services, hours & more)",
   "Photo gallery (up to 5 photos)",
-  "Working hours display",
-  "Offerings, classes & events",
+  "Social media links",
   "Direct booking link",
-  "Profile views & contact click counts",
-  "Priority in similar practitioner results",
+  "Profile analytics",
+  "Priority placement in search results",
 ];
 
 const PRAC_FEATURED_FEATURES = [
   "Everything in Premium, plus:",
-  "Homepage spotlight rotation (per island)",
+  "Homepage spotlight rotation",
   "Top placement in search results",
+  "Offerings, classes & events calendar",
   "Photo gallery (up to 10 photos)",
   "Rich directory card with bio preview",
   "Enhanced Google search visibility",
-  "Full analytics dashboard with trends",
-  "Search & homepage impression tracking",
-  "Monthly analytics report emailed to you",
+  "Advanced analytics & monthly reports",
 ];
 
 const CENTER_FREE_FEATURES = [
-  "Basic center listing",
-  "Center type, location & modalities",
-  "Contact information & website",
-  "Photo upload (1 profile photo)",
+  "Directory listing with center type, location & modalities",
+  "Contact info & website link",
+  "1 profile photo",
   "Description (up to 500 characters)",
-  "Single location only",
 ];
 
 const CENTER_PREMIUM_FEATURES = [
   "Everything in Free, plus:",
   '"Verified Center" badge',
   "Verified client testimonials",
-  "Unlimited description",
-  "Structured services display",
+  "Expanded listing details (full description, services, hours & more)",
   "Photo gallery (up to 5 photos)",
-  "Events & classes calendar",
   "Social media links",
-  "Working hours per location",
-  "Amenities display",
   "Direct booking link",
-  "Up to 3 locations",
-  "Profile views & contact click counts",
-  "Priority in similar center results",
+  "Center analytics",
+  "Priority placement in search results",
 ];
 
 const CENTER_FEATURED_FEATURES = [
   "Everything in Premium, plus:",
-  "Homepage spotlight rotation (per island)",
+  "Homepage spotlight rotation",
   "Top placement in search results",
+  "Events, classes & retreats calendar",
   "Photo gallery (up to 10 photos)",
-  "Unlimited locations",
   "Rich directory card with description preview",
   "Enhanced Google search visibility",
-  "Full analytics dashboard with trends",
-  "Search & homepage impression tracking",
-  "Monthly analytics report emailed to you",
+  "Advanced analytics & monthly reports",
 ];
 
 // ─── Pricing data ─────────────────────────────────────────────────────────────
@@ -93,12 +79,12 @@ type PricingMode = "practitioner" | "center";
 
 const PRICING = {
   practitioner: {
-    premium:  { price: 49,  kamaaina: 29,  spots: 10, priceId: STRIPE_PRICES.PREMIUM_MONTHLY },
-    featured: { price: 129, kamaaina: 99,  spots: 5,  priceId: STRIPE_PRICES.FEATURED_MONTHLY },
+    premium:  { price: 39,  kamaaina: 29,  spots: 25, priceId: STRIPE_PRICES.PREMIUM_MONTHLY },
+    featured: { price: 69,  kamaaina: 49,  spots: 10, priceId: STRIPE_PRICES.FEATURED_MONTHLY },
   },
   center: {
-    premium:  { price: 79,  kamaaina: 59,  spots: 5,  priceId: STRIPE_PRICES.CENTER_PREMIUM_MONTHLY },
-    featured: { price: 199, kamaaina: 149, spots: 5,  priceId: STRIPE_PRICES.CENTER_FEATURED_MONTHLY },
+    premium:  { price: 69,  kamaaina: 49,  spots: 25, priceId: STRIPE_PRICES.CENTER_PREMIUM_MONTHLY },
+    featured: { price: 129, kamaaina: 99,  spots: 10, priceId: STRIPE_PRICES.CENTER_FEATURED_MONTHLY },
   },
 } as const;
 
@@ -249,7 +235,7 @@ export default function ListYourPractice() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                {isPrac ? "Grow your practice online." : "Showcase your full center."}
+                {isPrac ? "Look professional. Get booked." : "Showcase your full center."}
               </p>
             </div>
 

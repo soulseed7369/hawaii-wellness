@@ -78,7 +78,7 @@ export default function TermsOfService() {
 
         <h3>Plans</h3>
         <p>
-          We offer three tiers: Free, Premium ($39/month), and Featured ($129/month).
+          We offer three tiers: Free, Premium ($39/month), and Featured ($69/month).
           Paid plans are billed monthly on a recurring basis through Stripe.
         </p>
 

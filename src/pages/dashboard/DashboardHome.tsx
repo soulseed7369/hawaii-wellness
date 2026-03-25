@@ -222,7 +222,7 @@ export default function DashboardHome() {
                 <Star className="h-4 w-4" /> Unlock Premium features
               </p>
               <p className="text-xs text-amber-700 mt-0.5">
-                Add social links, testimonials, working hours, and get priority placement for $49/mo.
+                Add social links, testimonials, working hours, and get priority placement for $29/mo.
               </p>
             </div>
             <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white flex-shrink-0">

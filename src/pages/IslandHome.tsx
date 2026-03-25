@@ -306,7 +306,7 @@ export function IslandHome({ config }: IslandHomeProps) {
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-primary font-semibold">✓</span>
-                    Premium from $49/mo · Featured from $129/mo
+                    Premium from $29/mo · Featured from $49/mo
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-primary font-semibold">✓</span>

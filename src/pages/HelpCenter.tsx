@@ -211,10 +211,9 @@ const sections: FAQSection[] = [
                 and add client testimonials to your profile.
               </li>
               <li>
-                <strong>Featured — $129/month</strong> — Everything in Premium, plus
-                prominent placement on your island's homepage, a Featured crown badge on your
-                listing, and priority positioning in search results. Limited to 5 providers
-                per island.
+                <strong>Featured — $69/month</strong> — Everything in Premium, plus
+                prominent placement on your island's homepage, a Featured badge on your
+                listing, offerings and classes calendar, and priority positioning in search results.
               </li>
             </ul>
           </div>
