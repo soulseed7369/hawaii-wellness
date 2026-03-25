@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { usePostAuthRedirect } from "@/hooks/usePostAuthRedirect";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -87,6 +88,12 @@ function ChunkRetryReset() {
   return null;
 }
 
+/** Catches post-OAuth redirects that miss /auth/callback (e.g. Supabase falls back to Site URL) */
+function PostAuthRedirectGuard() {
+  usePostAuthRedirect();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -96,6 +103,7 @@ const App = () => (
         <ScrollToTop />
         <ChunkRetryReset />
         <AuthProvider>
+          <PostAuthRedirectGuard />
           <LocationAwareErrorBoundary>
           <Suspense fallback={<PageSpinner />}>
             <Routes>
