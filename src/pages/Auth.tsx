@@ -53,7 +53,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const claimId = searchParams.get('claim');
+  const claimId = searchParams.get('claimId') || searchParams.get('claim');
   const redirectTo = searchParams.get('redirect');
   const setAccountType = useSetAccountType();
 

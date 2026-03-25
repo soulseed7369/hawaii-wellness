@@ -173,7 +173,7 @@ export const CENTER_PLAN_OPTIONS = [
   {
     id: 'premium' as const,
     name: 'Premium',
-    price: '$79 / month',
+    price: '$69 / month',
     priceId: STRIPE_PRICES.CENTER_PREMIUM_MONTHLY,
     features: [
       'Unlimited description & social links',
@@ -188,7 +188,7 @@ export const CENTER_PLAN_OPTIONS = [
   {
     id: 'featured' as const,
     name: 'Featured',
-    price: '$199 / month',
+    price: '$109 / month',
     priceId: STRIPE_PRICES.CENTER_FEATURED_MONTHLY,
     features: [
       'All Premium features',
