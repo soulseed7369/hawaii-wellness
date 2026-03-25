@@ -11,7 +11,7 @@
  * contact aloha@hawaiiwellness.net for manual support.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase, hasSupabase } from '@/lib/supabase';
@@ -90,9 +90,19 @@ export default function ClaimListing() {
   const [busy,     setBusy]     = useState(false);
   const [error,    setError]    = useState('');
 
+  // Track whether we've already attempted the fetch+claim to avoid re-runs
+  // when the `user` object reference changes (onAuthStateChange fires).
+  const claimAttempted = useRef(false);
+
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
+      // Don't redirect if auth tokens are in the URL — auth flow is in progress
+      // (e.g. magic link or OAuth just landed on this page with ?code= or #access_token=)
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('code')) return;
+      if (window.location.hash.includes('access_token')) return;
+
       // Persist the claim ID to localStorage so OAuth flows can resume after auth
       if (id) {
         localStorage.setItem('pendingClaimId', id);
@@ -104,6 +114,8 @@ export default function ClaimListing() {
   // Fetch listing on mount — auto-claim if emails match
   useEffect(() => {
     if (!id || !supabase || !user) return;
+    if (claimAttempted.current) return;
+    claimAttempted.current = true;
 
     (async () => {
       setStep('loading');
@@ -185,6 +197,9 @@ export default function ClaimListing() {
     if (!supabase || !listing?.email) return;
     setBusy(true);
     setError('');
+
+    // Persist claim ID so AuthCallback redirects back here after magic link auth
+    if (listing.id) localStorage.setItem('pendingClaimId', listing.id);
 
     try {
       const { error: err } = await supabase.auth.signInWithOtp({
