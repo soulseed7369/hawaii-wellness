@@ -216,8 +216,7 @@ Deno.serve(async (req) => {
 async function upsertProfile(userId: string, data: Record<string, unknown>) {
   const { error } = await supabase
     .from('user_profiles')
-    .update({ ...data, updated_at: new Date().toISOString() })
-    .eq('id', userId);
+    .upsert({ id: userId, ...data, updated_at: new Date().toISOString() });
   if (error) throw error;
 }
 
