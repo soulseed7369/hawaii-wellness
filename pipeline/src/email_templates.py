@@ -1,6 +1,15 @@
 """
-Email templates for the Aloha Health Hub campaign.
+Email templates for the Hawaii Wellness outreach campaign.
 Each template returns (subject, html_body, text_body) given a contact dict.
+
+Contact dict keys (from DB query):
+  id            — listing UUID (required)
+  name          — practitioner/center name
+  email         — listing email
+  city          — listing city
+  island        — listing island code ('big_island', 'maui', 'oahu', 'kauai')
+  modalities    — list of modality strings
+  listing_type  — 'practitioner' or 'center' (must be set by caller)
 """
 
 SITE_URL = "https://www.hawaiiwellness.net"
@@ -31,19 +40,22 @@ def _primary_modality(modalities: list) -> str:
     return "wellness"
 
 
+def _listing_id(contact: dict) -> str:
+    """Extract listing ID from contact dict. Raises if missing."""
+    lid = contact.get("listing_id") or contact.get("id") or ""
+    if not lid:
+        raise ValueError(f"Contact has no listing ID: {contact.get('name', '???')}")
+    return lid
+
+
 def _claim_url(listing_id: str, listing_type: str = "practitioner") -> str:
     """Link to the listing's public profile — the 'Claim this listing' card is shown for unclaimed listings."""
-    kind = "practitioners" if listing_type == "practitioner" else "centers"
+    kind = "center" if listing_type == "center" else "profile"
     return f"{SITE_URL}/{kind}/{listing_id}"
 
 
 def _upgrade_url() -> str:
     return f"{SITE_URL}/list-your-practice"
-
-
-def _profile_url(listing_id: str, listing_type: str = "practitioner") -> str:
-    kind = "practitioners" if listing_type == "practitioner" else "centers"
-    return f"{SITE_URL}/{kind}/{listing_id}"
 
 
 def _booking_url() -> str:
@@ -58,8 +70,9 @@ def phase1_claim(contact: dict) -> tuple:
     city = contact.get("city", "")
     island = _island_name(contact.get("island", ""))
     modality = _primary_modality(contact.get("modalities", []))
-    listing_id = contact.get("listing_id", "")
-    claim_link = _claim_url(listing_id, contact.get("listing_type", "practitioner"))
+    listing_id = _listing_id(contact)
+    listing_type = contact.get("listing_type", "practitioner")
+    claim_link = _claim_url(listing_id, listing_type)
 
     city_str = f" in {city}" if city else f" on {island}"
 
@@ -254,7 +267,7 @@ Hawaii Wellness"""
 def follow_up(contact: dict, original_subject: str = "", original_cta_url: str = "") -> tuple:
     name = contact.get("name", "there")
 
-    subject = f"Re: {original_subject}" if original_subject else f"Following up — Hawaii Wellness"
+    subject = f"Re: {original_subject}" if original_subject else "Following up — Hawaii Wellness"
 
     cta_link = original_cta_url or SITE_URL
 
@@ -307,7 +320,19 @@ SEGMENT_TO_TEMPLATE = {
 
 
 def render_email(contact: dict, template_name: str = None) -> tuple:
-    """Render an email for a contact. Auto-selects template from segment if not specified."""
+    """
+    Render an email for a contact. Auto-selects template from segment if not specified.
+
+    Args:
+        contact: dict with listing data (id, name, email, city, island, modalities, listing_type)
+        template_name: one of TEMPLATE_MAP keys, or None to auto-select from contact['segment']
+
+    Returns:
+        (subject, html_body, text_body)
+    """
+    if not isinstance(contact, dict):
+        raise TypeError(f"render_email() first arg must be a contact dict, got {type(contact).__name__}. "
+                        f"Usage: render_email(contact_dict, 'phase1_claim')")
     if not template_name:
         template_name = SEGMENT_TO_TEMPLATE.get(contact.get("segment", ""), "phase1_claim")
     fn = TEMPLATE_MAP.get(template_name, phase1_claim)

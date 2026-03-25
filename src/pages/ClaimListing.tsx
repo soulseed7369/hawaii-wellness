@@ -2,9 +2,10 @@
  * ClaimListing.tsx
  * Claim an unclaimed practitioner or center listing.
  *
- * Two verification channels — user picks whichever applies:
- *   Email  → Supabase Auth OTP sent to the listing's email
- *   Text   → Twilio SMS OTP sent to the listing's phone (via edge function)
+ * Three claim paths:
+ *   1. Email match  → User's auth email matches listing email → instant claim, no OTP
+ *   2. Email verify → User's auth email differs → magic-link sent to listing's email
+ *   3. SMS verify   → Twilio OTP sent to listing's phone (via edge function) [disabled until A2P approved]
  *
  * If neither is available or verification fails, the user is directed to
  * contact aloha@hawaiiwellness.net for manual support.
@@ -49,7 +50,7 @@ function buildHelpMailto(listing: Listing | null, userEmail: string | undefined)
 
 type ListingType = 'practitioner' | 'center';
 type Channel     = 'email' | 'sms';
-type Step        = 'loading' | 'choose' | 'enter-code' | 'success' | 'error';
+type Step        = 'loading' | 'choose' | 'email-link-sent' | 'enter-code' | 'claiming' | 'success' | 'error';
 
 interface Listing {
   id:       string;
@@ -100,7 +101,7 @@ export default function ClaimListing() {
     }
   }, [user, authLoading, id, navigate]);
 
-  // Fetch listing on mount
+  // Fetch listing on mount — auto-claim if emails match
   useEffect(() => {
     if (!id || !supabase || !user) return;
 
@@ -120,11 +121,53 @@ export default function ClaimListing() {
 
         if (!err && data) {
           if (data.owner_id) {
+            // Already claimed — check if it's ours
+            if (data.owner_id === user.id) {
+              toast.success('This listing is already yours!');
+              navigate('/dashboard');
+              return;
+            }
             setError('This listing has already been claimed.');
             setStep('error');
             return;
           }
-          setListing({ id: data.id, type, name: data.name, email: data.email, phone: data.phone, owner_id: data.owner_id });
+
+          const listingData: Listing = {
+            id: data.id, type, name: data.name,
+            email: data.email, phone: data.phone, owner_id: data.owner_id,
+          };
+          setListing(listingData);
+
+          // ── Auto-claim: user's email matches listing email ──────────────
+          const userEmail = user.email?.toLowerCase();
+          const listingEmail = data.email?.toLowerCase();
+          if (userEmail && listingEmail && userEmail === listingEmail) {
+            setStep('claiming');
+            try {
+              const rpcName  = type === 'center' ? 'claim_listing_center' : 'claim_listing';
+              const rpcParam = type === 'center' ? { p_center_id: data.id } : { p_practitioner_id: data.id };
+              const { error: claimErr } = await supabase.rpc(rpcName, rpcParam);
+
+              if (claimErr) {
+                console.error('Auto-claim failed:', claimErr);
+                // Fall back to manual verification
+                setStep('choose');
+                return;
+              }
+
+              queryClient.invalidateQueries({
+                queryKey: [type === 'center' ? 'center' : 'practitioner', data.id],
+              });
+              toast.success('Listing claimed!');
+              setStep('success');
+            } catch (e) {
+              console.error('Auto-claim error:', e);
+              setStep('choose');
+            }
+            return;
+          }
+
+          // Emails don't match — show verification options
           setStep('choose');
           return;
         }
@@ -135,11 +178,10 @@ export default function ClaimListing() {
     })();
   }, [id, user]);
 
-  // ── Send email OTP (Supabase Auth) ─────────────────────────────────────────
-  // OTP is sent to the LISTING's email, not the logged-in user's email.
-  // After verifyOtp succeeds, auth.email() becomes listing.email, which is
-  // exactly what the claim_listing RPC checks against.
-  const sendEmailCode = async () => {
+  // ── Send email verification link (magic link to listing's email) ──────────
+  // This sends a sign-in link to the listing's email. When clicked, the user's
+  // session switches to the listing's email, which lets the claim RPC pass.
+  const sendEmailLink = async () => {
     if (!supabase || !listing?.email) return;
     setBusy(true);
     setError('');
@@ -147,15 +189,18 @@ export default function ClaimListing() {
     try {
       const { error: err } = await supabase.auth.signInWithOtp({
         email: listing.email,
-        options: { shouldCreateUser: false },
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/claim/${listing.id}`,
+        },
       });
       if (err) { setError(err.message); return; }
 
       setChannel('email');
       setMasked(maskEmail(listing.email));
-      setStep('enter-code');
+      setStep('email-link-sent');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to send code');
+      setError(e instanceof Error ? e.message : 'Failed to send verification email');
     } finally {
       setBusy(false);
     }
@@ -187,47 +232,6 @@ export default function ClaimListing() {
     }
   };
 
-  // ── Verify email OTP ───────────────────────────────────────────────────────
-  const verifyEmailOtp = async () => {
-    if (!supabase || !listing?.email) return;
-    setBusy(true);
-    setError('');
-
-    try {
-      // Must verify against listing.email — that's what we sent the OTP to,
-      // and after verify, auth.email() becomes listing.email so the RPC passes.
-      const { error: verifyErr } = await supabase.auth.verifyOtp({
-        email: listing.email,
-        token: otp,
-        type:  'email',
-      });
-
-      if (verifyErr) {
-        setError('Invalid or expired code — request a new one.');
-        return;
-      }
-
-      // Claim the listing (RPC checks auth.email() === listing.email)
-      const rpcName  = listing.type === 'center' ? 'claim_listing_center' : 'claim_listing';
-      const rpcParam = listing.type === 'center' ? { p_center_id: listing.id } : { p_practitioner_id: listing.id };
-      const { error: claimErr } = await supabase.rpc(rpcName, rpcParam);
-
-      if (claimErr) {
-        setError("Couldn't complete the claim. Contact aloha@hawaiiwellness.net for help.");
-        return;
-      }
-
-      // Invalidate cached listing so the "Claim this listing" button disappears immediately
-      queryClient.invalidateQueries({ queryKey: [listing.type === 'center' ? 'center' : 'practitioner', listing.id] });
-      toast.success('Listing claimed!');
-      setStep('success');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Verification failed');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   // ── Verify SMS OTP ─────────────────────────────────────────────────────────
   const verifySmsOtp = async () => {
     if (!supabase || !listing) return;
@@ -244,7 +248,6 @@ export default function ClaimListing() {
         return;
       }
 
-      // Invalidate cached listing so the "Claim this listing" button disappears immediately
       queryClient.invalidateQueries({ queryKey: [listing.type === 'center' ? 'center' : 'practitioner', listing.id] });
       toast.success('Listing claimed!');
       setStep('success');
@@ -254,8 +257,6 @@ export default function ClaimListing() {
       setBusy(false);
     }
   };
-
-  const handleVerify = () => channel === 'email' ? verifyEmailOtp() : verifySmsOtp();
 
   const goBack = () => {
     setStep('choose');
@@ -275,8 +276,7 @@ export default function ClaimListing() {
   }
 
   const hasEmail = !!listing?.email;
-  // SMS claim is hidden until A2P 10DLC is approved — treat phone-only as no options
-  // const hasPhone = !!listing?.phone;
+  // SMS claim is hidden until A2P 10DLC is approved
   const hasNoOptions = !hasEmail;
 
   return (
@@ -291,6 +291,14 @@ export default function ClaimListing() {
         {step === 'loading' && (
           <CardContent className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </CardContent>
+        )}
+
+        {/* ── Auto-claiming ───────────────────────────────────────────────── */}
+        {step === 'claiming' && (
+          <CardContent className="flex flex-col items-center justify-center py-12 space-y-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Claiming your listing…</p>
           </CardContent>
         )}
 
@@ -314,10 +322,10 @@ export default function ClaimListing() {
         {step === 'choose' && listing && (
           <>
             <CardHeader>
-              <CardTitle className="font-display text-2xl">Claim this listing</CardTitle>
+              <CardTitle className="font-display text-2xl">Verify your listing</CardTitle>
               <CardDescription>
-                Verify your connection to <strong>{listing.name}</strong> by receiving a
-                one-time code at the contact info on file.
+                To claim <strong>{listing.name}</strong>, we need to verify you have access
+                to the contact info on file.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -332,14 +340,14 @@ export default function ClaimListing() {
                 <Button
                   className="w-full justify-start gap-3 h-14"
                   variant="outline"
-                  onClick={sendEmailCode}
+                  onClick={sendEmailLink}
                   disabled={busy || !hasSupabase}
                 >
                   {busy && channel === null
                     ? <Loader2 className="h-5 w-5 animate-spin flex-shrink-0" />
                     : <Mail className="h-5 w-5 flex-shrink-0 text-primary" />}
                   <div className="text-left">
-                    <p className="font-medium text-sm">Send code by email</p>
+                    <p className="font-medium text-sm">Verify by email</p>
                     <p className="text-xs text-muted-foreground">{maskEmail(listing.email!)}</p>
                   </div>
                 </Button>
@@ -377,7 +385,7 @@ export default function ClaimListing() {
 
               {/* Admin help — prominent button when no options, subtle link otherwise */}
               <Button
-                className={hasNoOptions ? 'w-full justify-start gap-3 h-14' : 'w-full justify-start gap-3 h-14'}
+                className="w-full justify-start gap-3 h-14"
                 variant={hasNoOptions ? 'default' : 'ghost'}
                 asChild
               >
@@ -397,13 +405,61 @@ export default function ClaimListing() {
           </>
         )}
 
-        {/* ── Enter code ─────────────────────────────────────────────────── */}
+        {/* ── Email link sent ─────────────────────────────────────────────── */}
+        {step === 'email-link-sent' && (
+          <>
+            <CardHeader className="text-center">
+              <Mail className="mx-auto mb-2 h-10 w-10 text-primary" />
+              <CardTitle className="font-display text-2xl">Check your email</CardTitle>
+              <CardDescription>
+                We sent a verification link to <strong>{masked}</strong>.
+                Click the link in that email to verify ownership and complete your claim.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Alert>
+                <Mail className="h-4 w-4" />
+                <AlertDescription>
+                  The link will bring you back here automatically. Check your spam folder
+                  if you don't see it within a few minutes.
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <button onClick={goBack} className="hover:text-foreground">
+                  ← Try another method
+                </button>
+                <button
+                  onClick={sendEmailLink}
+                  disabled={busy}
+                  className="hover:text-foreground disabled:opacity-50"
+                >
+                  Resend link
+                </button>
+              </div>
+
+              <p className="text-center text-xs text-muted-foreground">
+                Don't have access to this email?{' '}
+                <a href={buildHelpMailto(listing, user?.email ?? undefined)} className="underline hover:text-foreground">
+                  Contact admin for help
+                </a>
+              </p>
+            </CardContent>
+          </>
+        )}
+
+        {/* ── Enter SMS code ──────────────────────────────────────────────── */}
         {step === 'enter-code' && (
           <>
             <CardHeader className="text-center">
-              {channel === 'email'
-                ? <Mail className="mx-auto mb-2 h-10 w-10 text-primary" />
-                : <Phone className="mx-auto mb-2 h-10 w-10 text-primary" />}
+              <Phone className="mx-auto mb-2 h-10 w-10 text-primary" />
               <CardTitle className="font-display text-2xl">Enter your code</CardTitle>
               <CardDescription>
                 We sent a 6-digit code to <strong>{masked}</strong>. It expires in 10 minutes.
@@ -429,7 +485,7 @@ export default function ClaimListing() {
 
               <Button
                 className="w-full"
-                onClick={handleVerify}
+                onClick={verifySmsOtp}
                 disabled={busy || otp.length !== 6}
               >
                 {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -441,7 +497,7 @@ export default function ClaimListing() {
                   ← Try another method
                 </button>
                 <button
-                  onClick={channel === 'email' ? sendEmailCode : sendSmsCode}
+                  onClick={sendSmsCode}
                   disabled={busy}
                   className="hover:text-foreground disabled:opacity-50"
                 >
