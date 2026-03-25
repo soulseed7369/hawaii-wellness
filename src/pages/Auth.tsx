@@ -129,8 +129,10 @@ export default function Auth() {
     setError('');
     setLoading(true);
     try {
-      // Store account type before auth, will be picked up in callback
+      // Store account type + claim context before auth, will be picked up in callback
       localStorage.setItem('pendingAccountType', selectedAccountType);
+      if (claimId) localStorage.setItem('pendingClaimId', claimId);
+      if (redirectTo) localStorage.setItem('pendingRedirect', redirectTo);
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -156,8 +158,10 @@ export default function Auth() {
     setLoading(true);
     try {
       if (isSignUp) {
-        // Store account type before signup
+        // Store account type + claim context before signup
         localStorage.setItem('pendingAccountType', selectedAccountType);
+        if (claimId) localStorage.setItem('pendingClaimId', claimId);
+        if (redirectTo) localStorage.setItem('pendingRedirect', redirectTo);
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -168,9 +172,11 @@ export default function Auth() {
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
-        // For password sign-in (existing user), save account type before auth context updates
+        // For password sign-in (existing user), save account type + claim context before auth context updates
         // Use localStorage to avoid race condition with stale `user` from AuthContext
         localStorage.setItem('pendingAccountType', selectedAccountType);
+        if (claimId) localStorage.setItem('pendingClaimId', claimId);
+        if (redirectTo) localStorage.setItem('pendingRedirect', redirectTo);
         // navigation handled by useEffect above
       }
     } catch (err: unknown) {
