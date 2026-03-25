@@ -86,6 +86,16 @@ Deno.serve(async (req) => {
       return json({ error: 'Subscription is already set to cancel' }, 400);
     }
 
+    // ── Verify subscription is still active in Stripe before updating ──────
+    // Calling .update() on an already-canceled subscription throws a 400.
+    const existingSub = await stripe.subscriptions.retrieve(profile.stripe_subscription_id);
+    if (existingSub.status === 'canceled') {
+      return json({ error: 'This subscription has already ended.' }, 400);
+    }
+    if (existingSub.cancel_at_period_end) {
+      return json({ error: 'This subscription is already set to cancel at period end.' }, 400);
+    }
+
     // ── Cancel at period end ────────────────────────────────────────────────
     const sub = await stripe.subscriptions.update(profile.stripe_subscription_id, {
       cancel_at_period_end: true,
