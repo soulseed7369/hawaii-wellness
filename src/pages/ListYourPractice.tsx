@@ -148,11 +148,12 @@ export default function ListYourPractice() {
 
       {/* Kama'aina Rate banner — compact */}
       <div className="mx-auto max-w-3xl mb-8">
-        <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-3 flex items-center justify-center gap-3 text-center">
+        <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-4 flex items-center justify-center gap-4 text-center">
           <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
-          <p className="text-sm text-amber-800">
-            <strong className="font-semibold text-amber-900">Kamaʻāina Rate applied automatically</strong> — no discount code needed. Early supporter pricing locked in <strong>for life</strong>. Limited spots.
-          </p>
+          <div className="flex flex-col gap-0.5">
+            <p className="text-sm font-semibold text-amber-900">Kamaʻāina Rate applied automatically — no discount code needed.</p>
+            <p className="text-sm text-amber-800">Early supporter pricing locked in <strong>for life</strong>. Limited spots.</p>
+          </div>
           <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
         </div>
       </div>
