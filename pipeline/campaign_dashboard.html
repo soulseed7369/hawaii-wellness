@@ -1118,11 +1118,6 @@
                 <div class="kpi-subtext" id="emailsSentPct">- of total</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-label">Email 1 Open Rate</div>
-                <div class="kpi-value" id="openRate">-</div>
-                <div class="kpi-subtext" id="openCount">- opened</div>
-            </div>
-            <div class="kpi-card">
                 <div class="kpi-label">Email 1 Click Rate</div>
                 <div class="kpi-value" id="clickRate">-</div>
                 <div class="kpi-subtext" id="clickCount">- clicked</div>
@@ -1537,11 +1532,11 @@
                 const result = await resp.json();
                 const updated = result.updated || 0;
                 const breakdown = result.breakdown || {};
-                const opened = breakdown.opened || 0;
+
                 const clicked = breakdown.clicked || 0;
                 const bounced = breakdown.bounced || 0;
 
-                showToast(`Synced: ${updated} updated (${opened} opened, ${clicked} clicked, ${bounced} bounced)`);
+                showToast(`Synced: ${updated} updated (${clicked} clicked, ${bounced} bounced)`);
                 setTimeout(() => fetchData(), 1000);
             } catch (error) {
                 showError(`Failed to sync status: ${error.message}`);
@@ -1653,21 +1648,17 @@
         function updateKPIs() {
             const total = allData.length;
             const emailsSent = allData.filter(r => r.email_1_sent_at).length;
-            const opened = allData.filter(r => r.email_1_opened_at).length;
             const clicked = allData.filter(r => r.email_1_clicked_at).length;
             const email2Sent = allData.filter(r => r.email_2_sent_at).length;
             const claimed = allData.filter(r => r.status === 'claimed' || r.status === 'upgraded').length;
             const upgraded = allData.filter(r => r.status === 'upgraded').length;
             const badContacts = allData.filter(r => r.status === 'bad_contact').length;
 
-            const openRate = emailsSent > 0 ? Math.round((opened / emailsSent) * 100) : 0;
             const clickRate = emailsSent > 0 ? Math.round((clicked / emailsSent) * 100) : 0;
 
             document.getElementById('totalOutreach').textContent = total.toLocaleString();
             document.getElementById('emailsSent').textContent = emailsSent.toLocaleString();
             document.getElementById('emailsSentPct').textContent = `${Math.round((emailsSent / total) * 100)}% of total`;
-            document.getElementById('openRate').textContent = `${openRate}%`;
-            document.getElementById('openCount').textContent = `${opened} opened`;
             document.getElementById('clickRate').textContent = `${clickRate}%`;
             document.getElementById('clickCount').textContent = `${clicked} clicked`;
             document.getElementById('email2Sent').textContent = email2Sent.toLocaleString();
