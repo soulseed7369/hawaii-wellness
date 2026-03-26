@@ -78,6 +78,7 @@ const emptyForm: CenterFormData = {
 
 export default function DashboardCenterProfile() {
   const { data: centers, isLoading } = useMyCenters();
+  const { data: billing } = useMyBillingProfile();
   const saveMutation = useSaveCenter();
   const [form, setForm] = useState<CenterFormData>(emptyForm);
   const [photoSlots, setPhotoSlots] = useState<PhotoSlot[]>([]);
@@ -244,7 +245,6 @@ export default function DashboardCenterProfile() {
   }
 
   const cities = CITIES_BY_ISLAND[form.island] ?? [];
-  const { data: billing } = useMyBillingProfile();
   const tier = billing?.tier ?? center?.tier ?? 'free';
   const isPremiumOrFeatured = tier === 'premium' || tier === 'featured';
 
@@ -422,12 +422,12 @@ export default function DashboardCenterProfile() {
             placeholder="Describe your center's mission, philosophy, and offerings..."
             className="min-h-[120px]"
             value={form.description}
-            maxLength={isPremiumOrFeatured ? undefined : 250}
+            maxLength={isPremiumOrFeatured ? undefined : 500}
             onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
           />
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              {isPremiumOrFeatured ? 'Unlimited' : `${form.description.length}/250 characters`}
+              {isPremiumOrFeatured ? 'Unlimited' : `${form.description.length}/500 characters`}
             </p>
             {!isPremiumOrFeatured && (
               <p className="text-xs text-amber-600">
