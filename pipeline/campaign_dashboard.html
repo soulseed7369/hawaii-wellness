@@ -1074,6 +1074,10 @@
                 <span id="syncSpinner" class="spinner" style="display: none;"></span>
                 Sync Opens/Clicks
             </button>
+            <button id="syncContactBtn" onclick="syncContactInfo()" style="display: none;">
+                <span id="syncContactSpinner" class="spinner" style="display: none;"></span>
+                Sync Contact Info
+            </button>
             <button id="refreshBtn" onclick="refreshData()">
                 <span id="refreshSpinner" class="spinner" style="display: none;"></span>
                 Refresh Now
@@ -1323,6 +1327,7 @@
             campaignSecret = secret;
             updateSecretBanner();
             document.getElementById('syncBtn').style.display = 'inline-block';
+            document.getElementById('syncContactBtn').style.display = 'inline-block';
             showToast('Secret saved successfully');
         }
 
@@ -1535,6 +1540,51 @@
                 const syncSpinner = document.getElementById('syncSpinner');
                 syncBtn.disabled = false;
                 syncSpinner.style.display = 'none';
+            }
+        }
+
+        async function syncContactInfo() {
+            if (!campaignSecret) {
+                showError('Please set campaign secret first');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const syncContactBtn = document.getElementById('syncContactBtn');
+                const syncContactSpinner = document.getElementById('syncContactSpinner');
+                syncContactBtn.disabled = true;
+                syncContactSpinner.style.display = 'inline-block';
+
+                const resp = await fetch(`${EDGE_BASE}/sync-contact-info`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Campaign-Secret': campaignSecret,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (!resp.ok) {
+                    throw new Error(`HTTP ${resp.status}`);
+                }
+
+                const result = await resp.json();
+                const updated = result.updated || 0;
+                const emailsFixed = result.emailsFixed || 0;
+                const statusesReset = result.statusesReset || 0;
+
+                showToast(`Contact info synced: ${updated} updated (${emailsFixed} emails fixed, ${statusesReset} statuses reset)`);
+                setTimeout(() => fetchData(), 800);
+            } catch (error) {
+                showError(`Failed to sync contact info: ${error.message}`);
+            } finally {
+                showLoading(false);
+                const syncContactBtn = document.getElementById('syncContactBtn');
+                const syncContactSpinner = document.getElementById('syncContactSpinner');
+                syncContactBtn.disabled = false;
+                syncContactSpinner.style.display = 'none';
             }
         }
 
