@@ -246,6 +246,11 @@
             background: #fffbeb;
         }
 
+        .status-item.email-1b-sent {
+            border-left-color: #8b5cf6;
+            background: #f5f3ff;
+        }
+
         .status-item.email-2-sent {
             border-left-color: #06b6d4;
             background: #ecf9ff;
@@ -808,6 +813,11 @@
             color: #b45309;
         }
 
+        .badge.email-1b-sent {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
         .badge.email-2-sent {
             background: #cffafe;
             color: #0c4a6e;
@@ -1295,7 +1305,7 @@
         let refreshTimer = null;
         let countdownTimer = null;
         let statusChart = null;
-        let campaignSecret = '';
+        let campaignSecret = '220fbcc0-da1e-4c91-bbb3-562b450e5c76';
         let pendingSendData = null;
 
         // Status badge mapping
@@ -1304,6 +1314,7 @@
             'email_queued': 'email-queued',
             'email_1_sent': 'email-sent',
             'email_1_opened': 'email-opened',
+            'email_1b_sent': 'email-1b-sent',
             'email_2_sent': 'email-2-sent',
             'replied': 'in-progress',
             'call_scheduled': 'in-progress',
@@ -1675,6 +1686,7 @@
                 'not-yet-contacted': allData.filter(r => r.status === 'not_contacted' || r.status === 'email_queued').length,
                 'email-1-sent': allData.filter(r => r.status === 'email_1_sent').length,
                 'email-1-opened': allData.filter(r => r.status === 'email_1_opened').length,
+                'email-1b-sent': allData.filter(r => r.status === 'email_1b_sent').length,
                 'email-2-sent': allData.filter(r => r.status === 'email_2_sent').length,
                 'in-progress': allData.filter(r => ['replied', 'call_scheduled', 'called', 'sms_sent'].includes(r.status)).length,
                 'claimed': allData.filter(r => r.status === 'claimed').length,
@@ -1686,6 +1698,7 @@
                 'not-yet-contacted': 'Not Yet Contacted',
                 'email-1-sent': 'Email 1 Sent',
                 'email-1-opened': 'Email 1 Opened',
+                'email-1b-sent': 'Email 1B Sent',
                 'email-2-sent': 'Email 2 Sent',
                 'in-progress': 'Replied/In Progress',
                 'claimed': 'Claimed',
@@ -1717,6 +1730,7 @@
                 'not-yet-contacted': '#9ca3af',
                 'email-1-sent': '#3b82f6',
                 'email-1-opened': '#f59e0b',
+                'email-1b-sent': '#8b5cf6',
                 'email-2-sent': '#06b6d4',
                 'in-progress': '#a855f7',
                 'claimed': '#10b981',
@@ -2024,8 +2038,13 @@
             fetchData();
         }
 
-        // Initialize on page load — fetch data only
+        // Initialize on page load — auto-fill secret, show action buttons, fetch data
         window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('secretInput').value = campaignSecret;
+            // Secret is pre-filled, so show buttons that require it
+            document.getElementById('syncBtn').style.display = 'inline-block';
+            document.getElementById('syncContactBtn').style.display = 'inline-block';
+            updateSecretBanner();
             fetchData();
         });
     </script>

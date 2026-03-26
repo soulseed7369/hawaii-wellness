@@ -849,11 +849,23 @@ Deno.serve(async (req) => {
         }
 
         // Update campaign_outreach status
+        // phase1b_claim → email_1b_sent (distinct from email_2_sent)
+        // follow_up or phase2_* after email_1 → email_2_sent
+        // otherwise → email_1_sent
+        const isPhase1b = templateName === 'phase1b_claim';
         const isEmail2 =
-          followUp ||
-          (contact.status === 'email_1_sent' ||
-            contact.status === 'email_1_opened');
-        const updatePayload = isEmail2
+          !isPhase1b &&
+          (followUp ||
+            contact.status === 'email_1_sent' ||
+            contact.status === 'email_1_opened' ||
+            contact.status === 'email_1b_sent');
+        const updatePayload = isPhase1b
+          ? {
+              status: 'email_1b_sent',
+              email_2_sent_at: new Date().toISOString(),
+              email_2_template: templateName,
+            }
+          : isEmail2
           ? {
               status: 'email_2_sent',
               email_2_sent_at: new Date().toISOString(),

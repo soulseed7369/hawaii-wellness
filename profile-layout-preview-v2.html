@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practitioner Profile — Layout Preview v2</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ocean: { DEFAULT: '#0f766e', light: '#ccfbf1' },
+        sand: { DEFAULT: '#d4a574', light: '#fef3e2' },
+        terracotta: { light: '#fef0e7' },
+      },
+      fontFamily: { display: ['Georgia', 'serif'] },
+    },
+  },
+}
+</script>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; background: #fafaf9; }
+  .font-display { font-family: Georgia, serif; }
+  .annotation {
+    position: absolute;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #92400e;
+    white-space: nowrap;
+    z-index: 50;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .annotation::before {
+    content: '▸ ';
+  }
+  .changed {
+    outline: 2px dashed #f59e0b;
+    outline-offset: 2px;
+    position: relative;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Legend -->
+<div class="fixed top-4 right-4 z-50 bg-white border border-amber-300 rounded-lg p-3 shadow-lg text-xs max-w-xs">
+  <p class="font-bold text-amber-800 mb-1">🔶 Yellow dashed = Changed</p>
+  <p class="text-gray-600">Annotations highlight what's new in this revision.</p>
+</div>
+
+<!-- ============ HERO / HEADER ============ -->
+<section class="border-b border-gray-200 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="p-5 flex flex-col sm:flex-row gap-5">
+      <!-- Avatar -->
+      <div class="flex-shrink-0">
+        <div class="h-28 w-28 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-md">
+          <span class="text-3xl font-bold text-white">KM</span>
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start gap-3 flex-wrap">
+          <h1 class="font-display text-2xl font-bold">Kailani Makoa</h1>
+          <span class="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-medium text-amber-700">
+            👑 Featured
+          </span>
+        </div>
+        <p class="text-sm text-gray-500 mt-0.5">Kailua-Kona, Big Island · In Person & Online</p>
+
+        <!-- Status + Modalities -->
+        <div class="mt-2.5 flex flex-wrap items-center gap-2 relative changed">
+          <span class="annotation -top-6 left-0">Modalities: teal with border — more visible</span>
+          <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-xs font-medium gap-1">
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            Accepting New Clients
+          </span>
+          <span class="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700">Lomilomi / Hawaiian Healing</span>
+          <span class="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700">Energy Healing</span>
+          <span class="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700">Breathwork</span>
+          <span class="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700">Sound Healing</span>
+          <span class="inline-flex items-center rounded-md bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-medium text-teal-700">Meditation</span>
+          <button class="inline-flex items-center rounded-md bg-teal-50/60 border border-teal-200/60 px-2.5 py-0.5 text-xs font-medium text-teal-600 hover:bg-teal-100 transition-colors">
+            +3 more
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer strip: Social links + meta -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 bg-gray-50/40 px-5 py-2.5 relative changed">
+      <span class="annotation -top-6 left-0">Social links: branded colors, larger icons, labels on desktop</span>
+      <div class="flex items-center gap-3">
+        <a href="#" class="flex items-center gap-1.5 text-pink-600 hover:text-pink-700 transition-colors">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="18" cy="6" r="1.5" fill="currentColor" stroke="none"/></svg>
+          <span class="text-xs font-medium">Instagram</span>
+        </a>
+        <a href="#" class="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transition-colors">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          <span class="text-xs font-medium">Facebook</span>
+        </a>
+        <a href="#" class="flex items-center gap-1.5 text-gray-800 hover:text-black transition-colors">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span class="text-xs font-medium">X</span>
+        </a>
+        <a href="#" class="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 transition-colors">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 17.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+          <span class="text-xs font-medium">Substack</span>
+        </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-xs text-gray-400">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Member since Jan 2025
+        </span>
+        <span class="flex items-center gap-1.5 text-xs text-gray-400">
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Managed by practitioner · 2 days ago
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TAB BAR ============ -->
+<section class="border-b border-gray-200 bg-white sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex gap-0">
+      <button class="relative px-4 py-3 text-sm font-medium text-gray-900">
+        About
+        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600"></div>
+      </button>
+      <button class="px-4 py-3 text-sm font-medium text-gray-400 hover:text-gray-700">Classes</button>
+      <button class="px-4 py-3 text-sm font-medium text-gray-400 hover:text-gray-700">Offerings</button>
+      <button class="px-4 py-3 text-sm font-medium text-gray-400 hover:text-gray-700">Testimonials</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTENT GRID ============ -->
+<section class="max-w-6xl mx-auto grid gap-8 py-8 px-4 lg:grid-cols-3">
+  <!-- LEFT — Main Content -->
+  <div class="space-y-8 lg:col-span-2">
+
+    <!-- About -->
+    <div>
+      <h2 class="mb-3 font-display text-xl font-bold">About</h2>
+      <p class="whitespace-pre-line leading-relaxed text-gray-500">
+Kailani Makoa is a Native Hawaiian healer and practitioner of lomilomi, the traditional Hawaiian art of massage. With over 15 years of experience, she integrates ancient Hawaiian healing practices with modern wellness approaches.
+
+Her practice focuses on restoring balance and harmony through the connection of body, mind, and spirit. Each session is customized to address individual needs, incorporating breathwork, energy healing, and traditional Hawaiian prayer (pule).
+
+Kailani trained under master practitioners on the Big Island and continues to deepen her practice through ongoing study of Hawaiian healing traditions.
+      </p>
+    </div>
+
+    <!-- ★ SERVICES — now BEFORE "What to Expect" -->
+    <div class="relative changed">
+      <span class="annotation -top-6 left-0">Services: moved before "What to Expect" · No duplicate in sidebar</span>
+      <h2 class="mb-3 font-display text-xl font-bold">Services</h2>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold">Lomilomi Massage</h3>
+            <span class="flex-shrink-0 text-sm font-medium text-teal-700">$120–150</span>
+          </div>
+          <p class="mt-1.5 text-xs leading-relaxed text-gray-500">Traditional Hawaiian temple bodywork using flowing forearm and elbow strokes. 60 or 90 minutes.</p>
+        </div>
+        <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold">Energy Healing Session</h3>
+            <span class="flex-shrink-0 text-sm font-medium text-teal-700">$90</span>
+          </div>
+          <p class="mt-1.5 text-xs leading-relaxed text-gray-500">Gentle, hands-on energy work to release blockages and restore natural flow.</p>
+        </div>
+        <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold">Private Breathwork Session</h3>
+            <span class="flex-shrink-0 text-sm font-medium text-teal-700">$75</span>
+          </div>
+          <p class="mt-1.5 text-xs leading-relaxed text-gray-500">Guided breathing techniques for stress relief, emotional processing, and clarity.</p>
+        </div>
+        <div class="rounded-lg border border-gray-200 bg-white p-4">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold">Sound Healing Journey</h3>
+            <span class="flex-shrink-0 text-sm font-medium text-teal-700">Sliding scale</span>
+          </div>
+          <p class="mt-1.5 text-xs leading-relaxed text-gray-500">Crystal bowls, traditional Hawaiian instruments, and guided meditation. Group or private.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- What to Expect -->
+    <div>
+      <h2 class="mb-3 font-display text-xl font-bold">What to Expect</h2>
+      <p class="leading-relaxed text-gray-500">Sessions begin with a brief intake conversation to understand your needs and set intentions. Kailani creates a warm, safe space that honors the Hawaiian tradition of aloha. Wear comfortable clothing. Sessions typically last 60–90 minutes. You'll be guided through breathing exercises before hands-on work begins.</p>
+    </div>
+
+    <!-- Gallery -->
+    <div>
+      <h2 class="mb-3 font-display text-xl font-bold">Gallery</h2>
+      <div class="grid grid-cols-3 gap-2 rounded-lg overflow-hidden">
+        <div class="h-32 bg-gradient-to-br from-teal-100 to-cyan-100 flex items-center justify-center text-teal-400 text-xs">Photo 1</div>
+        <div class="h-32 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center text-amber-400 text-xs">Photo 2</div>
+        <div class="h-32 bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center text-violet-400 text-xs">Photo 3</div>
+      </div>
+    </div>
+
+    <!-- Booking CTA -->
+    <div>
+      <div class="mb-3 flex items-center gap-2">
+        <svg class="h-5 w-5 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <h2 class="font-display text-xl font-bold">Schedule a Discovery Call</h2>
+      </div>
+      <div class="rounded-xl border border-gray-200 bg-white p-5">
+        <p class="text-sm text-gray-500 mb-4">View available times and book directly on calendly.com.</p>
+        <a href="#" class="inline-flex items-center gap-2 rounded-md bg-teal-700 text-white px-4 py-2.5 text-sm font-medium hover:bg-teal-800 transition-colors">
+          Schedule a Discovery Call
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Share this listing -->
+    <div class="flex items-center gap-2 pt-2 relative changed">
+      <span class="annotation -top-6 left-0">"Share this listing" — clearer label</span>
+      <span class="text-xs text-gray-400">Share this listing:</span>
+      <div class="flex gap-1.5">
+        <button class="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-xs">f</button>
+        <button class="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-xs">X</button>
+        <button class="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-xs">🔗</button>
+        <button class="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-xs">✉</button>
+      </div>
+    </div>
+
+    <!-- Profile last updated -->
+    <div class="text-xs text-gray-300">Profile last updated: March 20, 2026</div>
+
+    <!-- Similar practitioners (About tab only) -->
+    <div>
+      <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Similar practitioners on Big Island</p>
+      <div class="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold mb-2">LN</div>
+          <p class="text-xs font-semibold truncate">Leilani Nakamura</p>
+          <p class="text-[10px] text-gray-400">Lomilomi</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xs font-bold mb-2">MK</div>
+          <p class="text-xs font-semibold truncate">Malia Kealoha</p>
+          <p class="text-[10px] text-gray-400">Energy Healing</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white text-xs font-bold mb-2">KP</div>
+          <p class="text-xs font-semibold truncate">Kai Paoa</p>
+          <p class="text-[10px] text-gray-400">Breathwork</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold mb-2">AH</div>
+          <p class="text-xs font-semibold truncate">Anuhea Hale</p>
+          <p class="text-[10px] text-gray-400">Sound Healing</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="space-y-4">
+    <!-- Primary CTA -->
+    <a href="#" class="flex items-center justify-center gap-2 w-full rounded-md bg-teal-700 text-white px-4 py-3 text-sm font-medium hover:bg-teal-800 transition-colors">
+      Schedule a Discovery Call
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </a>
+
+    <!-- Contact Card -->
+    <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <!-- Map -->
+      <div class="h-40 bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center">
+        <div class="text-center">
+          <svg class="mx-auto h-7 w-7 text-teal-600 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="text-xs font-medium text-teal-700">Kailua-Kona, Big Island</span>
+        </div>
+      </div>
+      <div class="p-4 space-y-3">
+        <p class="text-sm font-medium">75-5660 Palani Rd, Suite 201, Kailua-Kona, HI 96740</p>
+        <div class="space-y-2 text-sm">
+          <a href="#" class="flex items-center gap-2 text-teal-700 font-medium">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Reveal phone
+          </a>
+          <a href="#" class="flex items-center gap-2 text-teal-700 font-medium">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Reveal email
+          </a>
+          <a href="#" class="flex items-center gap-2 text-teal-700 font-medium">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span class="truncate">kailanihealingarts.com</span>
+          </a>
+        </div>
+
+        <!-- Response time -->
+        <div class="flex items-center gap-2 rounded-lg bg-sky-50 border border-sky-100 px-3 py-2">
+          <svg class="h-4 w-4 text-sky-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="text-sm font-medium text-sky-700">Responds within 24 hours</span>
+        </div>
+
+        <!-- Working hours — collapsible -->
+        <details class="group">
+          <summary class="flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-400 list-none select-none">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Hours</span>
+            <svg class="ml-auto h-3 w-3 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="mt-2 space-y-1 text-sm">
+            <div class="flex justify-between"><span class="text-gray-500">Mon</span><span>9:00 AM – 12:00 PM, 1:00 PM – 5:00 PM</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Tue</span><span>9:00 AM – 5:00 PM</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Wed</span><span>9:00 AM – 5:00 PM</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Thu</span><span>9:00 AM – 12:00 PM</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Fri</span><span>9:00 AM – 3:00 PM</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Sat</span><span class="text-gray-400">Closed</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Sun</span><span class="text-gray-400">Closed</span></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- NO MORE "Services & Modalities" section here -->
+    <div class="relative changed p-3 rounded-lg border-2 border-dashed border-red-300 bg-red-50/50 text-center">
+      <span class="annotation -top-6 left-0">REMOVED: redundant "Services & Modalities" sidebar</span>
+      <p class="text-xs text-red-400 italic">Previously: Services & Modalities pills were here — now removed</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION DIVIDER ============ -->
+<div class="max-w-6xl mx-auto px-4 py-12 border-t border-gray-200">
+  <h2 class="font-display text-xl font-bold text-center mb-2">Dashboard Profile Editor</h2>
+  <p class="text-sm text-gray-400 text-center mb-8">Changes to the profile editing experience</p>
+
+  <!-- Dashboard mock: field order -->
+  <div class="max-w-2xl mx-auto space-y-4">
+    <!-- About -->
+    <div class="rounded-lg border border-gray-200 bg-white p-4">
+      <h3 class="font-semibold text-base mb-1">About</h3>
+      <div class="h-20 bg-gray-50 rounded border border-gray-200 mt-2"></div>
+    </div>
+
+    <!-- ★ Services — moved here (after About) -->
+    <div class="rounded-lg border border-teal-200 bg-orange-50/30 p-4 relative changed">
+      <span class="annotation -top-6 left-0">Services: moved after About (was after Working Hours)</span>
+      <h3 class="font-semibold text-base mb-1 flex items-center gap-2">
+        <svg class="h-4 w-4 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Services
+        <span class="ml-auto text-xs rounded-full bg-teal-100 text-teal-700 px-2 py-0.5">Premium</span>
+      </h3>
+      <p class="text-xs text-gray-400 mb-3">List specific services — shown on your profile before "What to Expect".</p>
+
+      <!-- Compact service rows -->
+      <div class="space-y-2">
+        <div class="flex items-start gap-2 rounded-lg border border-gray-200 p-2.5">
+          <div class="flex-1 space-y-1.5">
+            <div class="flex gap-2">
+              <div class="flex-1 h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs text-gray-500">Lomilomi Massage</div>
+              <div class="w-28 h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs text-gray-500">$120–150</div>
+            </div>
+            <div class="h-7 rounded bg-gray-50 border border-gray-200 px-2 flex items-center text-xs text-gray-400">Traditional Hawaiian temple bodywork…</div>
+          </div>
+          <button class="text-gray-300 hover:text-red-400 mt-1.5">✕</button>
+        </div>
+        <div class="flex items-start gap-2 rounded-lg border border-gray-200 p-2.5">
+          <div class="flex-1 space-y-1.5">
+            <div class="flex gap-2">
+              <div class="flex-1 h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs text-gray-500">Energy Healing Session</div>
+              <div class="w-28 h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs text-gray-500">$90</div>
+            </div>
+            <div class="h-7 rounded bg-gray-50 border border-gray-200 px-2 flex items-center text-xs text-gray-400">Gentle, hands-on energy work…</div>
+          </div>
+          <button class="text-gray-300 hover:text-red-400 mt-1.5">✕</button>
+        </div>
+      </div>
+      <button class="mt-2 text-xs text-teal-700 font-medium hover:text-teal-800">+ Add a service</button>
+    </div>
+
+    <!-- What to Expect -->
+    <div class="rounded-lg border border-teal-200 bg-orange-50/30 p-4">
+      <h3 class="font-semibold text-base mb-1">What to Expect</h3>
+      <div class="h-16 bg-gray-50 rounded border border-gray-200 mt-2"></div>
+    </div>
+
+    <!-- Working Hours — compact -->
+    <div class="rounded-lg border border-teal-200 bg-orange-50/30 p-4 relative changed">
+      <span class="annotation -top-6 left-0">Working Hours: compact inline layout, abbreviated day names</span>
+      <h3 class="font-semibold text-base mb-3 flex items-center gap-2">
+        <svg class="h-4 w-4 text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Working Hours
+      </h3>
+      <div class="space-y-1">
+        <!-- Mon with multiple slots -->
+        <div class="flex items-center gap-2 py-1.5 border-b border-gray-100">
+          <div class="w-8 h-5 rounded-full bg-teal-600 relative"><div class="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-white"></div></div>
+          <span class="w-10 text-sm font-medium">Mon</span>
+          <div class="flex-1 flex flex-wrap items-center gap-1.5">
+            <div class="flex items-center gap-1">
+              <div class="w-[6.5rem] h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs">09:00</div>
+              <span class="text-xs text-gray-400">–</span>
+              <div class="w-[6.5rem] h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs">12:00</div>
+            </div>
+            <span class="text-xs text-gray-400">,</span>
+            <div class="flex items-center gap-1">
+              <div class="w-[6.5rem] h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs">13:00</div>
+              <span class="text-xs text-gray-400">–</span>
+              <div class="w-[6.5rem] h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs">17:00</div>
+              <button class="text-gray-300 hover:text-red-400 text-xs">✕</button>
+            </div>
+            <button class="text-xs text-teal-700 font-medium">+</button>
+          </div>
+        </div>
+        <!-- Tue -->
+        <div class="flex items-center gap-2 py-1.5 border-b border-gray-100">
+          <div class="w-8 h-5 rounded-full bg-teal-600 relative"><div class="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-white"></div></div>
+          <span class="w-10 text-sm font-medium">Tue</span>
+          <div class="flex-1 flex items-center gap-1">
+            <div class="w-[6.5rem] h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs">09:00</div>
+            <span class="text-xs text-gray-400">–</span>
+            <div class="w-[6.5rem] h-7 rounded bg-gray-100 border border-gray-200 px-2 flex items-center text-xs">17:00</div>
+            <button class="text-xs text-teal-700 font-medium ml-1.5">+</button>
+          </div>
+        </div>
+        <!-- Sat (closed) -->
+        <div class="flex items-center gap-2 py-1.5 border-b border-gray-100">
+          <div class="w-8 h-5 rounded-full bg-gray-200 relative"><div class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white"></div></div>
+          <span class="w-10 text-sm font-medium">Sat</span>
+          <span class="text-xs text-gray-400">Closed</span>
+        </div>
+        <!-- Sun (closed) -->
+        <div class="flex items-center gap-2 py-1.5">
+          <div class="w-8 h-5 rounded-full bg-gray-200 relative"><div class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white"></div></div>
+          <span class="w-10 text-sm font-medium">Sun</span>
+          <span class="text-xs text-gray-400">Closed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other fields (abbreviated) -->
+    <div class="rounded-lg border border-gray-200 bg-white p-4">
+      <h3 class="font-semibold text-base mb-1">Direct Booking Link</h3>
+      <p class="text-xs text-gray-400">Booking URL + button label</p>
+    </div>
+    <div class="rounded-lg border border-gray-200 bg-white p-4">
+      <h3 class="font-semibold text-base mb-1">Response Time</h3>
+      <p class="text-xs text-gray-400">How quickly you respond to enquiries</p>
+    </div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="max-w-3xl mx-auto px-4 py-8 border-t border-gray-200">
+  <h2 class="font-display text-lg font-bold mb-4">Changes in this revision</h2>
+  <div class="space-y-3 text-sm text-gray-600">
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">1.</span>
+      <p><strong>Social links — branded colors + labels.</strong> Instagram is pink, Facebook is blue, X is dark, Substack is orange. Icons are larger (h-4) with text labels on desktop.</p>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">2.</span>
+      <p><strong>Header modalities — teal with border.</strong> Changed from gray <code>bg-muted</code> pills to <code>bg-teal-50 border-teal-200 text-teal-700</code> — they pop without being garish.</p>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">3.</span>
+      <p><strong>Removed "Services & Modalities" from sidebar and mobile.</strong> This was redundant with the header modalities and the structured Services section. Gone from both sidebar (desktop) and inline (mobile).</p>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">4.</span>
+      <p><strong>Services section moved before "What to Expect".</strong> Content order is now: About → Services → What to Expect → Gallery → Booking.</p>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">5.</span>
+      <p><strong>"Share this listing"</strong> — clearer label instead of just "Share:".</p>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">6.</span>
+      <p><strong>Dashboard: Services after About.</strong> Mirrors the public listing order. Uses compact single-line inputs instead of full textarea per service.</p>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-teal-600 font-bold flex-shrink-0">7.</span>
+      <p><strong>Dashboard: compact hours editor.</strong> Abbreviated day names (Mon, Tue…), inline layout with all slots on one row, smaller inputs (h-7), "+" button instead of "+ Add hours" text.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

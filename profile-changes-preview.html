@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Detail Changes Preview — Kai Nakamura</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --card: #ffffff;
+    --border: #e5e2dd;
+    --border-light: #f0ede8;
+    --text: #1a1a1a;
+    --text-muted: #6b6560;
+    --primary: #c85a3a;
+    --primary-hover: #b04e32;
+    --muted-bg: #f5f3f0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 720px; margin: 0 auto; }
+
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 12px; background: linear-gradient(90deg, var(--primary), transparent); -webkit-background-clip: text; padding: 16px 0 4px; border-top: 2px solid var(--primary); margin-top: 40px; }
+  .section-label:first-child { margin-top: 0; border-top: none; }
+  .old-label { color: #dc2626; border-top-color: #dc2626; background: linear-gradient(90deg, #dc2626, transparent); -webkit-background-clip: text; }
+  .new-label { color: #16a34a; border-top-color: #16a34a; background: linear-gradient(90deg, #16a34a, transparent); -webkit-background-clip: text; }
+
+  /* Card base */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+  /* ── Get in Touch (NEW) ─── */
+  .get-in-touch .content { padding: 20px; }
+  .get-in-touch h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .get-in-touch .desc { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+  .get-in-touch .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--primary); color: white; flex: 1; justify-content: center; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); flex: 1; justify-content: center; }
+  .btn-outline:hover { background: var(--muted-bg); }
+  .footer-strip { border-top: 1px solid var(--border-light); background: var(--muted-bg); padding: 12px 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .footer-strip button { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-muted); background: none; border: none; cursor: pointer; transition: color 0.15s; }
+  .footer-strip button:hover { color: var(--text); }
+
+  /* ── Old CTA block ─── */
+  .old-cta { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; padding: 20px; }
+  .old-cta h3 { font-size: 14px; font-weight: 600; color: #134e4a; margin-bottom: 12px; }
+  .old-cta .actions { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn-teal { background: #0d9488; color: white; }
+  .btn-teal-outline { background: #f0fdfa; color: #115e59; border: 1px solid #99f6e4; }
+  .old-cta .featured-strip { border-top: 1px solid rgba(153,246,228,0.5); padding-top: 12px; }
+  .old-cta .featured-strip p { font-size: 12px; font-weight: 500; color: #134e4a; margin-bottom: 8px; }
+  .old-cta .featured-strip .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .old-cta .featured-strip .tag { font-size: 12px; background: white; border: 1px solid #99f6e4; border-radius: 4px; padding: 4px 8px; color: #0f766e; cursor: pointer; }
+
+  /* ── Book an Appointment (NEW) ─── */
+  .book-appt { padding: 20px; }
+  .book-appt .header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .book-appt .header svg { color: var(--primary); }
+  .book-appt .header h2 { font-size: 20px; font-weight: 700; }
+  .book-appt .desc { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* ── Old Booking Embed ─── */
+  .old-booking { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .old-booking .header { display: flex; align-items: center; justify-content: space-between; padding: 0 0 16px; }
+  .old-booking .header .left { display: flex; align-items: center; gap: 8px; }
+  .old-booking .header a { font-size: 12px; color: var(--text-muted); text-decoration: none; }
+  .old-booking .embed-area { background: #fef2f2; border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 40px 20px; text-align: center; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+  .old-booking .embed-area p { font-size: 14px; color: var(--text-muted); }
+
+  /* ── Gallery ─── */
+  .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .gallery-grid .photo { aspect-ratio: 4/3; border-radius: 8px; background: linear-gradient(135deg, #e0e7ee 0%, #cdd6de 100%); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-muted); position: relative; overflow: hidden; }
+  .gallery-grid .photo.profile { border: 3px solid var(--primary); opacity: 0.4; }
+  .gallery-grid .photo.profile::after { content: 'PROFILE (excluded)'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); color: white; font-size: 11px; font-weight: 600; }
+  .gallery-grid .photo.shown { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; }
+  .gallery-note { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+
+  /* SVG icon inline */
+  .icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .icon-sm { width: 14px; height: 14px; }
+  .icon-lg { width: 20px; height: 20px; }
+
+  @media (max-width: 480px) {
+    .get-in-touch .actions { flex-direction: column; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div class="section-label old-label">1. BEFORE — "Connect with Kai Nakamura" (teal CTA block)</div>
+
+<div class="old-cta">
+  <h3>Connect with Kai Nakamura</h3>
+  <div class="actions">
+    <a class="btn btn-teal" href="#">Book a Session <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+    <a class="btn btn-teal-outline" href="#">Discovery Call <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+  </div>
+  <div class="featured-strip">
+    <p>Featured</p>
+    <div class="tags">
+      <span class="tag">Morning Breathwork →</span>
+      <span class="tag">Lomilomi Basics →</span>
+      <span class="tag">Sunset Meditation Retreat →</span>
+      <span class="tag">View all classes →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div class="section-label new-label">1. AFTER — "Get in Touch" (clean, on-brand card)</div>
+
+<div class="card get-in-touch">
+  <div class="content">
+    <h3>Get in Touch</h3>
+    <p class="desc">Ready to start your wellness journey? Reach out to Kai directly.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#">
+        Book a Session
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+      <a class="btn btn-outline" href="#">
+        Free Discovery Call
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="footer-strip">
+    <button>
+      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      3 Classes →
+    </button>
+    <button>
+      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+      2 Offerings →
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div class="section-label old-label">2. BEFORE — Booking Embed (iframe with error)</div>
+
+<div style="padding: 0 0 0;">
+  <div class="old-booking">
+    <div style="padding: 16px 20px 0;">
+      <div class="old-booking header">
+        <div class="left">
+          <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M18 14h2"/><path d="M18 18h2"/></svg>
+          <h2 style="font-size: 20px; font-weight: 700;">Book an Appointment</h2>
+        </div>
+        <a href="#">Open in new tab ↗</a>
+      </div>
+    </div>
+    <div style="padding: 0 20px 20px;">
+      <div class="embed-area">
+        <p style="color: #ef4444; font-weight: 500;">Could not load the booking calendar.</p>
+        <p>This is what users see when the booking URL is invalid or fails to load — a big red error box.</p>
+        <a class="btn btn-outline" href="#" style="flex: none;">Open booking page ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div class="section-label new-label">2. AFTER — Book an Appointment (simple card + button)</div>
+
+<div class="card">
+  <div class="book-appt">
+    <div class="header">
+      <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M18 14h2"/><path d="M18 18h2"/></svg>
+      <h2>Book an Appointment</h2>
+    </div>
+    <p class="desc">Schedule a session with Kai through their booking page.</p>
+    <a class="btn btn-primary" href="#" style="flex: none;">
+      Book a Session
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </a>
+  </div>
+</div>
+
+<p style="margin-top: 12px; font-size: 13px; color: var(--text-muted); font-style: italic;">
+  If the URL is invalid (not http/https or malformed) → this entire section is hidden. No error window.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div class="section-label new-label">3. Gallery — Profile photo excluded, tier caps</div>
+
+<p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">
+  Profile photo (starred in upload) is automatically filtered out of the gallery display.
+  Premium shows up to <strong>5</strong> gallery photos, Featured up to <strong>10</strong>.
+</p>
+
+<h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Gallery</h3>
+<div class="gallery-grid">
+  <div class="photo profile">Photo 1</div>
+  <div class="photo shown">Photo 2</div>
+  <div class="photo shown">Photo 3</div>
+  <div class="photo shown">Photo 4</div>
+</div>
+<p class="gallery-note">
+  <span style="display: inline-block; width: 12px; height: 12px; border: 3px solid var(--primary); border-radius: 4px; opacity: 0.5; vertical-align: middle; margin-right: 4px;"></span> = Profile photo (excluded from gallery)
+  &nbsp;&nbsp;
+  <span style="display: inline-block; width: 12px; height: 12px; border: 2px solid #10b981; border-radius: 4px; background: #d1fae5; vertical-align: middle; margin-right: 4px;"></span> = Shown in gallery
+</p>
+
+<div style="margin-top: 32px; padding: 16px; background: var(--muted-bg); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+  <strong>Upload limits (dashboard):</strong><br>
+  Free: 1 photo &nbsp;|&nbsp; Premium: up to 5 &nbsp;|&nbsp; Featured: up to 10<br>
+  All uploads converted to WebP client-side before upload.
+</div>
+
+</body>
+</html>
