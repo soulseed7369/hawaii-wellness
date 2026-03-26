@@ -1193,12 +1193,8 @@
                 </div>
 
                 <div class="send-emails-actions">
-                    <button class="btn-primary" onclick="previewSendEmails()" id="previewBtn">
+                    <button class="btn-primary" id="actionBtn" onclick="handleActionBtn()">
                         Preview (Dry Run)
-                    </button>
-                    <button class="btn-primary" onclick="confirmSendEmails()" id="sendBtn" style="display: none;">
-                        <span class="warning-icon">⚠️</span>
-                        <span id="sendBtnText">Send 0 Emails</span>
                     </button>
                 </div>
 
@@ -1343,7 +1339,29 @@
             const matching = allData.filter(c => c.status === status);
             const count = Math.min(matching.length, limit);
             document.getElementById('matchingContactCount').textContent = matching.length;
-            document.getElementById('sendBtnText').textContent = `Send ${count} Emails`;
+            updateActionBtn(count);
+        }
+
+        function updateActionBtn(count) {
+            const isDryRun = document.getElementById('dryRunCheckbox').checked;
+            const btn = document.getElementById('actionBtn');
+            if (isDryRun) {
+                btn.textContent = 'Preview (Dry Run)';
+                btn.style.background = '#0369a1';
+            } else {
+                btn.innerHTML = `⚠️ Send ${count ?? ''} Emails`;
+                btn.style.background = '#0f4c5c';
+            }
+        }
+
+        function handleActionBtn() {
+            const isDryRun = document.getElementById('dryRunCheckbox').checked;
+            if (!campaignSecret) { showError('Please set campaign secret first'); return; }
+            if (isDryRun) {
+                sendEmails(true);
+            } else {
+                confirmSendEmails();
+            }
         }
 
         async function previewSendEmails() {
@@ -1501,9 +1519,10 @@
 
                 const result = await resp.json();
                 const updated = result.updated || 0;
-                const opened = result.opened || 0;
-                const clicked = result.clicked || 0;
-                const bounced = result.bounced || 0;
+                const breakdown = result.breakdown || {};
+                const opened = breakdown.opened || 0;
+                const clicked = breakdown.clicked || 0;
+                const bounced = breakdown.bounced || 0;
 
                 showToast(`Synced: ${updated} updated (${opened} opened, ${clicked} clicked, ${bounced} bounced)`);
                 setTimeout(() => fetchData(), 1000);
@@ -1865,6 +1884,7 @@
         // Send email form listeners
         document.getElementById('sendStatusFilter').addEventListener('change', updateMatchingContactCount);
         document.getElementById('sendLimit').addEventListener('change', updateMatchingContactCount);
+        document.getElementById('dryRunCheckbox').addEventListener('change', updateMatchingContactCount);
 
         // Utility functions
         function escapeHtml(text) {

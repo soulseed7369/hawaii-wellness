@@ -164,7 +164,7 @@ You claimed your listing on Hawaii Wellness — thanks for that.
 
 I see you already have a website, which is great. What most practitioners don't realize is that hundreds of people search our directory every week looking for {modality} on {island_with_article}.
 
-Right now your listing is basic. Upgrading to Premium ($49/mo) adds your class schedule, offerings, testimonials, and a booking button — so when people find you on the directory, they can book directly or visit your site.
+Right now your listing is basic. Upgrading to Premium ($39/mo) adds your class schedule, offerings, testimonials, and a booking button — so when people find you on the directory, they can book directly or visit your site.
 
 Your website does the converting. Hawaii Wellness does the finding.
 
@@ -181,7 +181,7 @@ Hawaii Wellness"""
 
   <p>I see you already have a website, which is great. What most practitioners don't realize is that hundreds of people search our directory every week looking for {modality} on {island_with_article}.</p>
 
-  <p>Right now your listing is basic. Upgrading to Premium ($49/mo) adds your class schedule, offerings, testimonials, and a booking button — so when people find you on the directory, they can book directly or visit your site.</p>
+  <p>Right now your listing is basic. Upgrading to Premium ($39/mo) adds your class schedule, offerings, testimonials, and a booking button — so when people find you on the directory, they can book directly or visit your site.</p>
 
   <p><strong>Your website does the converting. Hawaii Wellness does the finding.</strong></p>
 
@@ -206,7 +206,7 @@ def phase2_track_b(contact: dict) -> tuple:
 
     city_str = f" in {city}" if city else ""
 
-    subject = f"{name}, your complete online presence for $49/mo"
+    subject = f"{name}, your complete online presence for $39/mo"
 
     text_body = f"""Hi {name},
 
@@ -214,7 +214,7 @@ I noticed your {modality} practice{city_str} doesn't have a website yet — that
 
 A Premium profile on Hawaii Wellness gives you everything a website would: a full bio, your offerings with pricing, class schedules, testimonials, social links, and a booking button. All shareable — put it in your Instagram bio, on business cards, in your email signature.
 
-$49/mo. Less than a gym membership. Takes an afternoon to set up.
+$39/mo. Less than a gym membership. Takes an afternoon to set up.
 
 {upgrade_link}
 
@@ -229,7 +229,7 @@ Hawaii Wellness"""
 
   <p>A Premium profile on Hawaii Wellness gives you everything a website would: a full bio, your offerings with pricing, class schedules, testimonials, social links, and a booking button. All shareable — put it in your Instagram bio, on business cards, in your email signature.</p>
 
-  <p><strong>$49/mo. Less than a gym membership.</strong> Takes an afternoon to set up.</p>
+  <p><strong>$39/mo. Less than a gym membership.</strong> Takes an afternoon to set up.</p>
 
   <p style="margin: 24px 0;">
     <a href="{upgrade_link}" style="background: #0369a1; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">Upgrade to Premium</a>
@@ -305,7 +305,14 @@ def follow_up(contact: dict, original_subject: str = "", original_cta_url: str =
 
     subject = f"Re: {original_subject}" if original_subject else "Following up — Hawaii Wellness"
 
-    cta_link = original_cta_url or SITE_URL
+    # Re-derive the claim link from the contact so follow-up links to their specific listing
+    listing_id = contact.get("listing_id") or contact.get("id") or ""
+    listing_type = contact.get("listing_type", "practitioner")
+    if listing_id:
+        kind = "center" if listing_type == "center" else "profile"
+        cta_link = original_cta_url or f"{SITE_URL}/{kind}/{listing_id}"
+    else:
+        cta_link = original_cta_url or SITE_URL
 
     text_body = f"""Hi {name},
 

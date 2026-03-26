@@ -111,7 +111,8 @@ function renderPhase1Claim(contact: CampaignContact): EmailTemplate {
   const island = ISLAND_DISPLAY[contact.island] || 'Hawaii';
   const modalities = contact.modalities || ['wellness'];
   const modality = modalities.length > 0 ? modalities[0] : 'wellness';
-  const listingId = contact.listing_id || contact.id;
+  const listingId = contact.listing_id;
+  if (!listingId) throw new Error(`Contact ${contact.id} (${contact.name}) has no listing_id — cannot build claim URL`);
   const listingType = contact.listing_type || 'practitioner';
 
   const kind = listingType === 'center' ? 'center' : 'profile';
@@ -439,7 +440,8 @@ Not interested? Just reply and I'll remove you from future emails.`;
 
 function renderFollowUp(contact: CampaignContact): EmailTemplate {
   const name = contact.name || 'there';
-  const claimLink = `${SITE_URL}/profile/${contact.listing_id}`;
+  const kind = contact.listing_type === 'center' ? 'center' : 'profile';
+  const claimLink = `${SITE_URL}/${kind}/${contact.listing_id}`;
 
   const subject = `Quick follow-up: your listing on Hawaii Wellness`;
 
@@ -682,10 +684,6 @@ Deno.serve(async (req) => {
         .not('email', 'is', null)
         .neq('email', '');
 
-      if (filters.status) {
-        query = query.eq('status', filters.status);
-      }
-
       const { data, error: fetchError } = await query.limit(limit);
 
       if (fetchError) {
@@ -847,7 +845,7 @@ Deno.serve(async (req) => {
       results.push(result);
 
       // Rate limiting: 2 seconds between sends
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
     const response: EmailResponse = {
