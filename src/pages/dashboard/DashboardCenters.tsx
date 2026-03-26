@@ -482,7 +482,7 @@ export default function DashboardCenters() {
         </div>
         {!showForm && (
           <Button onClick={() => setShowForm(true)} className="gap-1.5">
-            <Plus className="h-4 w-4" /> Add Center
+            <Plus className="h-4 w-4" /> Add Location
           </Button>
         )}
       </div>
@@ -564,7 +564,7 @@ export default function DashboardCenters() {
             <Building className="mb-3 h-10 w-10 text-muted-foreground/50" />
             <p className="font-medium text-muted-foreground">No centers added yet.</p>
             <p className="mt-1 text-sm text-muted-foreground/70">
-              Click "Add Center" to create your first listing.
+              Click "Add Location" to create your first listing.
             </p>
           </CardContent>
         </Card>
