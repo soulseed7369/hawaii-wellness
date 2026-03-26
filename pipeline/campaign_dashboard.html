@@ -1574,8 +1574,15 @@
                 const updated = result.updated || 0;
                 const emailsFixed = result.emailsFixed || 0;
                 const statusesReset = result.statusesReset || 0;
+                const removed = result.removed || 0;
 
-                showToast(`Contact info synced: ${updated} updated (${emailsFixed} emails fixed, ${statusesReset} statuses reset)`);
+                const parts = [];
+                if (updated) parts.push(`${updated} updated`);
+                if (emailsFixed) parts.push(`${emailsFixed} emails fixed`);
+                if (statusesReset) parts.push(`${statusesReset} statuses reset`);
+                if (removed) parts.push(`${removed} deleted listings removed`);
+                const detail = parts.length ? ` (${parts.join(', ')})` : '';
+                showToast(`Contact info synced${detail}`);
                 setTimeout(() => fetchData(), 800);
             } catch (error) {
                 showError(`Failed to sync contact info: ${error.message}`);

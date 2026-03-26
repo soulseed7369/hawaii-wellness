@@ -231,6 +231,7 @@ Deno.serve(async (req) => {
     let updated = 0;
     let emailsFixed = 0;
     let statusesReset = 0;
+    let removed = 0;
 
     for (const outreachRow of outreachRows) {
       // Fetch the source listing
@@ -240,7 +241,18 @@ Deno.serve(async (req) => {
       );
 
       if (!sourceListing) {
-        // Listing not found or error — skip and continue
+        // Listing deleted from directory — remove from campaign_outreach too
+        const { error: delError } = await supabase
+          .from('campaign_outreach')
+          .delete()
+          .eq('id', outreachRow.id);
+
+        if (delError) {
+          console.warn(`[sync-contact-info] Failed to remove orphaned row ${outreachRow.id}:`, delError.message);
+        } else {
+          console.log(`[sync-contact-info] Removed orphaned row ${outreachRow.id} (listing ${outreachRow.listing_id} no longer exists)`);
+          removed++;
+        }
         continue;
       }
 
@@ -259,7 +271,7 @@ Deno.serve(async (req) => {
     }
 
     console.log(
-      `[sync-contact-info] Sync complete: ${updated} updated, ${emailsFixed} emails fixed, ${statusesReset} statuses reset`,
+      `[sync-contact-info] Sync complete: ${updated} updated, ${emailsFixed} emails fixed, ${statusesReset} statuses reset, ${removed} removed`,
     );
 
     return json({
@@ -267,6 +279,7 @@ Deno.serve(async (req) => {
       updated,
       emailsFixed,
       statusesReset,
+      removed,
     });
   } catch (err) {
     console.error('[sync-contact-info] Fatal error:', err);
