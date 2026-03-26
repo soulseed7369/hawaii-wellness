@@ -1566,11 +1566,6 @@
                 updateLastUpdatedTime();
                 scheduleRefresh();
 
-                // Auto-sync on page load if secret is set
-                if (campaignSecret && !pendingSendData) {
-                    setTimeout(() => syncStatus(), 2000);
-                }
-
             } catch (error) {
                 showError(`Failed to load data: ${error.message}`);
                 console.error('Fetch error:', error);
@@ -1968,9 +1963,11 @@
             fetchData();
         }
 
-        // Initialize on page load
+        // Initialize on page load — fetch data, then auto-sync once if secret is set
         window.addEventListener('DOMContentLoaded', () => {
-            fetchData();
+            fetchData().then(() => {
+                if (campaignSecret) setTimeout(() => syncStatus(), 2000);
+            });
         });
     </script>
 </body>
