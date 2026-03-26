@@ -102,6 +102,9 @@ Deno.serve(async (req) => {
 
         await syncTierToListings(userId, tier, listingType);
 
+        // Mark any active campaign_outreach rows for this user's listings as 'upgraded'
+        await markCampaignUpgraded(userId, listingType);
+
         // Notify aloha@hawaiiwellness.net of new subscriber
         const resendKey = Deno.env.get('RESEND_API_KEY');
         if (resendKey) {
@@ -304,6 +307,32 @@ async function getUserByCustomerId(customerId: string): Promise<string | null> {
     .single();
   if (error || !data) return null;
   return data.id;
+}
+
+/**
+ * Mark campaign_outreach rows as 'upgraded' for all listings owned by this user.
+ * Non-critical — errors are logged but don't fail the webhook.
+ */
+async function markCampaignUpgraded(userId: string, listingType: 'practitioner' | 'center') {
+  try {
+    const table = listingType === 'center' ? 'centers' : 'practitioners';
+    const { data: listings } = await supabase
+      .from(table)
+      .select('id')
+      .eq('owner_id', userId);
+
+    if (!listings || listings.length === 0) return;
+
+    const listingIds = listings.map((l: { id: string }) => l.id);
+    await supabase
+      .from('campaign_outreach')
+      .update({ status: 'upgraded' })
+      .in('listing_id', listingIds)
+      .in('status', ['not_contacted', 'email_queued', 'email_1_sent', 'email_1_opened',
+                     'email_1b_sent', 'email_2_sent', 'replied', 'claimed']);
+  } catch (err) {
+    console.error('markCampaignUpgraded failed (non-critical):', err);
+  }
 }
 
 async function syncTierToListings(userId: string, tier: string, listingType: 'practitioner' | 'center') {

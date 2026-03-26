@@ -24,6 +24,21 @@ import { CheckCircle, Mail, Phone, AlertCircle, Loader2, HelpCircle } from 'luci
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { toast } from 'sonner';
 
+/** Mark the campaign_outreach row as claimed (fire-and-forget, non-blocking). */
+async function markCampaignClaimed(listingId: string): Promise<void> {
+  if (!supabase || !listingId) return;
+  try {
+    await supabase
+      .from('campaign_outreach')
+      .update({ status: 'claimed' })
+      .eq('listing_id', listingId)
+      .in('status', ['not_contacted', 'email_queued', 'email_1_sent', 'email_1_opened', 'email_1b_sent', 'email_2_sent', 'replied']);
+  } catch (e) {
+    // Non-critical — don't surface to user
+    console.warn('Failed to update campaign_outreach on claim:', e);
+  }
+}
+
 /** Build a pre-filled mailto link so the admin gets all the context they need. */
 function buildHelpMailto(listing: Listing | null, userEmail: string | undefined): string {
   const subject = encodeURIComponent(
@@ -175,6 +190,7 @@ export default function ClaimListing() {
               queryClient.invalidateQueries({
                 queryKey: [type === 'center' ? 'center' : 'practitioner', data.id],
               });
+              markCampaignClaimed(data.id);
               toast.success('Listing claimed!');
               setStep('success');
             } catch (e) {
@@ -269,6 +285,7 @@ export default function ClaimListing() {
       }
 
       queryClient.invalidateQueries({ queryKey: [listing.type === 'center' ? 'center' : 'practitioner', listing.id] });
+      markCampaignClaimed(listing.id);
       toast.success('Listing claimed!');
       setStep('success');
     } catch (e) {
