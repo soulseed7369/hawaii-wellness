@@ -151,7 +151,7 @@ export default function ListYourPractice() {
         <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-3 flex items-center justify-center gap-3 text-center">
           <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
           <p className="text-sm text-amber-800">
-            <strong className="font-semibold text-amber-900">Kamaʻāina Rate</strong> — Early supporter pricing locked in <strong>for life</strong>. Limited spots.
+            <strong className="font-semibold text-amber-900">Kamaʻāina Rate applied automatically</strong> — no discount code needed. Early supporter pricing locked in <strong>for life</strong>. Limited spots.
           </p>
           <Sparkles className="h-4 w-4 text-amber-500 flex-shrink-0" />
         </div>
@@ -315,7 +315,7 @@ export default function ListYourPractice() {
       <p className="text-center text-sm text-muted-foreground mt-8">
         All plans include a free listing. Paid plans are billed monthly and can be cancelled anytime.
         <br className="hidden md:block" />
-        Payments are processed securely by Stripe.
+        Kamaʻāina pricing is applied automatically at checkout — no code needed. Payments processed securely by Stripe.
       </p>
 
     </main>
