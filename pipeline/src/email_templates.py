@@ -311,18 +311,16 @@ def phase1b_claim(contact: dict) -> tuple:
 
     city_str = f" in {city}" if city else f" on {island}"
 
-    subject = f"Your {modality} listing{city_str} is getting traffic"
+    subject = f"Your {modality} listing{city_str} — a quick follow-up"
 
     text_body = f"""Hi {name},
 
-I sent you a note last week about your listing on Hawai'i Wellness. Thought I'd follow up with one thing worth knowing:
+Sent you a note last week — just one follow-up.
 
-Your profile is already showing up in searches — people looking for {modality} on {island} are finding you. But since the listing is unclaimed, you can't see that traffic, update your contact info, or know when someone's been on your page.
+People searching for {modality} on {island} are already finding your listing on Hawai'i Wellness. Right now you have no way to update your info, add photos, or make sure what they're seeing is accurate — because the listing is still unclaimed.
 
-Still free, still 2 minutes:
+Takes about 2 minutes and it's free:
 {claim_link}
-
-No pressure either way.
 
 Aloha,
 Marcus
@@ -335,7 +333,7 @@ Not interested? Just reply and I'll remove you."""
     html_body = f"""<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">People searching for {modality} on {island} are already finding you — but you can't see it yet.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">People searching for {modality} on {island} are finding you — take 2 minutes to make sure what they see is accurate.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
 </head>
 <body style="margin:0;padding:0;background:#f8fafc;">
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
@@ -351,17 +349,15 @@ Not interested? Just reply and I'll remove you."""
   <div style="padding: 32px; color: #1e293b; line-height: 1.7;">
     <p style="margin-top:0;">Hi {name},</p>
 
-    <p>I sent you a note last week about your listing on <a href="{SITE_URL}" style="color: #0369a1;">Hawai'i Wellness</a>. Thought I'd follow up with one thing worth knowing:</p>
+    <p>Sent you a note last week — just one follow-up.</p>
 
-    <p>Your profile is already showing up in searches — people looking for {modality} on {island} are finding you. But since the listing is unclaimed, you can't see that traffic, update your contact info, or know when someone's been on your page.</p>
+    <p>People searching for {modality} on {island} are already finding your listing on <a href="{SITE_URL}" style="color: #0369a1;">Hawai'i Wellness</a>. Right now you have no way to update your info, add photos, or make sure what they're seeing is accurate — because the listing is still unclaimed.</p>
 
-    <p>Still free, still 2 minutes:</p>
+    <p>Takes about 2 minutes and it's free:</p>
 
     <p style="margin: 28px 0;">
-      <a href="{claim_link}" style="background: #0369a1; color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">View Your Listing</a>
+      <a href="{claim_link}" style="background: #0369a1; color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Claim Your Listing</a>
     </p>
-
-    <p style="color: #64748b; font-size: 15px;">No pressure either way.</p>
 
     <p style="margin-bottom:0;">Aloha,<br><strong>Marcus</strong><br>
     <a href="{SITE_URL}" style="color: #0369a1; text-decoration: none;">Hawai'i Wellness</a></p>
