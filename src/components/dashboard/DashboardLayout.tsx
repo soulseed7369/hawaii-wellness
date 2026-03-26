@@ -24,6 +24,7 @@ const practitionerLinks = [
 // Links for centers
 const centerLinks = [
   { label: "Dashboard Home",          to: "/dashboard",              icon: Home },
+  { label: "My Center Profile",       to: "/dashboard/center-profile", icon: User },
   { label: "My Centers & Spas",       to: "/dashboard/centers",      icon: Building },
   { label: "Billing & Subscription",  to: "/dashboard/billing",      icon: CreditCard },
   { label: "Account Settings",        to: "/dashboard/settings",     icon: Settings },
