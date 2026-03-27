@@ -16,6 +16,7 @@ import {
   avatarGradient,
   isValidListingImage,
   sortModalities,
+  getObjectPosition,
 } from "@/lib/cardUtils";
 
 // ── Island badge (compact, for use in cards) ─────────────────────────────────
@@ -53,15 +54,6 @@ const SESSION_TYPE_LABELS: Record<string, string> = {
   online: "Online",
   both: "In Person & Online",
 };
-
-// Helper to convert photo_position to CSS object-position
-function getObjectPosition(position?: string): string {
-  switch (position) {
-    case 'top': return 'center top';
-    case 'bottom': return 'center bottom';
-    default: return 'center';
-  }
-}
 
 interface ProviderCardProps {
   provider: Provider;

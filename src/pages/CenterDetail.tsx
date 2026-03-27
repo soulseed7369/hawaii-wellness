@@ -38,6 +38,8 @@ import {
   ISLAND_CFG,
   getOpenStatus,
   isRecentlyUpdated,
+  getObjectPosition,
+  getEmbedUrl,
 } from "@/lib/cardUtils";
 
 // ── Island labels ──────────────────────────────────────────────────────────────
@@ -65,34 +67,6 @@ const AMENITY_LABELS: Record<string, string> = {
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
-// Helper to convert photo_position to CSS object-position
-function getObjectPosition(position?: string): string {
-  switch (position) {
-    case 'top': return 'center top';
-    case 'bottom': return 'center bottom';
-    default: return 'center';
-  }
-}
-
-// Helper to extract embed URL from YouTube/Vimeo URLs
-function getEmbedUrl(url?: string | null): string | null {
-  if (!url) return null;
-
-  // YouTube: https://youtube.com/watch?v=ID or https://youtu.be/ID
-  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-  if (youtubeMatch) {
-    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-  }
-
-  // Vimeo: https://vimeo.com/ID
-  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeoMatch) {
-    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-  }
-
-  return null;
-}
 
 function formatEventDate(dateStr: string | null, timeStr: string | null): string {
   if (!dateStr) return '';

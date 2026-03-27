@@ -57,7 +57,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ISLAND_CFG, islandHeaderGradient } from "@/lib/cardUtils";
+import { ISLAND_CFG, islandHeaderGradient, getObjectPosition, getEmbedUrl } from "@/lib/cardUtils";
 
 
 function IslandBadge({ island }: { island: string }) {
@@ -70,34 +70,6 @@ function IslandBadge({ island }: { island: string }) {
       {cfg.icon} {cfg.fullLabel}
     </span>
   );
-}
-
-// Helper to convert photo_position to CSS object-position
-function getObjectPosition(position?: string): string {
-  switch (position) {
-    case 'top': return 'center top';
-    case 'bottom': return 'center bottom';
-    default: return 'center';
-  }
-}
-
-// Helper to extract embed URL from YouTube/Vimeo URLs
-function getEmbedUrl(url?: string | null): string | null {
-  if (!url) return null;
-
-  // YouTube: https://youtube.com/watch?v=ID or https://youtu.be/ID
-  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-  if (youtubeMatch) {
-    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-  }
-
-  // Vimeo: https://vimeo.com/ID
-  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeoMatch) {
-    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-  }
-
-  return null;
 }
 
 // ShareProfileButton removed — replaced by shared ShareButtons component

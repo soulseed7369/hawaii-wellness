@@ -140,6 +140,46 @@ export function centerTypeLabel(centerType?: string): string | undefined {
 
 // ── Sort modalities with highlighted one first ──────────────────────────────
 
+// ── Photo position → CSS object-position ─────────────────────────────────
+
+/** Maps a photo_position value ('top'|'center'|'bottom') to a CSS object-position string */
+export function getObjectPosition(position?: string | null): string {
+  switch (position) {
+    case 'top': return 'center top';
+    case 'bottom': return 'center bottom';
+    default: return 'center';
+  }
+}
+
+// ── Video embed helpers ──────────────────────────────────────────────────
+
+/** Returns true if the URL is a valid YouTube or Vimeo link */
+export function isValidVideoUrl(url: string | null | undefined): boolean {
+  if (!url || !url.trim()) return true; // empty is fine
+  return /youtube\.com|youtu\.be|vimeo\.com/.test(url);
+}
+
+/** Converts a YouTube or Vimeo URL to its embed variant. Returns null if unrecognised. */
+export function getEmbedUrl(url?: string | null): string | null {
+  if (!url) return null;
+
+  // YouTube: https://youtube.com/watch?v=ID or https://youtu.be/ID
+  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (youtubeMatch) {
+    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+  }
+
+  // Vimeo: https://vimeo.com/ID
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  }
+
+  return null;
+}
+
+// ── Sort modalities with highlighted one first ──────────────────────────
+
 export function sortModalities(modalities: string[], highlight?: string): string[] {
   if (!highlight) return modalities;
   return [...modalities].sort((a, b) => {

@@ -14,6 +14,7 @@ import { useMyCenters, useSaveCenter, uploadCenterPhoto, type CenterFormData } f
 import { useMyBillingProfile } from "@/hooks/useStripe";
 import { ContactVerification } from "@/components/ContactVerification";
 import MultiPhotoUpload, { type PhotoSlot } from "@/components/MultiPhotoUpload";
+import { isValidVideoUrl } from "@/lib/cardUtils";
 
 const ISLANDS = [
   { value: 'big_island', label: 'Big Island' },
@@ -504,10 +505,17 @@ export default function DashboardCenterProfile() {
                 placeholder="YouTube or Vimeo URL (e.g., https://youtube.com/watch?v=dQw4w9WgXcQ)"
                 value={form.video_url || ''}
                 onChange={e => setForm(p => ({ ...p, video_url: e.target.value }))}
+                className={!isValidVideoUrl(form.video_url) ? 'border-red-400' : ''}
               />
-              <p className="text-xs text-muted-foreground">
-                Paste the full URL from YouTube or Vimeo. It will be embedded on your profile.
-              </p>
+              {!isValidVideoUrl(form.video_url) ? (
+                <p className="text-xs text-red-500">
+                  Please enter a valid YouTube or Vimeo URL.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Paste the full URL from YouTube or Vimeo. It will be embedded on your profile.
+                </p>
+              )}
             </div>
           ) : (
             <div className="rounded-lg bg-accent/50 p-4 text-center">
