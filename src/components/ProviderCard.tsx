@@ -158,8 +158,8 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-snug">{provider.bio}</p>
               )}
 
-              {/* Match explanation labels (all tiers, when searching) */}
-              {(provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
+              {/* Match explanation labels (premium/featured tiers only) */}
+              {isEnhanced && (provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
                 <p className="mt-0.5 text-[11px] text-muted-foreground italic leading-snug">
                   {provider.matchedConcerns && provider.matchedConcerns.length > 0 && (
                     <span>Helps with: {provider.matchedConcerns.slice(0, 3).join(", ")}</span>
@@ -236,7 +236,7 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
             <p className="mt-2 line-clamp-2 flex-1 text-xs text-muted-foreground">{provider.bio}</p>
           )}
           {!provider.bio && <div className="flex-1" />}
-          {(provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
+          {(provider.tier === "premium" || provider.tier === "featured") && (provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
             <p className="mt-1 text-[10px] text-muted-foreground italic line-clamp-1">
               {provider.matchedConcerns && provider.matchedConcerns.length > 0 && (
                 <span>Helps with: {provider.matchedConcerns.slice(0, 2).join(", ")}</span>

@@ -765,9 +765,11 @@ const Directory = () => {
     if (USE_NEW_SEARCH) {
       const filtered = accumulatedResults
         .filter(item => {
+          // Island filter: only show pins for the selected island (or all if island === 'all')
+          const islandMatch = island === 'all' || item.island === island;
           const lat = item.lat ?? 0;
           const lng = item.lng ?? 0;
-          return lat !== 0 && lng !== 0 && lat !== 19.8968;
+          return islandMatch && lat !== 0 && lng !== 0 && lat !== 19.8968;
         })
         .map(item => ({
           id: item.id,
@@ -811,7 +813,7 @@ const Directory = () => {
         return a.name.localeCompare(b.name);
       })
       .slice(0, 50);
-  }, [accumulatedResults, oldFilteredPractitioners, oldFilteredCenters]);
+  }, [accumulatedResults, oldFilteredPractitioners, oldFilteredCenters, island]);
 
   const crossIslandNote = detectedIsland && detectedIsland !== island
     ? `Showing results from ${ISLANDS.find(i => i.value === detectedIsland)?.label} based on your search location.`
