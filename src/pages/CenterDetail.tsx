@@ -952,8 +952,8 @@ export default function CenterDetail() {
             </div>
           )}
 
-          {/* Book CTA */}
-          {c.externalBookingUrl && (
+          {/* Book CTA — paid tiers only (matches practitioner behaviour) */}
+          {isTiered && c.externalBookingUrl && (
             <Button className="w-full gap-2" size="lg" asChild>
               <a href={c.externalBookingUrl} onClick={() => trackClick('booking')} target="_blank" rel="noopener noreferrer">
                 Book / Visit Website
