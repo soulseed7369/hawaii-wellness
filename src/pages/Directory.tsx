@@ -484,8 +484,6 @@ const Directory = () => {
   const [acceptsClients, setAcceptsClients] = useState(urlAcceptsClients);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const [accumulatedResults, setAccumulatedResults] = useState<DirectoryResult[]>([]);
-  const [lastPageSize, setLastPageSize] = useState(0);
 
   useEffect(() => {
     if (searchParams.get('island')) {
@@ -578,7 +576,16 @@ const Directory = () => {
   const effectiveQuery = searchQuery.trim();
 
   // Reset pagination when any filter changes
-  useEffect(() => { setPage(0); setLastPageSize(0); }, [effectiveQuery, island, modality, city, centerType, effectiveSessionType, effectiveAcceptsClients, listingType]);
+  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, centerType, effectiveSessionType, effectiveAcceptsClients, listingType]);
+
+  // Scroll to top when page changes (both filter reset and pagination)
+  useEffect(() => {
+    if (resultsContainerRef.current) {
+      resultsContainerRef.current.scrollTop = 0;
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [page]);
 
   // ── NEW SEARCH PATH ────────────────────────────────────────────────────────
   // Map listing type to the tab format the hook expects
@@ -599,50 +606,14 @@ const Directory = () => {
     pageSize: 25,
   });
 
-  // Accumulate results across pages
-  useEffect(() => {
-    if (newSearch.isLoading) return;
-    if (page === 0) {
-      setAccumulatedResults(newSearch.results);
-      setLastPageSize(newSearch.results.length);
-    } else {
-      const existingIds = new Set(accumulatedResults.map(r => r.id));
-      const fresh = newSearch.results.filter(r => !existingIds.has(r.id));
-      // Track the actual page size returned by RPC (before dedup), not after dedup
-      setLastPageSize(newSearch.results.length);
-      setAccumulatedResults(prev => [...prev, ...fresh]);
-    }
-  }, [newSearch.results, newSearch.isLoading, page, accumulatedResults]);
-
-  // Track the previous page value to distinguish between filter change and load more
-  const prevPageRef = useRef<number>(0);
-
-  useEffect(() => {
-    // If page went from >0 to 0, it means filters changed (via the dependency effect at line 581)
-    // In that case, scroll to top is appropriate
-    // If page incremented (0→1, 1→2, etc.), that's a "load more" click — don't scroll
-    if (page === 0 && prevPageRef.current > 0) {
-      // Filter changed, reset triggered — scroll the results container, not the window
-      if (resultsContainerRef.current) {
-        resultsContainerRef.current.scrollTop = 0;
-      } else {
-        window.scrollTo(0, 0);
-      }
-    }
-    // When page > 0, we intentionally don't scroll to preserve user position
-    prevPageRef.current = page;
-  }, [page]);
-
-  // Reset prevPageRef when filters change (page is reset to 0 by the dependency effect)
-  useEffect(() => {
-    prevPageRef.current = 0;
-  }, [effectiveQuery, island, modality, city, centerType, effectiveSessionType, effectiveAcceptsClients, listingType]);
-
   const newTotalCount = newSearch.totalCount ?? 0;
+  const pageResults = newSearch.results;
+  const pageSize = pageResults.length;
+  const hasMorePages = pageSize === 25; // If we got exactly 25, there might be more
 
   // Detect true no-results: search was active but nothing matched
   const hasActiveSearch = effectiveQuery.trim() !== '' || modality !== '' || city !== '' || centerType !== '' || effectiveSessionType !== '' || effectiveAcceptsClients;
-  const isNoResults = USE_NEW_SEARCH && !newSearch.isLoading && hasActiveSearch && accumulatedResults.length === 0;
+  const isNoResults = USE_NEW_SEARCH && !newSearch.isLoading && hasActiveSearch && pageSize === 0;
 
   // Fallback suggestions: browse top listings on same island (shown when no results)
   const { data: fallbackData } = useSearchListings(
@@ -670,7 +641,7 @@ const Directory = () => {
   }
 
   const unifiedResults = useMemo(() => {
-    let list: UnifiedItem[] = accumulatedResults.map(r => {
+    let list: UnifiedItem[] = pageResults.map(r => {
       if (r.listing_type === 'practitioner') {
         const p = resultToProvider(r);
         if (userLocation && r.lat && r.lng) {
@@ -708,7 +679,7 @@ const Directory = () => {
     }
 
     return list;
-  }, [accumulatedResults, userLocation, sortByDistance, centerType]);
+  }, [pageResults, userLocation, sortByDistance, centerType]);
 
   // Backward compat: keep these for old search path
   const newProviders = useMemo(() =>
@@ -719,6 +690,11 @@ const Directory = () => {
     unifiedResults.filter(i => i.center).map(i => i.center!),
     [unifiedResults]
   );
+
+  // Calculate pagination info
+  const resultsStart = page * 25 + 1;
+  const resultsEnd = resultsStart + pageSize - 1;
+  const showPaginationButtons = USE_NEW_SEARCH && pageSize > 0;
 
   // ── OLD SEARCH PATH (fallback — only fetches when new search is disabled) ──
   const fetchIsland = island === 'all' ? 'big_island' : island;
@@ -753,6 +729,7 @@ const Directory = () => {
   // ── Unified: pick old or new ──────────────────────────────────────────────
   const isLoading = USE_NEW_SEARCH ? newSearch.isLoading : (loadingOldP || loadingOldC);
   const resultCount = USE_NEW_SEARCH ? unifiedResults.length : (oldFilteredPractitioners.length + oldFilteredCenters.length);
+  const pageResultCount = unifiedResults.length;
 
   const mapLocations = useMemo<MapLocation[]>(() => {
     // Helper to sort by tier priority
@@ -763,7 +740,7 @@ const Directory = () => {
     };
 
     if (USE_NEW_SEARCH) {
-      const filtered = accumulatedResults
+      const filtered = pageResults
         .filter(item => {
           // Island filter: only show pins for the selected island (or all if island === 'all')
           const islandMatch = island === 'all' || item.island === island;
@@ -783,14 +760,14 @@ const Directory = () => {
           tier: item.tier || 'free',
         }));
 
-      // Sort by tier priority (featured > premium > free), then by name alphabetically, and cap at 50 pins
+      // Sort by tier priority (featured > premium > free), then by name alphabetically
+      // Map shows only the current page (25 results max), no slicing needed
       return filtered
         .sort((a, b) => {
           const tierDiff = tierPriority(a.tier) - tierPriority(b.tier);
           if (tierDiff !== 0) return tierDiff;
           return a.name.localeCompare(b.name);
-        })
-        .slice(0, 50);
+        });
     }
     // Old search fallback — combine both types
     const all = [
@@ -805,15 +782,14 @@ const Directory = () => {
     ];
     const filtered = all.filter(l => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
 
-    // Sort by tier priority (featured > premium > free), then by name alphabetically, and cap at 50 pins
+    // Sort by tier priority (featured > premium > free), then by name alphabetically
     return filtered
       .sort((a, b) => {
         const tierDiff = tierPriority(a.tier) - tierPriority(b.tier);
         if (tierDiff !== 0) return tierDiff;
         return a.name.localeCompare(b.name);
-      })
-      .slice(0, 50);
-  }, [accumulatedResults, oldFilteredPractitioners, oldFilteredCenters, island]);
+      });
+  }, [pageResults, oldFilteredPractitioners, oldFilteredCenters, island]);
 
   const crossIslandNote = detectedIsland && detectedIsland !== island
     ? `Showing results from ${ISLANDS.find(i => i.value === detectedIsland)?.label} based on your search location.`
@@ -993,7 +969,7 @@ const Directory = () => {
 
           <div className="mb-4 flex items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
-              {isLoading ? "Loading…" : lastPageSize === 25 && newTotalCount > 0 && resultCount < newTotalCount ? `${resultCount} of ${newTotalCount} result${resultCount !== 1 ? "s" : ""} found` : `${resultCount} result${resultCount !== 1 ? "s" : ""} found`}
+              {isLoading ? "Loading…" : USE_NEW_SEARCH && newTotalCount > 0 ? `Showing ${resultsStart}–${resultsEnd} of ${newTotalCount} result${newTotalCount !== 1 ? "s" : ""}` : `${resultCount} result${resultCount !== 1 ? "s" : ""} found`}
             </p>
             {userLocation ? (
               <div className="flex items-center gap-2">
@@ -1097,21 +1073,31 @@ const Directory = () => {
                 </div>
               )}
 
-              {USE_NEW_SEARCH && lastPageSize === 25 && (
-                <div className="flex justify-center pt-4">
+              {showPaginationButtons && (
+                <div className="flex justify-between items-center gap-3 pt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(p => Math.max(0, p - 1))}
+                    disabled={page === 0 || isLoading}
+                    className="min-w-32"
+                  >
+                    ← Previous
+                  </Button>
+                  <p className="text-xs text-muted-foreground whitespace-nowrap">
+                    Page {page + 1} of ~{Math.ceil(newTotalCount / 25)}
+                  </p>
                   <Button
                     variant="outline"
                     onClick={() => setPage(p => p + 1)}
-                    disabled={newSearch.isLoading}
-                    className="min-w-40"
+                    disabled={!hasMorePages || isLoading}
+                    className="min-w-32"
                   >
-                    {newSearch.isLoading && page > 0 ? (
+                    {isLoading ? (
                       <span className="flex items-center gap-2">
                         <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Loading…
                       </span>
                     ) : (
-                      'Load more results'
+                      <>Next →</>
                     )}
                   </Button>
                 </div>
