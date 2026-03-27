@@ -167,6 +167,10 @@ export default function DashboardCenterProfile() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Center name is required.'); return; }
+    if (MODALITIES.some(m => m.toLowerCase() === form.name.trim().toLowerCase())) {
+      toast.error('Please use your real business name. Modality names like "Somatic Therapy" belong in the Services section.');
+      return;
+    }
     try {
       setUploading(true);
 

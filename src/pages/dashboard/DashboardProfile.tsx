@@ -177,6 +177,10 @@ export default function DashboardProfile() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error('Full name is required.'); return; }
+    if (MODALITIES.some(m => m.toLowerCase() === form.name.trim().toLowerCase())) {
+      toast.error('Please use your real name. Modality names like "Somatic Therapy" belong in the Services section.');
+      return;
+    }
     try {
       setUploading(true);
 
