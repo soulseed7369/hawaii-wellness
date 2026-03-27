@@ -305,15 +305,7 @@ export default function DashboardProfile() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="phone">Phone</Label>
-                {practitioner?.id && (
-                  <ContactVerification
-                    listingId={practitioner.id}
-                    listingType="practitioner"
-                    channel="phone"
-                    value={form.phone}
-                    verified={!!(practitioner as any).phone_verified_at}
-                  />
-                )}
+                {/* Phone verification disabled until Twilio A2P approval */}
               </div>
               <Input
                 id="phone"

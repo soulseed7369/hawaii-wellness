@@ -338,15 +338,7 @@ export default function DashboardCenterProfile() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="phone">Phone</Label>
-                {center?.id && (
-                  <ContactVerification
-                    listingId={center.id}
-                    listingType="center"
-                    channel="phone"
-                    value={form.phone}
-                    verified={!!center.phone_verified_at}
-                  />
-                )}
+                {/* Phone verification disabled until Twilio A2P approval */}
               </div>
               <Input
                 id="phone"
