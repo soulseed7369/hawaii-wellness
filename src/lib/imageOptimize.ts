@@ -44,25 +44,26 @@ export async function optimizeImage(file: File): Promise<File> {
     img.onload = () => {
       URL.revokeObjectURL(blobUrl); // prevent memory leak
       try {
-        // Resize to MAX_DIMENSION if needed (image is already square from crop modal)
-        const { width, height } = img;
-        let finalWidth = width;
-        let finalHeight = height;
+        // First: crop to a centered 1:1 square
+        let { width, height } = img;
+        const squareSize = Math.min(width, height);
+        const offsetX = (width - squareSize) / 2;
+        const offsetY = (height - squareSize) / 2;
 
-        if (finalWidth > MAX_DIMENSION || finalHeight > MAX_DIMENSION) {
-          const scale = MAX_DIMENSION / Math.max(finalWidth, finalHeight);
-          finalWidth = Math.round(finalWidth * scale);
-          finalHeight = Math.round(finalHeight * scale);
+        // Then: resize the square to MAX_DIMENSION if needed
+        let finalSize = squareSize;
+        if (finalSize > MAX_DIMENSION) {
+          finalSize = MAX_DIMENSION;
         }
 
         const canvas = document.createElement('canvas');
-        canvas.width = finalWidth;
-        canvas.height = finalHeight;
+        canvas.width = finalSize;
+        canvas.height = finalSize;
         const ctx = canvas.getContext('2d');
         if (!ctx) { URL.revokeObjectURL(blobUrl); resolve(file); return; } // fallback
 
-        // Draw the full image (already cropped by the modal) at the resized dimensions
-        ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
+        // Draw the centered square crop from the original image, scaled to finalSize
+        ctx.drawImage(img, offsetX, offsetY, squareSize, squareSize, 0, 0, finalSize, finalSize);
 
         canvas.toBlob(
           (blob) => {
