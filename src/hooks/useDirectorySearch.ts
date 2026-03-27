@@ -185,18 +185,8 @@ export function useTaxonomyFacets() {
           .map((c) => ({ id: c.id, label: c.label, slug: c.slug })),
       }));
 
-      // Add standalone modalities (no parent) as their own group
-      const standalone = terms.filter(
-        (t) => t.parent_id === null && !children.some((c) => c.parent_id === t.id)
-      );
-      if (standalone.length > 0) {
-        facets.push({
-          id: 0,
-          label: 'Other',
-          slug: 'other',
-          children: standalone.map((t) => ({ id: t.id, label: t.label, slug: t.slug })),
-        });
-      }
+      // Standalone modalities (no children under them) are already added as parents,
+      // so this section is not needed — all items are already in facets via the parents map
 
       return facets;
     },

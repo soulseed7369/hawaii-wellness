@@ -101,7 +101,7 @@ export function CenterCard({
               )}
               <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-sky-600">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-500" />
-                {centerTypeLabel(center.centerType || 'wellness_center')}
+                {center.centerType ? centerTypeLabel(center.centerType) : 'Center'}
               </span>
             </div>
 

@@ -77,6 +77,7 @@ function resultToProvider(r: DirectoryResult): Provider {
   return {
     id: r.id,
     name: r.name,
+    type: 'practitioner',
     bio: r.bio || '',
     modality: (r.modality_labels?.[0]) || (r.modalities?.[0]) || '',
     modalities: r.modality_labels?.length ? r.modality_labels : (r.modalities || []),
@@ -84,12 +85,10 @@ function resultToProvider(r: DirectoryResult): Provider {
     image: r.photo_url || '',
     lat: r.lat ?? 0,
     lng: r.lng ?? 0,
+    rating: 0,
     tier: r.tier || 'free',
     sessionType: r.session_type || '',
     acceptsNewClients: r.accepts_new_clients ?? undefined,
-    phone: r.phone || '',
-    email: r.email || '',
-    website: r.website_url || '',
     externalBookingUrl: r.external_booking_url || undefined,
     matchedConcerns: r.concern_labels?.length ? r.concern_labels : undefined,
     matchedApproaches: r.approach_labels?.length ? r.approach_labels : undefined,
@@ -107,6 +106,7 @@ function resultToCenter(r: DirectoryResult): Center {
     image: r.photo_url || '',
     lat: r.lat ?? 0,
     lng: r.lng ?? 0,
+    rating: 0,
     tier: r.tier || 'free',
     services: [],
     centerType: r.center_type || '',
@@ -376,7 +376,7 @@ function NoResultsState({ query, island, onClear, suggestions, highlightModality
           </p>
           <div className="space-y-3">
             {suggestions.map(s => {
-              const r = s as any;
+              const r = s as DirectoryResult;
               return r.listing_type === 'center'
                 ? <CenterCard key={s.id} center={resultToCenter(r)} highlightModality={highlightModality} compact />
                 : <ProviderCard key={s.id} provider={resultToProvider(r)} highlightModality={highlightModality} compact />;
@@ -398,6 +398,7 @@ const Directory = () => {
   const urlIsland = searchParams.get('island') || 'big_island';
   const urlModality = searchParams.get('modality') || '';
   const urlCity = searchParams.get('city') || '';
+  const urlCenterType = searchParams.get('centerType') || '';
   const urlSessionType = searchParams.get('sessionType') || '';
   // Default to true (show only accepting-clients listings) unless URL explicitly sets acceptsClients=0
   const urlAcceptsClients = searchParams.get('acceptsClients') !== '0';
@@ -438,7 +439,7 @@ const Directory = () => {
   });
   const [modality, setModality] = useState(urlModality);
   const [city, setCity] = useState(urlCity);
-  const [centerType, setCenterType] = useState('');
+  const [centerType, setCenterType] = useState(urlCenterType);
   const [sessionType, setSessionType] = useState(urlSessionType);
   const [acceptsClients, setAcceptsClients] = useState(urlAcceptsClients);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
@@ -465,7 +466,7 @@ const Directory = () => {
 
   const handleModality = (v: string) => { setModality(v); updateParam('modality', v); };
   const handleCity = (v: string) => { setCity(v); updateParam('city', v); };
-  const handleCenterType = (v: string) => { setCenterType(v); };
+  const handleCenterType = (v: string) => { setCenterType(v); updateParam('centerType', v); };
   const handleSessionType = (v: string) => { setSessionType(v); updateParam('sessionType', v); };
   const handleAcceptsClients = (v: boolean) => { setAcceptsClients(v); updateParam('acceptsClients', v ? '1' : ''); };
   const handleIsland = (v: string) => { setIsland(v); updateParam('island', v); };
@@ -496,7 +497,7 @@ const Directory = () => {
     setModality(''); setCity(''); setCenterType(''); setSessionType(''); setAcceptsClients(false);
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
-      next.delete('modality'); next.delete('city'); next.delete('sessionType'); next.delete('acceptsClients');
+      next.delete('modality'); next.delete('city'); next.delete('centerType'); next.delete('sessionType'); next.delete('acceptsClients');
       return next;
     }, { replace: true });
   };
@@ -508,7 +509,7 @@ const Directory = () => {
   const effectiveQuery = searchQuery.trim();
 
   // Reset pagination when any filter changes
-  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, centerType, sessionType, acceptsClients, listingType]);
+  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, centerType, effectiveSessionType, effectiveAcceptsClients, listingType]);
 
   // ── NEW SEARCH PATH ────────────────────────────────────────────────────────
   // Map listing type to the tab format the hook expects
@@ -626,7 +627,7 @@ const Directory = () => {
   const oldFilteredPractitioners = useMemo(() => {
     if (USE_NEW_SEARCH) return [];
     const cityFiltered = city
-      ? oldPractitioners.filter(p => p.location?.toLowerCase() === city.toLowerCase() || p.tier === 'premium' || p.tier === 'featured')
+      ? oldPractitioners.filter(p => p.location?.toLowerCase() === city.toLowerCase())
       : oldPractitioners;
     const results = filterProviders(cityFiltered, effectiveQuery, modality, sessionType, acceptsClients);
     return [...results].sort((a, b) => {
@@ -638,7 +639,7 @@ const Directory = () => {
   const oldFilteredCenters = useMemo(() => {
     if (USE_NEW_SEARCH) return [];
     const cityFiltered = city
-      ? oldCenters.filter(c => c.location?.toLowerCase() === city.toLowerCase() || c.tier === 'premium' || c.tier === 'featured')
+      ? oldCenters.filter(c => c.location?.toLowerCase() === city.toLowerCase())
       : oldCenters;
     let results = filterCenters(cityFiltered, effectiveQuery, modality);
     if (centerType) results = results.filter(c => c.centerType === centerType);
@@ -686,7 +687,7 @@ const Directory = () => {
     return all.filter(l => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
   }, [unifiedResults, oldFilteredPractitioners, oldFilteredCenters]);
 
-  const crossIslandNote = detectedIsland && detectedIsland !== urlIsland
+  const crossIslandNote = detectedIsland && detectedIsland !== island
     ? `Showing results from ${ISLANDS.find(i => i.value === detectedIsland)?.label} based on your search location.`
     : null;
 
@@ -800,7 +801,7 @@ const Directory = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input type="text" placeholder="Filter by name, modality, city…" value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={e => { setSearchQuery(e.target.value); updateParam('q', e.target.value); }}
                 aria-label="Filter practitioners by name, modality, or city"
                 className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
             </div>
@@ -959,7 +960,7 @@ const Directory = () => {
         <div className={`${showMap ? 'block' : 'hidden'} lg:block flex-1`} style={{ minHeight: "calc(100vh - 8rem)" }}>
           <div className="sticky top-0 h-[calc(100vh-8rem)]">
             <Suspense fallback={<div className="flex h-full items-center justify-center bg-muted"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
-              <DirectoryMap locations={mapLocations} visible={showMap || window.innerWidth >= 1024} />
+              <DirectoryMap locations={mapLocations} visible={showMap} />
             </Suspense>
           </div>
         </div>
