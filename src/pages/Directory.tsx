@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, Suspense, lazy } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
+import { FeaturedResultsRow, type FeaturedItem } from "@/components/FeaturedResultsRow";
 const DirectoryMap = lazy(() => import("@/components/DirectoryMap").then(m => ({ default: m.DirectoryMap })));
+import type { MapLocation } from "@/components/DirectoryMap";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePractitioners } from "@/hooks/usePractitioners";
 import { useCenters } from "@/hooks/useCenters";
@@ -17,10 +18,10 @@ import { useDirectorySearch, DirectoryResult } from "@/hooks/useDirectorySearch"
 import { useSearchListings } from "@/hooks/useSearchListings";
 import type { Provider, Center } from "@/data/mockData";
 import { haversineDistance } from "@/lib/geoUtils";
-import { Map, Search, SlidersHorizontal, X, Frown, Navigation } from "lucide-react";
+import { Map, Search, SlidersHorizontal, X, Frown, Navigation, User, Building2 } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
-type DirectoryTab = "practitioners" | "centers";
+type ListingType = "all" | "practitioner" | "center";
 
 // Feature flag: set VITE_USE_NEW_SEARCH=false in .env to revert to old client-side search
 const USE_NEW_SEARCH = import.meta.env.VITE_USE_NEW_SEARCH !== 'false';
@@ -226,7 +227,7 @@ interface FilterPanelProps {
   centerType: string;
   sessionType: string;
   acceptsClients: boolean;
-  tab: DirectoryTab;
+  listingType: ListingType;
   onModality: (v: string) => void;
   onCity: (v: string) => void;
   onCenterType: (v: string) => void;
@@ -237,7 +238,7 @@ interface FilterPanelProps {
 }
 
 function FilterPanel({
-  island, modality, city, centerType, sessionType, acceptsClients, tab,
+  island, modality, city, centerType, sessionType, acceptsClients, listingType,
   onModality, onCity, onCenterType, onSessionType, onAcceptsClients, onClear, activeCount
 }: FilterPanelProps) {
   const cities = island !== 'all' ? (ISLAND_CITIES[island] ?? []) : [];
@@ -267,8 +268,8 @@ function FilterPanel({
         </Select>
       </div>
 
-      {/* Center type (centers tab only) */}
-      {tab === 'centers' && (
+      {/* Center type (centers or all mode) */}
+      {(listingType === 'center' || listingType === 'all') && (
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Center Type</Label>
           <Select value={centerType || "_all"} onValueChange={v => onCenterType(v === "_all" ? "" : v)}>
@@ -304,7 +305,7 @@ function FilterPanel({
       )}
 
       {/* Session type (practitioners only) */}
-      {tab === 'practitioners' && (
+      {listingType === 'practitioner' && (
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Session Type</Label>
           <div className="flex flex-col gap-1.5">
@@ -326,7 +327,7 @@ function FilterPanel({
       )}
 
       {/* Accepting clients (practitioners only) */}
-      {tab === 'practitioners' && (
+      {listingType === 'practitioner' && (
         <div className="flex items-center justify-between gap-3">
           <Label htmlFor="acceptsClients" className="text-sm cursor-pointer">Accepting new clients</Label>
           <Switch id="acceptsClients" checked={acceptsClients} onCheckedChange={onAcceptsClients} />
@@ -343,11 +344,10 @@ interface NoResultsStateProps {
   island: string;
   onClear: () => void;
   suggestions: import("@/hooks/useSearchListings").SearchResult[];
-  tab: DirectoryTab;
   highlightModality?: string;
 }
 
-function NoResultsState({ query, island, onClear, suggestions, tab, highlightModality }: NoResultsStateProps) {
+function NoResultsState({ query, island, onClear, suggestions, highlightModality }: NoResultsStateProps) {
   const displayQuery = query.trim();
   return (
     <div className="py-8">
@@ -375,11 +375,12 @@ function NoResultsState({ query, island, onClear, suggestions, tab, highlightMod
             You might be interested in
           </p>
           <div className="space-y-3">
-            {suggestions.map(s =>
-              tab === 'practitioners'
-                ? <ProviderCard key={s.id} provider={resultToProvider(s as any)} highlightModality={highlightModality} compact />
-                : <CenterCard key={s.id} center={resultToCenter(s as any)} highlightModality={highlightModality} compact />
-            )}
+            {suggestions.map(s => {
+              const r = s as any;
+              return r.listing_type === 'center'
+                ? <CenterCard key={s.id} center={resultToCenter(r)} highlightModality={highlightModality} compact />
+                : <ProviderCard key={s.id} provider={resultToProvider(r)} highlightModality={highlightModality} compact />;
+            })}
           </div>
         </div>
       )}
@@ -425,7 +426,7 @@ const Directory = () => {
     return detectIslandFromText(urlQ);
   }, [urlQ]);
 
-  const [tab, setTab] = useState<DirectoryTab>("practitioners");
+  const [listingType, setListingType] = useState<ListingType>("all");
   const [showMap, setShowMap] = useState(false);
   const [searchQuery, setSearchQuery] = useState(urlQ);
   const [island, setIsland] = useState(detectedIsland || urlIsland);
@@ -477,22 +478,30 @@ const Directory = () => {
     }, { replace: true });
   };
 
-  const activeFilterCount = [modality, city, centerType, sessionType, acceptsClients ? '1' : ''].filter(Boolean).length;
+  // Only count practitioner-specific filters when they're actually applied
+  const effectiveSessionType = listingType === 'practitioner' ? sessionType : '';
+  const effectiveAcceptsClients = listingType === 'practitioner' && acceptsClients;
+  const activeFilterCount = [modality, city, centerType, effectiveSessionType, effectiveAcceptsClients ? '1' : ''].filter(Boolean).length;
   const effectiveQuery = searchQuery.trim();
 
   // Reset pagination when any filter changes
-  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, centerType, sessionType, acceptsClients, tab]);
+  useEffect(() => { setPage(0); }, [effectiveQuery, island, modality, city, centerType, sessionType, acceptsClients, listingType]);
 
   // ── NEW SEARCH PATH ────────────────────────────────────────────────────────
+  // Map listing type to the tab format the hook expects
+  const searchTab = listingType === 'all' ? 'all' as const
+    : listingType === 'practitioner' ? 'practitioners' as const
+    : 'centers' as const;
+
   const newSearch = useDirectorySearch({
     searchQuery: effectiveQuery,
     island,
     modality,
     city,
-    sessionType,
-    // Centers don't have an "accepting new clients" concept — never apply this filter for centers
-    acceptsClients: tab === 'centers' ? false : acceptsClients,
-    tab,
+    sessionType: listingType === 'center' ? '' : sessionType,
+    // Centers don't have an "accepting new clients" concept — only apply for practitioner-only mode
+    acceptsClients: listingType === 'practitioner' ? acceptsClients : false,
+    tab: searchTab,
     page,
     pageSize: 25,
   });
@@ -514,14 +523,14 @@ const Directory = () => {
   const newTotalCount = newSearch.totalCount ?? 0;
 
   // Detect true no-results: search was active but nothing matched
-  const hasActiveSearch = effectiveQuery.trim() !== '' || modality !== '' || sessionType !== '' || acceptsClients;
+  const hasActiveSearch = effectiveQuery.trim() !== '' || modality !== '' || city !== '' || centerType !== '' || effectiveSessionType !== '' || effectiveAcceptsClients;
   const isNoResults = USE_NEW_SEARCH && !newSearch.isLoading && hasActiveSearch && accumulatedResults.length === 0;
 
   // Fallback suggestions: browse top listings on same island (shown when no results)
   const { data: fallbackData } = useSearchListings(
     {
       island: island !== 'all' ? island : 'big_island',
-      listingType: tab === 'practitioners' ? 'practitioner' : 'center',
+      listingType: listingType === 'all' ? undefined : listingType,
       pageSize: 4,
     },
     isNoResults // only fetch when actually showing no-results state
@@ -534,43 +543,78 @@ const Directory = () => {
   // Tier rank: featured=0, premium=1, free/other=2 — used as stable secondary sort
   function tierRank(tier?: string) { return tier === 'featured' ? 0 : tier === 'premium' ? 1 : 2; }
 
-  const newProviders = useMemo(() => {
-    const list = accumulatedResults
-      .filter(r => r.listing_type === 'practitioner')
-      .map(r => {
+  // ── Unified results (both types in one list) ────────────────────────────────
+
+  interface UnifiedItem {
+    raw: DirectoryResult;
+    provider?: Provider;
+    center?: Center;
+  }
+
+  const unifiedResults = useMemo(() => {
+    let list: UnifiedItem[] = accumulatedResults.map(r => {
+      if (r.listing_type === 'practitioner') {
         const p = resultToProvider(r);
         if (userLocation && r.lat && r.lng) {
           p.distanceMiles = haversineDistance(userLocation.lat, userLocation.lng, r.lat, r.lng);
         }
-        return p;
-      });
-    if (sortByDistance && userLocation) {
-      return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
-    }
-    // Always keep featured before premium in display order
-    return [...list].sort((a, b) => tierRank(a.tier) - tierRank(b.tier));
-  }, [accumulatedResults, userLocation, sortByDistance]);
-
-  const newCenters = useMemo(() => {
-    let list = accumulatedResults
-      .filter(r => r.listing_type === 'center')
-      .map(r => {
+        return { raw: r, provider: p };
+      } else {
         const c = resultToCenter(r);
         if (userLocation && r.lat && r.lng) {
           c.distanceMiles = haversineDistance(userLocation.lat, userLocation.lng, r.lat, r.lng);
         }
-        return c;
-      });
+        return { raw: r, center: c };
+      }
+    });
+
     // Client-side center type filter (not in RPC)
     if (centerType) {
-      list = list.filter(c => c.centerType === centerType);
+      list = list.filter(item => item.raw.listing_type !== 'center' || item.center?.centerType === centerType);
     }
+
+    // Sort by distance if enabled, otherwise keep RPC composite-score order
     if (sortByDistance && userLocation) {
-      return [...list].sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity));
+      list.sort((a, b) => {
+        const da = a.provider?.distanceMiles ?? a.center?.distanceMiles ?? Infinity;
+        const db = b.provider?.distanceMiles ?? b.center?.distanceMiles ?? Infinity;
+        return da - db;
+      });
     }
-    // Always keep featured before premium in display order
-    return [...list].sort((a, b) => tierRank(a.tier) - tierRank(b.tier));
+
+    return list;
   }, [accumulatedResults, userLocation, sortByDistance, centerType]);
+
+  // Split into featured row (max 3) and main results
+  const { featuredItems, mainResults } = useMemo(() => {
+    const featured: FeaturedItem[] = [];
+    const main: UnifiedItem[] = [];
+
+    for (const item of unifiedResults) {
+      if (item.raw.tier === 'featured' && featured.length < 3) {
+        featured.push({
+          id: item.raw.id,
+          listing_type: item.raw.listing_type as 'practitioner' | 'center',
+          provider: item.provider,
+          center: item.center,
+        });
+      } else {
+        main.push(item);
+      }
+    }
+
+    return { featuredItems: featured, mainResults: main };
+  }, [unifiedResults]);
+
+  // Backward compat: keep these for old search path
+  const newProviders = useMemo(() =>
+    unifiedResults.filter(i => i.provider).map(i => i.provider!),
+    [unifiedResults]
+  );
+  const newCenters = useMemo(() =>
+    unifiedResults.filter(i => i.center).map(i => i.center!),
+    [unifiedResults]
+  );
 
   // ── OLD SEARCH PATH (fallback — only fetches when new search is disabled) ──
   const fetchIsland = island === 'all' ? 'big_island' : island;
@@ -603,26 +647,49 @@ const Directory = () => {
   }, [oldCenters, effectiveQuery, modality, city, centerType]);
 
   // ── Unified: pick old or new ──────────────────────────────────────────────
-  const practitioners = USE_NEW_SEARCH ? newProviders : oldFilteredPractitioners;
-  const centers = USE_NEW_SEARCH ? newCenters : oldFilteredCenters;
-  const isLoading = USE_NEW_SEARCH
-    ? newSearch.isLoading
-    : (tab === "practitioners" ? loadingOldP : loadingOldC);
-  const resultCount = tab === "practitioners" ? practitioners.length : centers.length;
+  const isLoading = USE_NEW_SEARCH ? newSearch.isLoading : (loadingOldP || loadingOldC);
+  const resultCount = USE_NEW_SEARCH ? unifiedResults.length : (oldFilteredPractitioners.length + oldFilteredCenters.length);
 
-  const mapLocations = useMemo(() => {
-    const raw = tab === "practitioners"
-      ? (USE_NEW_SEARCH ? newProviders : oldFilteredPractitioners)
-      : (USE_NEW_SEARCH ? newCenters : oldFilteredCenters);
-    return raw.filter((l: any) => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
-  }, [tab, newProviders, newCenters, oldFilteredPractitioners, oldFilteredCenters]);
+  const mapLocations = useMemo<MapLocation[]>(() => {
+    if (USE_NEW_SEARCH) {
+      return unifiedResults
+        .filter(item => {
+          const lat = item.raw.lat ?? 0;
+          const lng = item.raw.lng ?? 0;
+          return lat !== 0 && lng !== 0 && lat !== 19.8968;
+        })
+        .map(item => ({
+          id: item.raw.id,
+          name: item.raw.name,
+          lat: item.raw.lat!,
+          lng: item.raw.lng!,
+          image: item.provider?.image || item.center?.image || '',
+          modality: item.provider?.modality || item.center?.modality || '',
+          location: item.raw.city || '',
+          listing_type: item.raw.listing_type as 'practitioner' | 'center',
+          tier: item.raw.tier || 'free',
+        }));
+    }
+    // Old search fallback — combine both types
+    const all = [
+      ...oldFilteredPractitioners.map(p => ({
+        id: p.id, name: p.name, lat: p.lat, lng: p.lng, image: p.image,
+        modality: p.modality, location: p.location, listing_type: 'practitioner' as const, tier: p.tier,
+      })),
+      ...oldFilteredCenters.map(c => ({
+        id: c.id, name: c.name, lat: c.lat, lng: c.lng, image: c.image,
+        modality: c.modality, location: c.location, listing_type: 'center' as const, tier: c.tier,
+      })),
+    ];
+    return all.filter(l => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
+  }, [unifiedResults, oldFilteredPractitioners, oldFilteredCenters]);
 
   const crossIslandNote = detectedIsland && detectedIsland !== urlIsland
     ? `Showing results from ${ISLANDS.find(i => i.value === detectedIsland)?.label} based on your search location.`
     : null;
 
   const filterPanelProps: FilterPanelProps = {
-    island, modality, city, centerType, sessionType, acceptsClients, tab,
+    island, modality, city, centerType, sessionType, acceptsClients, listingType,
     onModality: handleModality,
     onCity: handleCity,
     onCenterType: handleCenterType,
@@ -646,31 +713,74 @@ const Directory = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            {/* Type filter — segmented control */}
+            <div className="hidden sm:flex rounded-lg border border-input overflow-hidden text-sm" role="group" aria-label="Filter by listing type">
+              {([
+                { value: 'all' as const, label: 'All', icon: null },
+                { value: 'practitioner' as const, label: 'Practitioners', icon: <User className="h-3.5 w-3.5" /> },
+                { value: 'center' as const, label: 'Centers', icon: <Building2 className="h-3.5 w-3.5" /> },
+              ] as const).map((opt, i) => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setListingType(opt.value);
+                    if (opt.value !== 'practitioner') {
+                      setAcceptsClients(false); setSessionType('');
+                      // Clear practitioner-specific URL params to prevent bleed on reload
+                      setSearchParams(prev => {
+                        const next = new URLSearchParams(prev);
+                        next.delete('sessionType'); next.delete('acceptsClients');
+                        return next;
+                      }, { replace: true });
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 font-medium transition-colors ${
+                    i > 0 ? 'border-l border-input' : ''
+                  } ${
+                    listingType === opt.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                  aria-pressed={listingType === opt.value}
+                >
+                  {opt.icon}
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile type filter — dropdown */}
+            <Select value={listingType} onValueChange={(v) => {
+              setListingType(v as ListingType);
+              if (v !== 'practitioner') {
+                setAcceptsClients(false); setSessionType('');
+                setSearchParams(prev => {
+                  const next = new URLSearchParams(prev);
+                  next.delete('sessionType'); next.delete('acceptsClients');
+                  return next;
+                }, { replace: true });
+              }
+            }}>
+              <SelectTrigger className="w-32 flex-shrink-0 text-sm sm:hidden">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="practitioner">Practitioners</SelectItem>
+                <SelectItem value="center">Centers</SelectItem>
+              </SelectContent>
+            </Select>
+
             <div className="flex-1" />
+
+            {/* Map toggle — mobile only (desktop has always-on map) */}
             <button onClick={() => setShowMap(!showMap)}
               className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted lg:hidden">
               <Map className="h-4 w-4" />
               {showMap ? "List" : "Map"}
             </button>
           </div>
-
-          <Tabs value={tab} onValueChange={(v) => {
-            const next = v as DirectoryTab;
-            setTab(next);
-            // Accepting-clients filter doesn't apply to centers — reset it when switching tabs
-            if (next === 'centers') setAcceptsClients(false);
-          }}>
-            <TabsList className="w-full">
-              <TabsTrigger value="practitioners" className="flex-1 text-xs sm:text-sm">
-                <span className="sm:hidden">Practitioners</span>
-                <span className="hidden sm:inline">Individual Practitioners</span>
-              </TabsTrigger>
-              <TabsTrigger value="centers" className="flex-1 text-xs sm:text-sm">
-                <span className="sm:hidden">Spas &amp; Centers</span>
-                <span className="hidden sm:inline">Spas &amp; Wellness Centers</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
       </div>
 
@@ -730,13 +840,13 @@ const Directory = () => {
                   <button onClick={() => handleCenterType('')} aria-label="Remove center type filter"><X className="h-3 w-3" /></button>
                 </Badge>
               )}
-              {sessionType && (
+              {effectiveSessionType && (
                 <Badge variant="secondary" className="gap-1 text-xs">
                   {sessionType === 'in_person' ? 'In Person' : sessionType === 'online' ? 'Online' : 'Both'}
                   <button onClick={() => handleSessionType('')} aria-label="Remove session type filter"><X className="h-3 w-3" /></button>
                 </Badge>
               )}
-              {acceptsClients && (
+              {effectiveAcceptsClients && (
                 <Badge variant="secondary" className="gap-1 text-xs">Accepting Clients
                   <button onClick={() => handleAcceptsClients(false)} aria-label="Remove accepting clients filter"><X className="h-3 w-3" /></button>
                 </Badge>
@@ -782,14 +892,31 @@ const Directory = () => {
               island={ISLANDS.find(i => i.value === island)?.label || 'this island'}
               onClear={handleClearFilters}
               suggestions={fallbackSuggestions}
-              tab={tab}
               highlightModality={effectiveQuery}
             />
           ) : (
-            <div className="space-y-3">
-              {tab === "practitioners"
-                ? practitioners.map((p) => <ProviderCard key={p.id} provider={p} highlightModality={effectiveQuery} compact />)
-                : centers.map((c) => <CenterCard key={c.id} center={c} highlightModality={effectiveQuery} compact />)}
+            <div>
+              {/* Featured row — max 3 featured listings */}
+              {USE_NEW_SEARCH && (
+                <FeaturedResultsRow items={featuredItems} highlightModality={effectiveQuery} />
+              )}
+
+              {/* Main results — sorted by composite score */}
+              <div className="space-y-3">
+                {USE_NEW_SEARCH
+                  ? mainResults.map(item =>
+                      item.raw.listing_type === 'center' && item.center
+                        ? <CenterCard key={item.raw.id} center={item.center} highlightModality={effectiveQuery} compact />
+                        : item.provider
+                        ? <ProviderCard key={item.raw.id} provider={item.provider} highlightModality={effectiveQuery} compact />
+                        : null
+                    )
+                  : [
+                      ...oldFilteredPractitioners.map(p => <ProviderCard key={p.id} provider={p} highlightModality={effectiveQuery} compact />),
+                      ...oldFilteredCenters.map(c => <CenterCard key={c.id} center={c} highlightModality={effectiveQuery} compact />),
+                    ]
+                }
+              </div>
 
               {resultCount === 0 && !hasActiveSearch && (
                 <div className="py-12 text-center">
@@ -820,16 +947,14 @@ const Directory = () => {
           )}
         </div>
 
-        {/* Map — lazy-loaded, only mounts when visible */}
-        {showMap && (
-          <div className="flex-1" style={{ minHeight: "calc(100vh - 8rem)" }}>
-            <div className="sticky top-0 h-[calc(100vh-8rem)]">
-              <Suspense fallback={<div className="flex h-full items-center justify-center bg-muted"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
-                <DirectoryMap locations={mapLocations} visible={showMap} />
-              </Suspense>
-            </div>
+        {/* Map — always visible on desktop (lg+), toggled on mobile */}
+        <div className={`${showMap ? 'block' : 'hidden'} lg:block flex-1`} style={{ minHeight: "calc(100vh - 8rem)" }}>
+          <div className="sticky top-0 h-[calc(100vh-8rem)]">
+            <Suspense fallback={<div className="flex h-full items-center justify-center bg-muted"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
+              <DirectoryMap locations={mapLocations} visible={showMap || window.innerWidth >= 1024} />
+            </Suspense>
           </div>
-        )}
+        </div>
       </div>
     </main>
   );

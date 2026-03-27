@@ -17,7 +17,7 @@ export interface DirectoryFilters {
   city: string;          // city name or ''
   sessionType: string;   // 'in_person' | 'online' | 'both' | ''
   acceptsClients: boolean;
-  tab: 'practitioners' | 'centers';
+  tab: 'practitioners' | 'centers' | 'all';
   page: number;
   pageSize: number;
 }
@@ -70,7 +70,7 @@ export function useDirectorySearch(filters: DirectoryFilters) {
       query: intent?.freeText || '',
       page: filters.page,
       pageSize: filters.pageSize,
-      listingType: filters.tab === 'practitioners' ? 'practitioner' : 'center',
+      listingType: filters.tab === 'all' ? undefined : (filters.tab === 'practitioners' ? 'practitioner' : 'center'),
     };
 
     // Modalities: from parsed intent + explicit dropdown
