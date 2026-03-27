@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ProviderCard } from "@/components/ProviderCard";
 import { CenterCard } from "@/components/CenterCard";
-import { FeaturedResultsRow, type FeaturedItem } from "@/components/FeaturedResultsRow";
+// FeaturedResultsRow removed — featured listings now inline with enhanced cards
 const DirectoryMap = lazy(() => import("@/components/DirectoryMap").then(m => ({ default: m.DirectoryMap })));
 import type { MapLocation } from "@/components/DirectoryMap";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -585,27 +585,6 @@ const Directory = () => {
     return list;
   }, [accumulatedResults, userLocation, sortByDistance, centerType]);
 
-  // Split into featured row (max 3) and main results
-  const { featuredItems, mainResults } = useMemo(() => {
-    const featured: FeaturedItem[] = [];
-    const main: UnifiedItem[] = [];
-
-    for (const item of unifiedResults) {
-      if (item.raw.tier === 'featured' && featured.length < 3) {
-        featured.push({
-          id: item.raw.id,
-          listing_type: item.raw.listing_type as 'practitioner' | 'center',
-          provider: item.provider,
-          center: item.center,
-        });
-      } else {
-        main.push(item);
-      }
-    }
-
-    return { featuredItems: featured, mainResults: main };
-  }, [unifiedResults]);
-
   // Backward compat: keep these for old search path
   const newProviders = useMemo(() =>
     unifiedResults.filter(i => i.provider).map(i => i.provider!),
@@ -896,15 +875,10 @@ const Directory = () => {
             />
           ) : (
             <div>
-              {/* Featured row — max 3 featured listings */}
-              {USE_NEW_SEARCH && (
-                <FeaturedResultsRow items={featuredItems} highlightModality={effectiveQuery} activeModality={modality || effectiveQuery} />
-              )}
-
-              {/* Main results — sorted by composite score */}
-              <div className="space-y-3">
+              {/* Results — featured/premium get enhanced cards, free get condensed */}
+              <div className="space-y-2">
                 {USE_NEW_SEARCH
-                  ? mainResults.map(item =>
+                  ? unifiedResults.map(item =>
                       item.raw.listing_type === 'center' && item.center
                         ? <CenterCard key={item.raw.id} center={item.center} highlightModality={effectiveQuery} compact />
                         : item.provider

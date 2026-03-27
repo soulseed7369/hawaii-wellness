@@ -65,8 +65,13 @@ export function CenterCard({
 
   // ── Compact (directory list) layout ────────────────────────────────────────
   if (compact) {
-    const visibleModalities = sorted.slice(0, 3);
-    const extraCount = displayModalities.length - visibleModalities.length;
+    const isFeatured = center.tier === 'featured';
+    const isPremium = center.tier === 'premium';
+    const isEnhanced = isFeatured || isPremium;
+
+    // Featured/premium: show ALL modalities. Free: cap at 3.
+    const visibleModalities = isEnhanced ? sorted : sorted.slice(0, 3);
+    const extraCount = isEnhanced ? 0 : displayModalities.length - visibleModalities.length;
 
     return (
       <Link
@@ -74,7 +79,7 @@ export function CenterCard({
         className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
       >
         <Card
-          className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(center.tier)} ${center.tier === "featured" ? "border-l-4 border-l-amber-400" : "border-l-4 border-l-sky-300"}`}
+          className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(center.tier)} ${isFeatured ? "border-l-4 border-l-amber-400" : "border-l-4 border-l-sky-300"}`}
         >
           <div className="flex gap-3 p-3">
             {/* Avatar column: image + type label underneath */}
@@ -102,13 +107,13 @@ export function CenterCard({
 
             {/* Info */}
             <div className="min-w-0 flex-1">
-              {/* Row 1: Name + tier badge */}
+              {/* Row 1: Name + verified + tier badge */}
               <div className="flex items-start justify-between gap-1">
                 <div className="flex items-center gap-1 min-w-0">
                   <h3 className="truncate font-display text-sm font-semibold group-hover:text-primary transition-colors leading-tight">
                     {center.name}
                   </h3>
-                  {(center.tier === "premium" || center.tier === "featured") && (
+                  {isEnhanced && (
                     <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" aria-label="Verified" />
                   )}
                 </div>
@@ -151,6 +156,13 @@ export function CenterCard({
                     </Badge>
                   )}
                 </div>
+              )}
+
+              {/* Featured/Premium: Description excerpt — free tier hides this */}
+              {isEnhanced && (center.description || center.bio) && (
+                <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-snug">
+                  {center.description || center.bio}
+                </p>
               )}
             </div>
           </div>

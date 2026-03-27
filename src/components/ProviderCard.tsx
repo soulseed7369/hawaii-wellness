@@ -74,11 +74,17 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
 
   // ── Compact (directory list) layout ────────────────────────────────────────
   if (compact) {
-    const visibleModalities = sorted.slice(0, 3);
-    const extraCount = displayModalities.length - visibleModalities.length;
+    const isFeatured = provider.tier === 'featured';
+    const isPremium = provider.tier === 'premium';
+    const isEnhanced = isFeatured || isPremium;
+
+    // Featured/premium: show ALL modalities. Free: cap at 3.
+    const visibleModalities = isEnhanced ? sorted : sorted.slice(0, 3);
+    const extraCount = isEnhanced ? 0 : displayModalities.length - visibleModalities.length;
+
     return (
       <Link to={`/profile/${provider.id}`} className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
-        <Card className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(provider.tier)} ${provider.tier === 'featured' ? 'border-l-4 border-l-amber-400' : ''}`}>
+        <Card className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(provider.tier)} ${isFeatured ? 'border-l-4 border-l-amber-400' : ''}`}>
           <div className="flex gap-3 p-3">
             {/* Avatar column: image + type label underneath */}
             <div className="flex flex-col items-center flex-shrink-0 gap-1">
@@ -103,13 +109,13 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
 
             {/* Info */}
             <div className="min-w-0 flex-1">
-              {/* Row 1: Name + tier badge */}
+              {/* Row 1: Name + verified + tier badge */}
               <div className="flex items-start justify-between gap-1">
                 <div className="flex items-center gap-1 min-w-0">
-                  <h3 className="truncate font-display text-sm font-semibold group-hover:text-primary transition-colors leading-tight">
+                  <h3 className={`truncate font-display font-semibold group-hover:text-primary transition-colors leading-tight ${isEnhanced ? 'text-sm' : 'text-sm'}`}>
                     {provider.name}
                   </h3>
-                  {(provider.tier === "premium" || provider.tier === "featured") && (
+                  {isEnhanced && (
                     <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" aria-label="Verified" />
                   )}
                 </div>
@@ -130,6 +136,9 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                     · <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" /> Accepting
                   </span>
                 )}
+                {isEnhanced && provider.sessionType && (
+                  <span className="text-muted-foreground/70">· {SESSION_TYPE_LABELS[provider.sessionType] ?? provider.sessionType}</span>
+                )}
               </div>
 
               {/* Row 3: Modality pills */}
@@ -144,7 +153,12 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                 </div>
               )}
 
-              {/* Row 4: Match explanation (when searching) */}
+              {/* Featured/Premium: Bio excerpt — free tier hides this */}
+              {isEnhanced && provider.bio && (
+                <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-snug">{provider.bio}</p>
+              )}
+
+              {/* Match explanation labels (all tiers, when searching) */}
               {(provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
                 <p className="mt-0.5 text-[11px] text-muted-foreground italic leading-snug">
                   {provider.matchedConcerns && provider.matchedConcerns.length > 0 && (
