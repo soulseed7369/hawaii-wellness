@@ -112,6 +112,7 @@ export function centerRowToCenter(row: CenterRow): Center {
     photos: (row as any).photos ?? undefined,
     bio: (row as any).bio ?? undefined,
     workingHours: (row as any).working_hours ?? undefined,
+    acceptsNewClients: (row as any).accepts_new_clients ?? undefined,
     verified: !!(row as any).email || !!(row as any).phone,
   };
 }

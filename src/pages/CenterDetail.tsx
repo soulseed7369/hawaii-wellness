@@ -510,6 +510,16 @@ export default function CenterDetail() {
                   )}
                 </div>
 
+                {/* Accepting clients badge */}
+                {c.acceptsNewClients && (
+                  <div className="mt-2">
+                    <Badge className="gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Accepting New Clients
+                    </Badge>
+                  </div>
+                )}
+
                 {/* Top 2 modality chips */}
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   {c.modalities.slice(0, 2).map((m) => (
@@ -523,14 +533,10 @@ export default function CenterDetail() {
 
             {/* Footer strip — share + last updated */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/50 bg-background/40 px-5 py-2.5">
-              {isTiered ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Share:</span>
-                  <ShareButtons title={`Check out ${c.name} on Hawaiʻi Wellness`} compact />
-                </div>
-              ) : (
-                <span className="text-xs text-muted-foreground">Free listing</span>
-              )}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Share this listing:</span>
+                <ShareButtons title={`Check out ${c.name} on Hawaiʻi Wellness`} compact />
+              </div>
               <div className="flex items-center gap-3">
                 {c.created_at && (
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">

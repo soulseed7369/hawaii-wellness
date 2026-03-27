@@ -103,6 +103,8 @@ export interface Center {
   bio?: string;
   /** Parsed working_hours from DB — keyed by day abbreviation */
   workingHours?: Record<string, { open: string; close: string } | null>;
+  /** Whether the center is currently accepting new clients */
+  acceptsNewClients?: boolean;
 }
 
 export interface RetreatEvent {
