@@ -776,8 +776,8 @@ const Directory = () => {
           name: item.name,
           lat: item.lat!,
           lng: item.lng!,
-          image: item.image || '',
-          modality: item.modality || '',
+          image: item.photo_url || '',
+          modality: item.modality_labels?.[0] || '',
           location: item.city || '',
           listing_type: item.listing_type as 'practitioner' | 'center',
           tier: item.tier || 'free',
@@ -1073,7 +1073,7 @@ const Directory = () => {
               highlightModality={effectiveQuery}
             />
           ) : (
-            <div ref={resultsContainerRef}>
+            <div>
               {/* Results — featured/premium get enhanced cards, free get condensed */}
               <div className="space-y-2">
                 {USE_NEW_SEARCH
