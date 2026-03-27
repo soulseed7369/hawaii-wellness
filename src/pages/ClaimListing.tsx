@@ -30,7 +30,7 @@ async function markCampaignClaimed(listingId: string): Promise<void> {
   try {
     await supabase
       .from('campaign_outreach')
-      .update({ status: 'claimed' })
+      .update({ status: 'claimed', has_owner: true })
       .eq('listing_id', listingId)
       .in('status', ['not_contacted', 'email_queued', 'email_1_sent', 'email_1_opened', 'email_1b_sent', 'email_2_sent', 'replied', 'claimed']);
   } catch (e) {
