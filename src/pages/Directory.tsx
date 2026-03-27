@@ -469,6 +469,29 @@ const Directory = () => {
   const handleSessionType = (v: string) => { setSessionType(v); updateParam('sessionType', v); };
   const handleAcceptsClients = (v: boolean) => { setAcceptsClients(v); updateParam('acceptsClients', v ? '1' : ''); };
   const handleIsland = (v: string) => { setIsland(v); updateParam('island', v); };
+
+  const [locating, setLocating] = useState(false);
+  const handleSetLocation = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try { localStorage.setItem('aloha_user_location', JSON.stringify({ lat: latitude, lng: longitude })); } catch { /* ignore */ }
+        setSortByDistance(true);
+        setSearchParams(prev => {
+          const next = new URLSearchParams(prev);
+          next.set('ulat', String(latitude));
+          next.set('ulng', String(longitude));
+          return next;
+        }, { replace: true });
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { timeout: 8000 }
+    );
+  }, [setSearchParams]);
+
   const handleClearFilters = () => {
     setModality(''); setCity(''); setCenterType(''); setSessionType(''); setAcceptsClients(false);
     setSearchParams(prev => {
@@ -843,18 +866,29 @@ const Directory = () => {
             <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
               {isLoading ? "Loading…" : `${resultCount} result${resultCount !== 1 ? "s" : ""} found`}
             </p>
-            {userLocation && !isLoading && resultCount > 0 && (
-              <label htmlFor="sortByDistance" className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors select-none">
-                <Navigation className="h-3.5 w-3.5" />
-                <input
-                  id="sortByDistance"
-                  type="checkbox"
-                  className="accent-primary"
-                  checked={sortByDistance}
-                  onChange={e => setSortByDistance(e.target.checked)}
-                />
-                Nearest first
-              </label>
+            {userLocation ? (
+              !isLoading && resultCount > 0 && (
+                <label htmlFor="sortByDistance" className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors select-none">
+                  <Navigation className="h-3.5 w-3.5" />
+                  <input
+                    id="sortByDistance"
+                    type="checkbox"
+                    className="accent-primary"
+                    checked={sortByDistance}
+                    onChange={e => setSortByDistance(e.target.checked)}
+                  />
+                  Nearest first
+                </label>
+              )
+            ) : (
+              <button
+                onClick={handleSetLocation}
+                disabled={locating}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                <Navigation className="h-3.5 w-3.5 shrink-0" />
+                {locating ? 'Locating…' : 'Use my location'}
+              </button>
             )}
           </div>
 
