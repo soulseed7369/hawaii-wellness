@@ -107,16 +107,11 @@ export function CenterCard({
                       <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" aria-label="Verified" />
                     )}
                   </div>
-                  {/* Type label — always visible "Center" + optional subtype */}
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-sky-600">
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-500" />
-                      Center
-                    </span>
-                    {center.centerType && (
-                      <span className="text-[10px] text-muted-foreground">· {centerTypeLabel(center.centerType)}</span>
-                    )}
-                  </div>
+                  {/* Center type label */}
+                  <span className="inline-flex items-center gap-0.5 mt-0.5 text-[10px] font-medium text-sky-600">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-500" />
+                    {centerTypeLabel(center.centerType || 'wellness_center')}
+                  </span>
                 </div>
                 <div className="flex flex-shrink-0 items-center gap-1">
                   {center.tier && center.tier !== "free" && (
