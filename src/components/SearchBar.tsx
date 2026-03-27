@@ -5,6 +5,7 @@ import { Search, LocateFixed, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-homepage.jpg";
 import { useAliasMap } from "@/hooks/useSearchListings";
+import { useNameSuggestions } from "@/hooks/useNameSuggestions";
 
 // Island tabs — Big Island live, others coming soon
 const ISLAND_TABS = [
@@ -55,6 +56,9 @@ interface Suggestion {
   id: number;
   label: string;
   axis: string;
+  /** Set for name suggestions — navigate directly to profile on select */
+  listingId?: string;
+  listingType?: 'practitioner' | 'center';
 }
 
 interface HeroImageSet {
@@ -278,6 +282,7 @@ export function SearchBar({
 
   // ── Autocomplete ────────────────────────────────────────────────────────────
   const { aliasMap } = useAliasMap();
+  const { data: nameSuggestions = [] } = useNameSuggestions(debouncedWhat, island);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedWhat(what), 200);
@@ -285,21 +290,36 @@ export function SearchBar({
   }, [what]);
 
   const suggestions = useMemo<Suggestion[]>(() => {
-    if (!aliasMap || debouncedWhat.length < 2) return [];
-    const q = debouncedWhat.toLowerCase();
-    const seen = new Set<number>();
     const results: Suggestion[] = [];
 
-    for (const [key, term] of aliasMap) {
-      if (seen.has(term.id)) continue;
-      if (key.includes(q) || term.label.toLowerCase().includes(q)) {
-        seen.add(term.id);
-        results.push({ id: term.id, label: term.label, axis: term.axis });
+    // Taxonomy suggestions first (up to 6)
+    if (aliasMap && debouncedWhat.length >= 2) {
+      const q = debouncedWhat.toLowerCase();
+      const seen = new Set<number>();
+      for (const [key, term] of aliasMap) {
+        if (seen.has(term.id)) continue;
+        if (key.includes(q) || term.label.toLowerCase().includes(q)) {
+          seen.add(term.id);
+          results.push({ id: term.id, label: term.label, axis: term.axis });
+        }
+        if (results.length >= 6) break;
       }
-      if (results.length >= 8) break;
     }
+
+    // Name suggestions after (up to 3, virtual negative ids to avoid collision)
+    for (let i = 0; i < Math.min(nameSuggestions.length, 3); i++) {
+      const ns = nameSuggestions[i];
+      results.push({
+        id: -(i + 1),
+        label: ns.label,
+        axis: 'listing',
+        listingId: ns.listingId,
+        listingType: ns.listingType,
+      });
+    }
+
     return results;
-  }, [aliasMap, debouncedWhat]);
+  }, [aliasMap, debouncedWhat, nameSuggestions]);
 
   const grouped = useMemo(() => {
     const groups: Record<string, Suggestion[]> = {};
@@ -320,11 +340,16 @@ export function SearchBar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = useCallback((label: string) => {
-    setWhat(label);
+  const handleSelect = useCallback((label: string, listingId?: string, listingType?: 'practitioner' | 'center') => {
     setIsOpen(false);
     setHighlightIdx(-1);
-  }, []);
+    if (listingId) {
+      // Navigate directly to the listing's profile page
+      navigate(listingType === 'center' ? `/center/${listingId}` : `/profile/${listingId}`);
+    } else {
+      setWhat(label);
+    }
+  }, [navigate]);
 
   // ── Navigation ──────────────────────────────────────────────────────────────
   const handleSearch = (overrideWhat?: string) => {
@@ -346,7 +371,8 @@ export function SearchBar({
     if (e.key === 'Escape') { setIsOpen(false); return; }
     if (e.key === 'Enter') {
       if (highlightIdx >= 0 && highlightIdx < suggestions.length) {
-        handleSelect(suggestions[highlightIdx].label);
+        const s = suggestions[highlightIdx];
+        handleSelect(s.label, s.listingId, s.listingType);
         e.preventDefault();
         return;
       }
@@ -462,7 +488,7 @@ export function SearchBar({
                     {Object.entries(grouped).map(([axis, items]) => (
                       <div key={axis}>
                         <div className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                          {AXIS_LABELS[axis] || axis}
+                          {axis === 'listing' ? 'Practitioners & Centers' : (AXIS_LABELS[axis] || axis)}
                         </div>
                         {items.map(item => {
                           const flatIdx = suggestions.indexOf(item);
@@ -471,7 +497,7 @@ export function SearchBar({
                               key={item.id}
                               type="button"
                               className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${flatIdx === highlightIdx ? 'bg-accent' : ''}`}
-                              onMouseDown={() => handleSelect(item.label)}
+                              onMouseDown={() => handleSelect(item.label, item.listingId, item.listingType)}
                             >
                               {item.label}
                             </button>
