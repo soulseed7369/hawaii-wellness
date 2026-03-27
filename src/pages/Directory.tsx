@@ -39,32 +39,40 @@ const FILTER_MODALITIES = [
 // ── Island / city lookup ─────────────────────────────────────────────────────
 
 // Approximate centroids used for distance sorting when user picks a city instead of sharing GPS
-const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  // Big Island
-  'Kailua-Kona': { lat: 19.6400, lng: -155.9969 }, 'Hilo': { lat: 19.7297, lng: -155.0900 },
-  'Waimea': { lat: 20.0133, lng: -155.6718 }, 'Pahoa': { lat: 19.4942, lng: -154.9447 },
-  'Captain Cook': { lat: 19.4992, lng: -155.9194 }, 'Keaau': { lat: 19.6261, lng: -155.0497 },
-  'Holualoa': { lat: 19.6228, lng: -155.9317 }, 'Volcano': { lat: 19.4256, lng: -155.2347 },
-  'Waikoloa': { lat: 19.9306, lng: -155.7797 }, 'Hawi': { lat: 20.2428, lng: -155.8330 },
-  'Honokaa': { lat: 20.0817, lng: -155.4719 }, 'Ocean View': { lat: 19.1000, lng: -155.7667 },
-  // Maui
-  'Lahaina': { lat: 20.8783, lng: -156.6825 }, 'Kihei': { lat: 20.7645, lng: -156.4450 },
-  'Wailea': { lat: 20.6881, lng: -156.4414 }, 'Kahului': { lat: 20.8893, lng: -156.4729 },
-  'Wailuku': { lat: 20.8936, lng: -156.5000 }, 'Makawao': { lat: 20.8564, lng: -156.3100 },
-  'Paia': { lat: 20.9108, lng: -156.3703 }, 'Haiku': { lat: 20.9197, lng: -156.3231 },
-  'Kula': { lat: 20.7878, lng: -156.3358 }, 'Hana': { lat: 20.7578, lng: -155.9928 },
-  // Oahu
-  'Honolulu': { lat: 21.3069, lng: -157.8583 }, 'Waikiki': { lat: 21.2793, lng: -157.8294 },
-  'Kailua': { lat: 21.4022, lng: -157.7394 }, 'Kaneohe': { lat: 21.4022, lng: -157.8003 },
-  'Pearl City': { lat: 21.3972, lng: -157.9756 }, 'Kapolei': { lat: 21.3347, lng: -158.0764 },
-  'Haleiwa': { lat: 21.5950, lng: -158.1028 }, 'Mililani': { lat: 21.4511, lng: -158.0147 },
-  'Hawaii Kai': { lat: 21.2919, lng: -157.7000 }, 'Manoa': { lat: 21.3094, lng: -157.8019 },
-  // Kauai
-  'Lihue': { lat: 21.9781, lng: -159.3508 }, 'Kapaa': { lat: 22.0753, lng: -159.3192 },
-  'Hanalei': { lat: 22.2039, lng: -159.5017 }, 'Princeville': { lat: 22.2153, lng: -159.4811 },
-  'Poipu': { lat: 21.8742, lng: -159.4586 }, 'Koloa': { lat: 21.9056, lng: -159.4656 },
-  'Hanapepe': { lat: 21.9092, lng: -159.5950 }, 'Kilauea': { lat: 22.2128, lng: -159.4028 },
-  'Kalaheo': { lat: 21.9244, lng: -159.5281 },
+// Build city coords with island prefix to avoid collisions (e.g., Kauai Waimea != Big Island Waimea)
+const CITY_COORDS_BY_ISLAND: Record<string, Record<string, { lat: number; lng: number }>> = {
+  big_island: {
+    'Kailua-Kona': { lat: 19.6400, lng: -155.9969 }, 'Hilo': { lat: 19.7297, lng: -155.0900 },
+    'Waimea': { lat: 20.0133, lng: -155.6718 }, 'Pahoa': { lat: 19.4942, lng: -154.9447 },
+    'Captain Cook': { lat: 19.4992, lng: -155.9194 }, 'Keaau': { lat: 19.6261, lng: -155.0497 },
+    'Holualoa': { lat: 19.6228, lng: -155.9317 }, 'Volcano': { lat: 19.4256, lng: -155.2347 },
+    'Waikoloa': { lat: 19.9306, lng: -155.7797 }, 'Hawi': { lat: 20.2428, lng: -155.8330 },
+    'Honokaa': { lat: 20.0817, lng: -155.4719 }, 'Ocean View': { lat: 19.1000, lng: -155.7667 },
+  },
+  maui: {
+    'Lahaina': { lat: 20.8783, lng: -156.6825 }, 'Kihei': { lat: 20.7645, lng: -156.4450 },
+    'Wailea': { lat: 20.6881, lng: -156.4414 }, 'Kahului': { lat: 20.8893, lng: -156.4729 },
+    'Wailuku': { lat: 20.8936, lng: -156.5000 }, 'Makawao': { lat: 20.8564, lng: -156.3100 },
+    'Paia': { lat: 20.9108, lng: -156.3703 }, 'Haiku': { lat: 20.9197, lng: -156.3231 },
+    'Kula': { lat: 20.7878, lng: -156.3358 }, 'Hana': { lat: 20.7578, lng: -155.9928 },
+  },
+  oahu: {
+    'Honolulu': { lat: 21.3069, lng: -157.8583 }, 'Waikiki': { lat: 21.2793, lng: -157.8294 },
+    'Kailua': { lat: 21.4022, lng: -157.7394 }, 'Kaneohe': { lat: 21.4022, lng: -157.8003 },
+    'Pearl City': { lat: 21.3972, lng: -157.9756 }, 'Kapolei': { lat: 21.3347, lng: -158.0764 },
+    'Haleiwa': { lat: 21.5950, lng: -158.1028 }, 'Mililani': { lat: 21.4511, lng: -158.0147 },
+    'Hawaii Kai': { lat: 21.2919, lng: -157.7000 }, 'Manoa': { lat: 21.3094, lng: -157.8019 },
+  },
+  kauai: {
+    'Lihue': { lat: 21.9781, lng: -159.3508 }, 'Kapaa': { lat: 22.0753, lng: -159.3192 },
+    'Hanalei': { lat: 22.2039, lng: -159.5017 }, 'Princeville': { lat: 22.2153, lng: -159.4811 },
+    'Poipu': { lat: 21.8742, lng: -159.4586 }, 'Koloa': { lat: 21.9056, lng: -159.4656 },
+    'Hanapepe': { lat: 21.9092, lng: -159.5950 }, 'Waimea': { lat: 21.9544, lng: -159.6411 },
+    'Kilauea': { lat: 22.2128, lng: -159.4028 }, 'Kalaheo': { lat: 21.9244, lng: -159.5281 },
+  },
+  molokai: {
+    'Kaunakakai': { lat: 21.1975, lng: -157.0281 },
+  },
 };
 
 const ISLAND_CITIES: Record<string, string[]> = {
@@ -504,7 +512,9 @@ const Directory = () => {
   const [showCityPicker, setShowCityPicker] = useState(false);
 
   const handleSetLocationFromCity = useCallback((cityName: string) => {
-    const coords = CITY_COORDS[cityName];
+    // Look up city coords using current island context
+    const islandForLookup = island === 'all' ? 'big_island' : island;
+    const coords = CITY_COORDS_BY_ISLAND[islandForLookup]?.[cityName];
     if (!coords) return;
     try { localStorage.setItem('aloha_user_location', JSON.stringify(coords)); } catch { /* ignore */ }
     setSortByDistance(true);
@@ -515,7 +525,7 @@ const Directory = () => {
       next.set('ulng', String(coords.lng));
       return next;
     }, { replace: true });
-  }, [setSearchParams]);
+  }, [setSearchParams, island]);
 
   const handleSetLocation = useCallback(() => {
     if (!navigator.geolocation) return;
@@ -949,8 +959,11 @@ const Directory = () => {
                     autoFocus
                     className="text-xs border rounded px-1.5 py-0.5 bg-background text-foreground"
                     defaultValue=""
-                    onChange={e => e.target.value && handleSetLocationFromCity(e.target.value)}
-                    onBlur={() => setShowCityPicker(false)}
+                    onChange={e => {
+                      if (e.target.value) {
+                        handleSetLocationFromCity(e.target.value);
+                      }
+                    }}
                   >
                     <option value="" disabled>Pick your town</option>
                     {(ISLAND_CITIES[island === 'all' ? 'big_island' : island] ?? []).map(c => (
