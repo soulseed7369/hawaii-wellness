@@ -123,11 +123,11 @@ export async function uploadCenterOfferingImage(file: File): Promise<string> {
   const path = `centers/offerings/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error } = await supabase.storage
-    .from('images')
+    .from('practitioner-images')
     .upload(path, optimized, { upsert: true });
 
   if (error) throw error;
 
-  const { data } = supabase.storage.from('images').getPublicUrl(path);
+  const { data } = supabase.storage.from('practitioner-images').getPublicUrl(path);
   return data.publicUrl;
 }

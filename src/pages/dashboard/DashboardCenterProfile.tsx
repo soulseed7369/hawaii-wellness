@@ -177,8 +177,9 @@ export default function DashboardCenterProfile() {
           try {
             const url = await uploadCenterPhoto(slot.file);
             finalSlots.push({ url });
-          } catch (err) {
-            toast.error('Photo upload failed. Please try again.');
+          } catch (err: any) {
+            console.error('Photo upload error:', err);
+            toast.error(`Photo upload failed: ${err?.message ?? 'unknown error'}`);
             setUploading(false);
             return;
           }
