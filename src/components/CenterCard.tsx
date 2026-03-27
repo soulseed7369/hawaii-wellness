@@ -76,110 +76,82 @@ export function CenterCard({
         <Card
           className={`overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.01] ${tierCardClasses(center.tier)} ${center.tier === "featured" ? "border-l-4 border-l-amber-400" : "border-l-4 border-l-sky-300"}`}
         >
-          <div className="flex gap-4 p-4">
-            {/* Avatar — 72px, using OptimizedImage */}
-            {hasImage ? (
-              <OptimizedImage
-                src={center.image}
-                alt={`Photo of ${center.name}`}
-                width={72}
-                height={72}
-                className="h-[72px] w-[72px] flex-shrink-0 rounded-lg object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <AvatarFallback
-                name={center.name}
-                className="h-[72px] w-[72px] flex-shrink-0 rounded-lg"
-              />
-            )}
+          <div className="flex gap-3 p-3">
+            {/* Avatar column: image + type label underneath */}
+            <div className="flex flex-col items-center flex-shrink-0 gap-1">
+              {hasImage ? (
+                <OptimizedImage
+                  src={center.image}
+                  alt={`Photo of ${center.name}`}
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 rounded-lg object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <AvatarFallback
+                  name={center.name}
+                  className="h-16 w-16 rounded-lg"
+                />
+              )}
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-sky-600">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-500" />
+                {centerTypeLabel(center.centerType || 'wellness_center')}
+              </span>
+            </div>
 
             {/* Info */}
             <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  {/* Center name + verified checkmark */}
-                  <div className="flex items-center gap-1">
-                    <h3 className="truncate font-display text-base font-semibold group-hover:text-primary transition-colors leading-tight">
-                      {center.name}
-                    </h3>
-                    {(center.tier === "premium" || center.tier === "featured") && (
-                      <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" aria-label="Verified" />
-                    )}
-                  </div>
-                  {/* Center type label */}
-                  <span className="inline-flex items-center gap-0.5 mt-0.5 text-[10px] font-medium text-sky-600">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-500" />
-                    {centerTypeLabel(center.centerType || 'wellness_center')}
-                  </span>
-                </div>
-                <div className="flex flex-shrink-0 items-center gap-1">
-                  {center.tier && center.tier !== "free" && (
-                    <TierBadge tier={center.tier} />
+              {/* Row 1: Name + tier badge */}
+              <div className="flex items-start justify-between gap-1">
+                <div className="flex items-center gap-1 min-w-0">
+                  <h3 className="truncate font-display text-sm font-semibold group-hover:text-primary transition-colors leading-tight">
+                    {center.name}
+                  </h3>
+                  {(center.tier === "premium" || center.tier === "featured") && (
+                    <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" aria-label="Verified" />
                   )}
                 </div>
+                {center.tier && center.tier !== "free" && (
+                  <TierBadge tier={center.tier} />
+                )}
               </div>
 
-              {/* Bio excerpt — italic, truncated, for all tiers */}
-              {center.bio && (
-                <p className="mt-0.5 truncate text-xs text-muted-foreground/80 italic leading-snug">
-                  {center.bio}
-                </p>
-              )}
-
-              {/* Location row with IslandPill */}
-              <div className="mt-1 mb-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+              {/* Row 2: Location + open status on same line */}
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0 text-xs text-muted-foreground leading-tight">
+                <MapPin className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
                 <span className="truncate">{center.location?.split(",")[0]}</span>
                 {center.distanceMiles != null && (
                   <span className="flex-shrink-0 text-muted-foreground/70">
                     · {formatDistance(center.distanceMiles)}
                   </span>
                 )}
-                {center.island && <IslandPill island={center.island} />}
+                {getOpenStatus(center.workingHours)?.isOpen && (
+                  <span className="inline-flex items-center gap-0.5 text-emerald-600 font-medium">
+                    · <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" /> Open
+                  </span>
+                )}
               </div>
 
-              {/* Color-coded modality chips */}
+              {/* Row 3: Modality pills */}
               {visibleModalities.length > 0 && (
-                <div className="mb-1.5 flex flex-wrap gap-1" role="list" aria-label="Services">
+                <div className="mt-1 flex flex-wrap gap-1" role="list" aria-label="Services">
                   {visibleModalities.map((m) => (
                     <span
                       key={m}
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-normal ${modalityBadgeClass(m)}`}
+                      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-normal leading-none ${modalityBadgeClass(m)}`}
                       role="listitem"
                     >
                       {m}
                     </span>
                   ))}
                   {extraCount > 0 && (
-                    <Badge variant="outline" className="text-xs font-normal">
+                    <Badge variant="outline" className="text-[11px] font-normal px-1.5 py-0.5 leading-none">
                       +{extraCount} more
                     </Badge>
                   )}
                 </div>
               )}
-
-              {/* Description excerpt for featured tier */}
-              {center.tier === "featured" && center.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">
-                  {center.description}
-                </p>
-              )}
-
-              {/* Open/closed status indicator */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                {getOpenStatus(center.workingHours) && getOpenStatus(center.workingHours)?.isOpen ? (
-                  <>
-                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-emerald-600 font-medium">Open now</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
-                    <span>Closed</span>
-                  </>
-                )}
-              </div>
             </div>
           </div>
         </Card>

@@ -898,7 +898,7 @@ const Directory = () => {
             <div>
               {/* Featured row — max 3 featured listings */}
               {USE_NEW_SEARCH && (
-                <FeaturedResultsRow items={featuredItems} highlightModality={effectiveQuery} />
+                <FeaturedResultsRow items={featuredItems} highlightModality={effectiveQuery} activeModality={modality || effectiveQuery} />
               )}
 
               {/* Main results — sorted by composite score */}
