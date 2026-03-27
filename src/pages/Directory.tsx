@@ -747,8 +747,15 @@ const Directory = () => {
   const resultCount = USE_NEW_SEARCH ? unifiedResults.length : (oldFilteredPractitioners.length + oldFilteredCenters.length);
 
   const mapLocations = useMemo<MapLocation[]>(() => {
+    // Helper to sort by tier priority
+    const tierPriority = (tier: string | null | undefined): number => {
+      if (tier === 'featured') return 0;
+      if (tier === 'premium') return 1;
+      return 2; // 'free' or null
+    };
+
     if (USE_NEW_SEARCH) {
-      return accumulatedResults
+      const filtered = accumulatedResults
         .filter(item => {
           const lat = item.lat ?? 0;
           const lng = item.lng ?? 0;
@@ -765,6 +772,11 @@ const Directory = () => {
           listing_type: item.listing_type as 'practitioner' | 'center',
           tier: item.tier || 'free',
         }));
+
+      // Sort by tier priority (featured > premium > free) and cap at 50 pins
+      return filtered
+        .sort((a, b) => tierPriority(a.tier) - tierPriority(b.tier))
+        .slice(0, 50);
     }
     // Old search fallback — combine both types
     const all = [
@@ -777,7 +789,12 @@ const Directory = () => {
         modality: c.modality, location: c.location, listing_type: 'center' as const, tier: c.tier,
       })),
     ];
-    return all.filter(l => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
+    const filtered = all.filter(l => l.lat !== 0 && l.lng !== 0 && l.lat !== 19.8968);
+
+    // Sort by tier priority (featured > premium > free) and cap at 50 pins
+    return filtered
+      .sort((a, b) => tierPriority(a.tier) - tierPriority(b.tier))
+      .slice(0, 50);
   }, [accumulatedResults, oldFilteredPractitioners, oldFilteredCenters]);
 
   const crossIslandNote = detectedIsland && detectedIsland !== island
