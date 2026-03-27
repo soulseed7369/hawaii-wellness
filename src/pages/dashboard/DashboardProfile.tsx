@@ -217,9 +217,9 @@ export default function DashboardProfile() {
       setProfilePhotoIndex(safeIdx);
 
       toast.success('Profile saved! It will appear in the directory once reviewed.');
-    } catch (err) {
-      toast.error('Failed to save profile. Please try again.');
-      if (import.meta.env.DEV) console.error(err);
+    } catch (err: any) {
+      console.error('Profile save error:', err);
+      toast.error(`Failed to save profile: ${err?.message ?? 'unknown error'}`);
     } finally {
       setUploading(false);
     }
