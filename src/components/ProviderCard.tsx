@@ -158,18 +158,6 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-snug">{provider.bio}</p>
               )}
 
-              {/* Match explanation labels (premium/featured tiers only) */}
-              {isEnhanced && (provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
-                <p className="mt-0.5 text-[11px] text-muted-foreground italic leading-snug">
-                  {provider.matchedConcerns && provider.matchedConcerns.length > 0 && (
-                    <span>Helps with: {provider.matchedConcerns.slice(0, 3).join(", ")}</span>
-                  )}
-                  {provider.matchedConcerns?.length && provider.matchedApproaches?.length ? <span className="mx-1">·</span> : null}
-                  {provider.matchedApproaches && provider.matchedApproaches.length > 0 && (
-                    <span>Approach: {provider.matchedApproaches.slice(0, 3).join(", ")}</span>
-                  )}
-                </p>
-              ) : null}
             </div>
           </div>
         </Card>
@@ -236,17 +224,6 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
             <p className="mt-2 line-clamp-2 flex-1 text-xs text-muted-foreground">{provider.bio}</p>
           )}
           {!provider.bio && <div className="flex-1" />}
-          {(provider.tier === "premium" || provider.tier === "featured") && (provider.matchedConcerns?.length || provider.matchedApproaches?.length) ? (
-            <p className="mt-1 text-[10px] text-muted-foreground italic line-clamp-1">
-              {provider.matchedConcerns && provider.matchedConcerns.length > 0 && (
-                <span>Helps with: {provider.matchedConcerns.slice(0, 2).join(", ")}</span>
-              )}
-              {provider.matchedConcerns?.length && provider.matchedApproaches?.length ? <span className="mx-1">·</span> : null}
-              {provider.matchedApproaches && provider.matchedApproaches.length > 0 && (
-                <span>Approach: {provider.matchedApproaches.slice(0, 2).join(", ")}</span>
-              )}
-            </p>
-          ) : null}
           <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
             {visibleModalities.length > 1 && visibleModalities.slice(1).map((m) => (
               <span key={m} className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-normal ${modalityBadgeClass(m)}`}>{m}</span>
