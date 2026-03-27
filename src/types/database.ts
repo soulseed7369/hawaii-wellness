@@ -190,6 +190,8 @@ export interface PractitionerRow {
   // Multi-photo support (migration 20260322000002)
   photos: string[];
   profile_photo_index: number;
+  photo_position: string | null;       // 'top' | 'center' | 'bottom'
+  video_url: string | null;
   // Search rebuild sprint — populated by pipeline/scripts/31_rebuild_search_docs.py
   profile_completeness: number | null;
 }
@@ -247,6 +249,8 @@ export interface CenterRow {
     sat?: Array<{ open: string; close: string }> | null;
     sun?: Array<{ open: string; close: string }> | null;
   };
+  photo_position: string | null;       // 'top' | 'center' | 'bottom'
+  video_url: string | null;
   // Search rebuild sprint — populated by pipeline/scripts/31_rebuild_search_docs.py
   profile_completeness: number | null;
 }

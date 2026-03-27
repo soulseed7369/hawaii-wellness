@@ -121,8 +121,8 @@ export default function DashboardProfile() {
         messaging_enabled: (practitioner as any).messaging_enabled ?? true,
         discovery_call_enabled: (practitioner as any).discovery_call_enabled ?? false,
         discovery_call_url: (practitioner as any).discovery_call_url ?? '',
-        photo_position: (practitioner as any).photo_position ?? 'center',
-        video_url: (practitioner as any).video_url ?? '',
+        photo_position: practitioner.photo_position ?? 'center',
+        video_url: practitioner.video_url ?? '',
         social_links: (practitioner as any).social_links ?? {},
         working_hours: (() => {
           const raw = (practitioner as any).working_hours ?? {};

@@ -113,8 +113,8 @@ export default function DashboardCenterProfile() {
         accepts_new_clients: center.accepts_new_clients ?? true,
         modalities: center.modalities ?? [],
         session_type: center.session_type ?? 'in_person',
-        photo_position: (center as any).photo_position ?? 'center',
-        video_url: (center as any).video_url ?? '',
+        photo_position: center.photo_position ?? 'center',
+        video_url: center.video_url ?? '',
         social_links: center.social_links ?? {},
         working_hours: (() => {
           const raw = center.working_hours ?? {};
