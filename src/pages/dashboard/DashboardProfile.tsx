@@ -15,6 +15,20 @@ import { ContactVerification } from "@/components/ContactVerification";
 import { useRequestReview } from "@/hooks/useVerification";
 import MultiPhotoUpload, { type PhotoSlot } from "@/components/MultiPhotoUpload";
 import { isValidVideoUrl } from "@/lib/cardUtils";
+import { RankedModalities, type ModalityTier } from "@/components/RankedModalities";
+
+const MODALITIES = [
+  'Acupuncture', 'Alternative Therapy', 'Art Therapy', 'Astrology', 'Ayurveda',
+  'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
+  'Craniosacral', 'Dentistry', 'Energy Healing', 'Family Constellation', 'Fitness', 'Functional Medicine',
+  'Hawaiian Healing', 'Herbalism', 'Hypnotherapy', 'IV Therapy', 'Life Coaching',
+  'Lomilomi / Hawaiian Healing', 'Longevity', 'Massage', 'Meditation', 'Midwife',
+  'Nature Therapy', 'Naturopathic', 'Nervous System Regulation', 'Network Chiropractic',
+  'Nutrition', 'Osteopathic', 'Physical Therapy',
+  'Psychic', 'Psychotherapy', 'Reiki', 'Ritualist', 'Somatic Therapy', 'Soul Guidance',
+  'Sound Healing', 'TCM (Traditional Chinese Medicine)',
+  'Trauma-Informed Care', 'Watsu / Water Therapy', "Women's Health", 'Yoga',
+];
 
 const ISLANDS = [
   { value: 'big_island', label: 'Big Island' },
@@ -32,18 +46,6 @@ const CITIES_BY_ISLAND: Record<string, string[]> = {
   molokai:    ['Kaunakakai', 'Hoolehua', 'Maunaloa', 'Kualapuu', 'Halawa'],
 };
 
-const MODALITIES = [
-  'Acupuncture', 'Alternative Therapy', 'Art Therapy', 'Astrology', 'Ayurveda',
-  'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
-  'Craniosacral', 'Dentistry', 'Energy Healing', 'Family Constellation', 'Fitness', 'Functional Medicine',
-  'Hawaiian Healing', 'Herbalism', 'Hypnotherapy', 'IV Therapy', 'Life Coaching',
-  'Lomilomi / Hawaiian Healing', 'Longevity', 'Massage', 'Meditation', 'Midwife',
-  'Nature Therapy', 'Naturopathic', 'Nervous System Regulation', 'Network Chiropractic',
-  'Nutrition', 'Osteopathic', 'Physical Therapy',
-  'Psychic', 'Psychotherapy', 'Reiki', 'Ritualist', 'Somatic Therapy', 'Soul Guidance',
-  'Sound Healing', 'TCM (Traditional Chinese Medicine)',
-  'Trauma-Informed Care', 'Watsu / Water Therapy', "Women's Health", 'Yoga',
-];
 
 const BOOKING_LABELS = [
   { value: 'Book a Session', label: 'Book a Session' },
@@ -162,14 +164,6 @@ export default function DashboardProfile() {
     setProfilePhotoIndex(idx);
   };
 
-  const toggleModality = (m: string) => {
-    setForm(prev => ({
-      ...prev,
-      modalities: prev.modalities.includes(m)
-        ? prev.modalities.filter(x => x !== m)
-        : [...prev.modalities, m],
-    }));
-  };
 
   const handleIslandChange = (island: string) => {
     setForm(prev => ({ ...prev, island, city: '' }));
@@ -335,31 +329,18 @@ export default function DashboardProfile() {
         </CardContent>
       </Card>
 
-      {/* Modalities */}
+      {/* Modalities — Ranked by Search Priority */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Services & Modalities</CardTitle>
-          <CardDescription>Select all that apply to your practice.</CardDescription>
+          <CardDescription>Rank your modalities by search priority — top modalities are searchable based on your tier.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1">
-            {MODALITIES.map(m => (
-              <label key={m} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary">
-                <input
-                  type="checkbox"
-                  checked={form.modalities.includes(m)}
-                  onChange={() => toggleModality(m)}
-                  className="w-3.5 h-3.5 accent-primary"
-                />
-                {m}
-              </label>
-            ))}
-          </div>
-          {form.modalities.length > 0 && (
-            <p className="text-xs text-muted-foreground mt-3">
-              Selected: {form.modalities.join(', ')}
-            </p>
-          )}
+          <RankedModalities
+            modalities={form.modalities}
+            tier={(tier as ModalityTier) || 'free'}
+            onChange={modalities => setForm(prev => ({ ...prev, modalities }))}
+          />
         </CardContent>
       </Card>
 

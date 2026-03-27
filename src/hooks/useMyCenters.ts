@@ -121,7 +121,7 @@ export function useSaveCenter() {
 
       const { data: existing } = await supabase
         .from('centers')
-        .select('id, status')
+        .select('id, status, tier')
         .eq('owner_id', user.id)
         .maybeSingle();
 
@@ -133,12 +133,75 @@ export function useSaveCenter() {
           .eq('id', existing.id)
           .eq('owner_id', user.id);
         if (error) throw error;
+
+        // After save: sync modality ranks to listing_modalities join table
+        // This enforces tier-based search limits (free: top 2, premium: top 5, featured: all)
+        try {
+          const tier = existing.tier || 'free';
+          const modalities = formData.modalities?.filter(Boolean) ?? [];
+
+          // Delete existing modality mappings for this center
+          await supabase
+            .from('listing_modalities')
+            .delete()
+            .eq('listing_id', existing.id)
+            .eq('listing_type', 'center');
+
+          // Re-insert with rank-based limit enforcement
+          if (modalities.length > 0) {
+            const { error: invokeError } = await supabase.functions.invoke('sync-modality-ranks', {
+              body: {
+                listing_id: existing.id,
+                listing_type: 'center',
+                modalities,
+                tier,
+              },
+            });
+            if (invokeError) {
+              throw invokeError;
+            }
+          }
+        } catch (err) {
+          // Log but don't fail the save — modality sync is best-effort
+          // (center profile is already saved; search indexing may be delayed)
+          console.warn('Failed to sync modality ranks for center:', err);
+        }
       } else {
         // Only set status: 'draft' for brand-new centers
         const { error } = await supabase
           .from('centers')
           .insert({ ...payload, status: 'draft' } as CenterInsert);
         if (error) throw error;
+
+        // After creating new center: fetch tier and sync modality ranks
+        try {
+          const { data: newCenter } = await supabase
+            .from('centers')
+            .select('id, tier')
+            .eq('owner_id', user.id)
+            .maybeSingle();
+
+          if (newCenter) {
+            const tier = newCenter.tier || 'free';
+            const modalities = formData.modalities?.filter(Boolean) ?? [];
+            if (modalities.length > 0) {
+              const { error: invokeError } = await supabase.functions.invoke('sync-modality-ranks', {
+                body: {
+                  listing_id: newCenter.id,
+                  listing_type: 'center',
+                  modalities,
+                  tier,
+                },
+              });
+              if (invokeError) {
+                throw invokeError;
+              }
+            }
+          }
+        } catch (err) {
+          // Log but don't fail the save — center is already created
+          console.warn('Failed to sync modality ranks on new center:', err);
+        }
       }
     },
     onSuccess: () => {

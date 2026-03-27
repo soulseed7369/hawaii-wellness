@@ -99,7 +99,7 @@ export function useSavePractitioner() {
 
       const { data: existing } = await supabase
         .from('practitioners')
-        .select('id, status')
+        .select('id, status, tier')
         .eq('owner_id', user.id)
         .maybeSingle();
 
@@ -112,12 +112,75 @@ export function useSavePractitioner() {
           .eq('id', existing.id)
           .eq('owner_id', user.id);
         if (error) throw error;
+
+        // After save: sync modality ranks to listing_modalities join table
+        // This enforces tier-based search limits (free: top 2, premium: top 5, featured: all)
+        try {
+          const tier = existing.tier || 'free';
+          const modalities = formData.modalities.filter(Boolean);
+
+          // Delete existing modality mappings for this listing
+          await supabase
+            .from('listing_modalities')
+            .delete()
+            .eq('listing_id', existing.id)
+            .eq('listing_type', 'practitioner');
+
+          // Re-insert with rank-based limit enforcement
+          if (modalities.length > 0) {
+            const { error: invokeError } = await supabase.functions.invoke('sync-modality-ranks', {
+              body: {
+                listing_id: existing.id,
+                listing_type: 'practitioner',
+                modalities,
+                tier,
+              },
+            });
+            if (invokeError) {
+              throw invokeError;
+            }
+          }
+        } catch (err) {
+          // Log but don't fail the save — modality sync is best-effort
+          // (profile is already saved; search indexing may be delayed)
+          console.warn('Failed to sync modality ranks:', err);
+        }
       } else {
         // Only set status: 'draft' for brand-new listings
         const { error } = await supabase
           .from('practitioners')
           .insert({ ...payload, status: 'draft' } as PractitionerInsert);
         if (error) throw error;
+
+        // After creating new listing: fetch tier and sync modality ranks
+        try {
+          const { data: newListing } = await supabase
+            .from('practitioners')
+            .select('id, tier')
+            .eq('owner_id', user.id)
+            .maybeSingle();
+
+          if (newListing) {
+            const tier = newListing.tier || 'free';
+            const modalities = formData.modalities.filter(Boolean);
+            if (modalities.length > 0) {
+              const { error: invokeError } = await supabase.functions.invoke('sync-modality-ranks', {
+                body: {
+                  listing_id: newListing.id,
+                  listing_type: 'practitioner',
+                  modalities,
+                  tier,
+                },
+              });
+              if (invokeError) {
+                throw invokeError;
+              }
+            }
+          }
+        } catch (err) {
+          // Log but don't fail the save — profile is already created
+          console.warn('Failed to sync modality ranks on new listing:', err);
+        }
       }
     },
     onSuccess: () => {
