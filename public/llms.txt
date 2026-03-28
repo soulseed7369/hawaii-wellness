@@ -58,7 +58,7 @@ featured ($129/mo): Homepage rotation, crown badge, priority in search results �
 - Articles: https://hawaiiwellness.net/api/articles/{slug} — NewsArticle schema
 - Events/Retreats: https://hawaiiwellness.net/api/offering/{uuid} — Event schema
 - Island directories: https://hawaiiwellness.net/api/island/{island-slug} — CollectionPage + ItemList schema
-- Sitemaps: https://hawaiiwellness.net/api/sitemap-practitioners.xml, /api/sitemap-centers.xml, /api/sitemap-articles.xml
+- Sitemaps: https://hawaiiwellness.net/sitemap.xml
 
 ## Contact
 Website: https://hawaiiwellness.net

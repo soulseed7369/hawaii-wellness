@@ -20,7 +20,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
 
   const urls = data.map(c => `
   <url>
-    <loc>https://hawaiiwellness.net/api/center/${c.id}</loc>
+    <loc>https://hawaiiwellness.net/center/${c.id}</loc>
     <lastmod>${c.updated_at?.substring(0, 10) ?? '2026-03-01'}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
