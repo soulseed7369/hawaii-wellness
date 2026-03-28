@@ -20,6 +20,3 @@ Disallow: /api/contact/
 
 # Sitemaps
 Sitemap: https://hawaiiwellness.net/sitemap.xml
-Sitemap: https://hawaiiwellness.net/api/sitemap-practitioners.xml
-Sitemap: https://hawaiiwellness.net/api/sitemap-centers.xml
-Sitemap: https://hawaiiwellness.net/api/sitemap-articles.xml
