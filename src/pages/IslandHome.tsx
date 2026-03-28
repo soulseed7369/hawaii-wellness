@@ -189,7 +189,7 @@ export function IslandHome({ config }: IslandHomeProps) {
             <div className="mx-auto flex max-w-3xl items-center justify-evenly gap-4">
               {practitionerCount > 0 && (
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary md:text-3xl">{practitionerCount}+</div>
+                  <div className="text-2xl font-bold text-primary md:text-3xl">{practitionerCount}</div>
                   <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Practitioners</div>
                 </div>
               )}
