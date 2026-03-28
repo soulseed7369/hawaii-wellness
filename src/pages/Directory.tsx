@@ -451,6 +451,11 @@ const Directory = () => {
     if (!isNaN(urlULat) && !isNaN(urlULng)) {
       return { lat: urlULat, lng: urlULng };
     }
+    // Only use localStorage if URL params are explicitly absent
+    if (searchParams.has('ulat') || searchParams.has('ulng')) {
+      // If URL had ulat/ulng but they failed to parse, don't fall back to localStorage
+      return null;
+    }
     try {
       const saved = localStorage.getItem('aloha_user_location');
       if (saved) {
@@ -514,11 +519,16 @@ const Directory = () => {
   const [showCityPicker, setShowCityPicker] = useState(false);
 
   const handleClearLocation = useCallback(() => {
-    try { localStorage.removeItem('aloha_user_location'); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem('aloha_user_location');
+    } catch {
+      // Ignore localStorage errors (private browsing, etc.)
+    }
     setSortByDistance(false);
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
-      next.delete('ulat'); next.delete('ulng');
+      next.delete('ulat');
+      next.delete('ulng');
       return next;
     }, { replace: true });
   }, [setSearchParams]);
@@ -809,9 +819,9 @@ const Directory = () => {
   return (
     <main className="flex flex-1 flex-col">
       {/* Tab Bar + Controls */}
-      <div className="border-b border-border bg-background px-4 py-3">
-        <div className="container space-y-2">
-          <div className="flex items-center gap-2">
+      <div className="border-b border-border bg-background">
+        <div className="container mx-auto max-w-full px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
             <Select value={island} onValueChange={handleIsland}>
               <SelectTrigger className="w-36 flex-shrink-0 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -879,12 +889,12 @@ const Directory = () => {
               </SelectContent>
             </Select>
 
-            <div className="flex-1" />
+            <div className="flex-1 min-w-0" />
 
             {/* Map toggle — mobile only (desktop has always-on map) */}
             <button onClick={() => setShowMap(!showMap)}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted lg:hidden">
-              <Map className="h-4 w-4" />
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-input px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted lg:hidden whitespace-nowrap">
+              <Map className="h-4 w-4 flex-shrink-0" />
               {showMap ? "List" : "Map"}
             </button>
           </div>
