@@ -311,7 +311,7 @@ def phase1b_claim(contact: dict) -> tuple:
 
     city_str = f" in {city}" if city else f" on {island}"
 
-    subject = f"Your {modality} listing{city_str} — a quick follow-up"
+    subject = f"Your {modality} listing on Hawaiʻi Wellness — a quick follow-up"
 
     text_body = f"""Hi {name},
 
