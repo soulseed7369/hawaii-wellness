@@ -11,7 +11,7 @@ export const MODALITY_SAGE = new Set([
   "Hawaiian Healing","Watsu / Water Therapy","Physical Therapy","Osteopathic",
   "Chiropractic","Network Chiropractic","Acupuncture","TCM (Traditional Chinese Medicine)",
   "Ayurveda","Naturopathic","Functional Medicine","Herbalism","IV Therapy","Longevity",
-  "Dentistry","Nervous System Regulation",
+  "Nervous System Regulation",
 ]);
 
 export const MODALITY_OCEAN = new Set([

@@ -42,7 +42,7 @@ def detect_island(city: str, fallback: str) -> str:
 MODALITIES = [
     'Acupuncture', 'Alternative Therapy', 'Art Therapy', 'Astrology', 'Ayurveda',
     'Birth Doula', 'Breathwork', 'Chiropractic', 'Counseling',
-    'Craniosacral', 'Dentistry', 'Energy Healing', 'Family Constellation',
+    'Craniosacral', 'Energy Healing', 'Family Constellation',
     'Fitness', 'Functional Medicine', 'Hawaiian Healing', 'Herbalism', 'Hypnotherapy',
     'IV Therapy', 'Life Coaching', 'Lomilomi / Hawaiian Healing', 'Longevity',
     'Massage', 'Meditation', 'Midwife', 'Nature Therapy', 'Naturopathic',
@@ -60,7 +60,7 @@ TYPE_TO_MODALITIES: dict[str, list[str]] = {
     "gym":            ["Fitness"],
     "yoga_studio":    ["Yoga"],
     "chiropractor":   ["Chiropractic"],
-    "dentist":        ["Dentistry"],
+    "dentist":        [],  # Dentistry removed — dental is not a wellness modality
     "doctor":         [],
     "health":         [],
     "point_of_interest": [],
@@ -278,6 +278,12 @@ NAME_KEYWORDS: list[tuple[str, str]] = [
     ("dance therapy",    "Art Therapy"),
     ("movement therapy", "Art Therapy"),
 
+    # Quantum / Energy Healing (common in Hawaii wellness market)
+    ("quantum",          "Energy Healing"),
+    ("quantum heal",     "Energy Healing"),
+    ("quantum touch",    "Energy Healing"),
+    ("quantum vitality", "Energy Healing"),
+
     # Longevity & Anti-Aging
     ("longevity",        "Longevity"),
     ("anti-aging",       "Longevity"),
@@ -308,12 +314,7 @@ NAME_KEYWORDS: list[tuple[str, str]] = [
     ("fertility",        "Women's Health"),
     ("menopause",        "Women's Health"),
 
-    # Dentistry
-    ("dental",           "Dentistry"),
-    ("dentist",          "Dentistry"),
-    ("holistic dentist", "Dentistry"),
-    ("biological dentist", "Dentistry"),
-    ("integrative dentist", "Dentistry"),
+    # NOTE: Dentistry removed from modalities list — dental providers are not wellness practitioners
 ]
 
 # ── Exclusion filters (learned from Big Island audit 2026-03-15) ──────────────
@@ -323,11 +324,14 @@ EXCLUDED_GOOGLE_TYPES = {
     "pharmacy", "drugstore",
     "veterinary_care", "pet_store",
     "grocery_or_supermarket", "supermarket", "convenience_store",
+    "grocery_store", "food_store",  # health food stores are NOT wellness providers
+    "resort_hotel", "hotel", "lodging", "campground",  # hotels with spas are NOT wellness listings
     "restaurant", "cafe", "bakery", "bar", "meal_delivery", "meal_takeaway",
     "hair_care", "hair_salon", "barber_shop",
     "real_estate_agency", "insurance_agency", "bank", "atm",
     "car_repair", "car_dealer", "gas_station",
     "school", "university", "library", "museum",
+    "dentist", "dental_clinic",  # Dentistry is not a wellness modality
     "church", "synagogue", "mosque", "hindu_temple",
     "funeral_home", "cemetery",
     "post_office", "courthouse", "city_hall",
@@ -372,6 +376,24 @@ EXCLUDED_NAME_PATTERNS = [
     r'\binternal\s*medicine\b',
     r'\bmedical\s*(group|associates|office)\b',
     r'\brehabilitation\s*hospital\b',
+    # Retail, hospitality, and non-wellness businesses (from autoresearch 2026-03-26)
+    r'\bsmoke\s*shop\b',
+    r'\btobacco\b',
+    r'\bvape\b',
+    r'\bhotel\b',
+    r'\bresort\b',
+    r'\binn\b',
+    r'\blodge\b',
+    r'\bbed\s*(and|&)\s*breakfast\b',
+    r'\bnoni\s*farm\b',
+    r'\bfarm\b',  # farms sell products, not wellness services
+    r'\bnatural\s*foods?\b',  # health food stores are NOT wellness providers
+    r'\borganic\s*market\b',
+    # Wedding / events services (from Oahu autoresearch 2026-03-26)
+    r'\bwedding\b',
+    r'\bofficiant\b',
+    r'\bcelebrant\b',
+    # Note: martial arts are classified as center/Fitness — NOT excluded
 ]
 
 
@@ -391,7 +413,9 @@ def should_exclude(name: str, types: list[str]) -> str | None:
     return None
 
 
-CENTER_TYPES = {"spa", "gym", "yoga_studio", "health", "wellness_center"}
+CENTER_TYPES = {"spa", "gym", "yoga_studio", "health", "wellness_center",
+                "fitness_center", "sports_complex", "sports_activity_location",
+                "martial_arts"}  # martial arts gyms = center/Fitness
 PRACTITIONER_TYPES = {"physiotherapist", "chiropractor", "dentist", "doctor"}
 CENTER_NAME_KEYWORDS = [
     "center", "centre", "studio", "clinic", "spa", "wellness",

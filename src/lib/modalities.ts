@@ -1,7 +1,7 @@
 /**
  * Canonical list of all wellness modalities.
  * Source of truth for the directory — must stay in sync with database and pipelines.
- * Total: 44 modalities
+ * Total: 43 modalities
  */
 export const ALL_MODALITIES = [
   'Acupuncture',
@@ -14,7 +14,6 @@ export const ALL_MODALITIES = [
   'Chiropractic',
   'Counseling',
   'Craniosacral',
-  'Dentistry',
   'Energy Healing',
   'Family Constellation',
   'Fitness',
