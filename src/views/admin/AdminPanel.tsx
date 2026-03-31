@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AdminArticles } from './AdminArticles';
+import { AdminClaims } from './AdminClaims';
 import { AdminFlags } from './AdminFlags';
 import { AdminAccounts } from './AdminAccounts';
+import { AdminLeads } from './AdminLeads';
+import { AdminQueue } from './AdminQueue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Plus, Trash2, Eye, EyeOff, Loader2, Upload, X, ImagePlus, Pencil, ChevronLeft, ChevronRight, ArrowLeftRight, CheckCircle, XCircle, Flag, Users, Star, Crown, MapPin as MapPinIcon, UserX } from 'lucide-react';
+import { Plus, Trash2, Eye, EyeOff, Loader2, Upload, X, ImagePlus, Pencil, ChevronLeft, ChevronRight, ArrowLeftRight, CheckCircle, XCircle, Flag, Users, Star, Crown, MapPin as MapPinIcon, ClipboardList, UserX } from 'lucide-react';
 import {
   AdminQueryParams,
   useAllPractitioners,
@@ -133,7 +136,7 @@ const ImageStrip = ({ urls, onRemove }: ImageStripProps) => (
 // ─── Main component ──────────────────────────────────────────────────────────
 
 const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState<'practitioners' | 'centers' | 'articles' | 'flags' | 'accounts'>('practitioners');
+  const [activeTab, setActiveTab] = useState<'practitioners' | 'centers' | 'claims' | 'articles' | 'flags' | 'accounts' | 'leads'>('practitioners');
   const [isAddPractitionerOpen, setIsAddPractitionerOpen] = useState(false);
   const [isAddCenterOpen, setIsAddCenterOpen] = useState(false);
 
@@ -148,8 +151,6 @@ const AdminPanel = () => {
   // ── Centers-only filters ──────────────────────────────────────────────────
   const [centerTypeFilter, setCenterTypeFilter] = useState('all');
   const [missingDataFilter, setMissingDataFilter] = useState('all');
-  // ── Claimed filter ────────────────────────────────────────────────────────
-  const [claimedFilter, setClaimedFilter] = useState<'all' | 'claimed' | 'unclaimed'>('all');
 
   // ── Batch selection ───────────────────────────────────────────────────────
   const [selectedPractitioners, setSelectedPractitioners] = useState<Set<string>>(new Set());
@@ -312,7 +313,6 @@ const AdminPanel = () => {
     status: statusFilter,
     tier: tierFilter,
     modality: modalityFilter,
-    claimed: claimedFilter,
     page: practitionerPage,
     pageSize: PAGE_SIZE,
   };
@@ -325,7 +325,6 @@ const AdminPanel = () => {
     modality: modalityFilter,
     centerType: centerTypeFilter,
     missingData: missingDataFilter,
-    claimed: claimedFilter,
     page: centerPage,
     pageSize: PAGE_SIZE,
   };
@@ -1171,25 +1170,22 @@ const AdminPanel = () => {
             ))}
           </SelectContent>
         </Select>
-        <Select value={claimedFilter} onValueChange={v => { setClaimedFilter(v as 'all' | 'claimed' | 'unclaimed'); setPractitionerPage(0); setCenterPage(0); }}>
-          <SelectTrigger className="h-8 w-36 text-xs">
-            <SelectValue placeholder="All Listings" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Listings</SelectItem>
-            <SelectItem value="claimed">Claimed only</SelectItem>
-            <SelectItem value="unclaimed">Unclaimed only</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      <Tabs value={activeTab} onValueChange={v => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs value={activeTab} onValueChange={v => {
+        const tab = v as typeof activeTab;
+        setActiveTab(tab);
+        if (tab === 'claims') fetchClaims(claimStatusFilter);
+      }}>
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="practitioners">
             Practitioners {practResult ? `(${practTotal})` : ''}
           </TabsTrigger>
           <TabsTrigger value="centers">
             Centers {centerResult ? `(${centerTotal})` : ''}
+          </TabsTrigger>
+          <TabsTrigger value="claims">
+            Claims
           </TabsTrigger>
           <TabsTrigger value="articles">
             Articles
@@ -1201,6 +1197,14 @@ const AdminPanel = () => {
           <TabsTrigger value="accounts" className="gap-1.5">
             <Users className="h-3.5 w-3.5" />
             Accounts
+          </TabsTrigger>
+          <TabsTrigger value="leads" className="gap-1.5">
+            <Star className="h-3.5 w-3.5" />
+            Leads
+          </TabsTrigger>
+          <TabsTrigger value="queue" className="gap-1.5">
+            <ClipboardList className="h-3.5 w-3.5" />
+            Queue
           </TabsTrigger>
         </TabsList>
 
@@ -2002,6 +2006,11 @@ const AdminPanel = () => {
           }
         </TabsContent>
 
+        {/* ── CLAIMS TAB ── */}
+        <TabsContent value="claims" className="mt-6">
+          <AdminClaims />
+        </TabsContent>
+
         <TabsContent value="articles" className="mt-6">
           <AdminArticles />
         </TabsContent>
@@ -2016,7 +2025,15 @@ const AdminPanel = () => {
           <AdminAccounts />
         </TabsContent>
 
+        {/* ── LEADS TAB ── */}
+        <TabsContent value="leads" className="mt-6">
+          <AdminLeads />
+        </TabsContent>
 
+        {/* ── QUEUE TAB ── */}
+        <TabsContent value="queue" className="mt-6">
+          <AdminQueue />
+        </TabsContent>
       </Tabs>
 
       {/* ── Edit Practitioner Dialog ── */}
@@ -3172,7 +3189,7 @@ const AdminPanel = () => {
   );
 };
 
-// Inline AdminFlags, AdminAccounts components
+// Inline AdminFlags, AdminAccounts, AdminLeads, AdminQueue components
 // have been extracted to separate files in this directory.
 
 export default AdminPanel;
