@@ -20,19 +20,19 @@ const nextConfig = {
     config.plugins.push(
       new webpack.DefinePlugin({
         'import.meta.env.VITE_SUPABASE_URL':
-          JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''),
+          JSON.stringify(process.env.VITE_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''),
         'import.meta.env.VITE_SUPABASE_ANON_KEY':
-          JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''),
+          JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''),
         'import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY':
-          JSON.stringify(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''),
+          JSON.stringify(process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''),
         'import.meta.env.VITE_SITE_URL':
-          JSON.stringify(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.hawaiiwellness.net'),
+          JSON.stringify(process.env.VITE_SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.hawaiiwellness.net'),
         'import.meta.env.VITE_USE_NEW_SEARCH':
-          JSON.stringify(process.env.NEXT_PUBLIC_USE_NEW_SEARCH ?? 'true'),
+          JSON.stringify(process.env.VITE_USE_NEW_SEARCH ?? process.env.NEXT_PUBLIC_USE_NEW_SEARCH ?? 'true'),
         'import.meta.env.VITE_BETA_SECRET':
-          JSON.stringify(process.env.NEXT_PUBLIC_BETA_SECRET ?? ''),
+          JSON.stringify(process.env.VITE_BETA_SECRET ?? process.env.NEXT_PUBLIC_BETA_SECRET ?? ''),
         'import.meta.env.VITE_PROMO_ACTIVE':
-          JSON.stringify(process.env.NEXT_PUBLIC_PROMO_ACTIVE ?? 'false'),
+          JSON.stringify(process.env.VITE_PROMO_ACTIVE ?? process.env.NEXT_PUBLIC_PROMO_ACTIVE ?? 'false'),
         'import.meta.env.DEV':
           JSON.stringify(process.env.NODE_ENV === 'development'),
       })
