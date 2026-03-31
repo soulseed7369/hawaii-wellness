@@ -1,4 +1,6 @@
 {
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
   "rewrites": [
     {
       "source": "/api/profile/:id",
