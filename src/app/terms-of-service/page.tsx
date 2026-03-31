@@ -1,11 +1,18 @@
-import { Link } from 'react-router-dom';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export default function TermsOfService() {
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description:
+    'Review the Hawaiʻi Wellness terms of service governing use of our directory for practitioners, wellness centers, and visitors.',
+};
+
+export default function TermsOfServicePage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <Link
-        to="/"
+        href="/"
         className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -16,10 +23,9 @@ export default function TermsOfService() {
       <p className="mb-10 text-sm text-muted-foreground">Last updated: March 2026</p>
 
       <div className="prose prose-stone max-w-none">
-
         <p>
-          These Terms of Service ("Terms") govern your use of the Hawaiʻi Wellness website
-          and platform operated by <strong>Hawaii Wellness LLC</strong> ("we," "us," or "our").
+          These Terms of Service (&ldquo;Terms&rdquo;) govern your use of the Hawai&#699;i Wellness website
+          and platform operated by <strong>Hawaii Wellness LLC</strong> (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;).
           By accessing or using the Site, you agree to be bound by these Terms. If you do not
           agree, please do not use the Site.
         </p>
@@ -33,7 +39,7 @@ export default function TermsOfService() {
 
         <h2>2. The Platform</h2>
         <p>
-          Hawaiʻi Wellness is a directory platform connecting wellness seekers with holistic
+          Hawai&#699;i Wellness is a directory platform connecting wellness seekers with holistic
           practitioners, wellness centers, and retreat providers in Hawaii. We do not provide
           medical, therapeutic, or health services ourselves. We are not responsible for the
           quality, accuracy, or outcomes of services offered by listed providers.
@@ -91,7 +97,7 @@ export default function TermsOfService() {
 
         <h3>Price changes</h3>
         <p>
-          We reserve the right to change subscription prices with at least 30 days' notice.
+          We reserve the right to change subscription prices with at least 30 days&apos; notice.
           Continued use after a price change takes effect constitutes acceptance of the new price.
         </p>
 
@@ -116,7 +122,7 @@ export default function TermsOfService() {
 
         <h2>6. Disclaimer of Warranties</h2>
         <p>
-          THE SITE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED.
+          THE SITE IS PROVIDED &ldquo;AS IS&rdquo; WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED.
           WE DO NOT WARRANT THAT THE SITE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF
           VIRUSES. WE MAKE NO WARRANTIES REGARDING THE ACCURACY OR COMPLETENESS OF DIRECTORY
           LISTINGS OR THE QUALITY OF SERVICES PROVIDED BY LISTED PRACTITIONERS.
@@ -139,7 +145,7 @@ export default function TermsOfService() {
         <h2>8. Indemnification</h2>
         <p>
           You agree to indemnify and hold harmless Hawaii Wellness LLC, its officers, employees,
-          and agents from any claims, damages, or expenses (including reasonable attorneys' fees)
+          and agents from any claims, damages, or expenses (including reasonable attorneys&apos; fees)
           arising from your use of the Site, your listings, or your violation of these Terms.
         </p>
 

@@ -10,7 +10,9 @@
  */
 
 export const SITE_URL = (
-  (import.meta.env.VITE_SITE_URL as string | undefined) ?? 'https://hawaiiwellness.net'
+  ((import.meta as any).env?.VITE_SITE_URL as string | undefined)
+  ?? process.env.NEXT_PUBLIC_SITE_URL
+  ?? 'https://www.hawaiiwellness.net'
 ).replace(/\/$/, '');
 
 export const SITE_NAME = 'Hawaiʻi Wellness';

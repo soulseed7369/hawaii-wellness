@@ -818,6 +818,7 @@ const Directory = () => {
 
   return (
     <main className="flex flex-1 flex-col">
+      <h1 className="sr-only">Hawaiʻi Wellness Directory — Find Practitioners &amp; Centers</h1>
       {/* Tab Bar + Controls */}
       <div className="border-b border-border bg-background">
         <div className="container mx-auto max-w-full px-4 py-3">

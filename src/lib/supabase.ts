@@ -1,8 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// Universal env access: Vite replaces import.meta.env.* at build time;
+// Next.js doesn't, so we fall back to NEXT_PUBLIC_* process.env vars.
+const supabaseUrl =
+  ((import.meta as any).env?.VITE_SUPABASE_URL as string | undefined)
+  ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string | undefined)
+  ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
  * Supabase client singleton.

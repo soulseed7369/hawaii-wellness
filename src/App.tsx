@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, memo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,44 +17,44 @@ import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_EMAIL } from "@/lib/siteCon
 import { lazyWithRetry, clearChunkRetryFlag } from "@/lib/lazyWithRetry";
 
 
+// ── Next.js App Router shim ───────────────────────────────────────────────────
+// Routes in this list are now handled by Next.js App Router (SSR).
+// When React Router lands on one (e.g. an in-SPA link click), force a hard
+// reload so Next.js serves the correct SSR page instead of the Vite component.
+const NextJsPage = memo(function NextJsPage() {
+  useEffect(() => { window.location.replace(window.location.href); }, []);
+  return null;
+});
+
 // ── Lazy-loaded page bundles (with auto-reload on stale chunks) ───────────────
-const Directory         = lazyWithRetry(() => import("./pages/Directory"));
-const Articles          = lazyWithRetry(() => import("./pages/Articles"));
-const ArticleDetail     = lazyWithRetry(() => import("./pages/ArticleDetail"));
-const ListYourPractice  = lazyWithRetry(() => import("./pages/ListYourPractice"));
-const ProfileDetail     = lazyWithRetry(() => import("./pages/ProfileDetail"));
-const CenterDetail      = lazyWithRetry(() => import("./pages/CenterDetail"));
-const Concierge         = lazyWithRetry(() => import("./pages/Concierge"));
-const NotFound          = lazyWithRetry(() => import("./pages/NotFound"));
-const Auth              = lazyWithRetry(() => import("./pages/Auth"));
-const AuthCallback      = lazyWithRetry(() => import("./pages/AuthCallback"));
-const ClaimListing      = lazyWithRetry(() => import("./pages/ClaimListing"));
-const TestimonialSubmit = lazyWithRetry(() => import("./pages/TestimonialSubmit"));
-const BigIsland         = lazyWithRetry(() => import("./pages/BigIsland"));
-const MauiHome          = lazyWithRetry(() => import("./pages/MauiHome"));
-const OahuHome          = lazyWithRetry(() => import("./pages/OahuHome"));
-const KauaiHome         = lazyWithRetry(() => import("./pages/KauaiHome"));
-const PrivacyPolicy     = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
-const TermsOfService    = lazyWithRetry(() => import("./pages/TermsOfService"));
-const HelpCenter        = lazyWithRetry(() => import("./pages/HelpCenter"));
-const About             = lazyWithRetry(() => import("./pages/About"));
-const WebsitePackages   = lazyWithRetry(() => import("./pages/WebsitePackages"));
+const Directory         = lazyWithRetry(() => import("./views/Directory"));
+const Articles          = lazyWithRetry(() => import("./views/Articles"));
+const ArticleDetail     = lazyWithRetry(() => import("./views/ArticleDetail"));
+const ListYourPractice  = lazyWithRetry(() => import("./views/ListYourPractice"));
+const Concierge         = lazyWithRetry(() => import("./views/Concierge"));
+const NotFound          = lazyWithRetry(() => import("./views/NotFound"));
+const Auth              = lazyWithRetry(() => import("./views/Auth"));
+const AuthCallback      = lazyWithRetry(() => import("./views/AuthCallback"));
+const ClaimListing      = lazyWithRetry(() => import("./views/ClaimListing"));
+const TestimonialSubmit = lazyWithRetry(() => import("./views/TestimonialSubmit"));
+const About             = lazyWithRetry(() => import("./views/About"));
+const WebsitePackages   = lazyWithRetry(() => import("./views/WebsitePackages"));
 
 // Dashboard pages (split separately — only loaded when user visits /dashboard)
-const AdminPanel        = lazyWithRetry(() => import("./pages/admin/AdminPanel"));
-const DashboardHome     = lazyWithRetry(() => import("./pages/dashboard/DashboardHome"));
-const DashboardProfile  = lazyWithRetry(() => import("./pages/dashboard/DashboardProfile"));
-const DashboardCenterProfile = lazyWithRetry(() => import("./pages/dashboard/DashboardCenterProfile"));
-const DashboardCenters  = lazyWithRetry(() => import("./pages/dashboard/DashboardCenters"));
-const DashboardCenterOfferings = lazyWithRetry(() => import("./pages/dashboard/DashboardCenterOfferings"));
-const DashboardCenterClasses = lazyWithRetry(() => import("./pages/dashboard/DashboardCenterClasses"));
-const DashboardCenterHome   = lazyWithRetry(() => import("./pages/dashboard/DashboardCenterHome"));
-const DashboardOfferings    = lazyWithRetry(() => import("./pages/dashboard/DashboardOfferings"));
-const DashboardClasses      = lazyWithRetry(() => import("./pages/dashboard/DashboardClasses"));
-const DashboardTestimonials = lazyWithRetry(() => import("./pages/dashboard/DashboardTestimonials"));
-const DashboardBilling      = lazyWithRetry(() => import("./pages/dashboard/DashboardBilling"));
-const DashboardAnalytics    = lazyWithRetry(() => import("./pages/dashboard/DashboardAnalytics"));
-const DashboardSettings     = lazyWithRetry(() => import("./pages/dashboard/DashboardSettings"));
+const AdminPanel        = lazyWithRetry(() => import("./views/admin/AdminPanel"));
+const DashboardHome     = lazyWithRetry(() => import("./views/dashboard/DashboardHome"));
+const DashboardProfile  = lazyWithRetry(() => import("./views/dashboard/DashboardProfile"));
+const DashboardCenterProfile = lazyWithRetry(() => import("./views/dashboard/DashboardCenterProfile"));
+const DashboardCenters  = lazyWithRetry(() => import("./views/dashboard/DashboardCenters"));
+const DashboardCenterOfferings = lazyWithRetry(() => import("./views/dashboard/DashboardCenterOfferings"));
+const DashboardCenterClasses = lazyWithRetry(() => import("./views/dashboard/DashboardCenterClasses"));
+const DashboardCenterHome   = lazyWithRetry(() => import("./views/dashboard/DashboardCenterHome"));
+const DashboardOfferings    = lazyWithRetry(() => import("./views/dashboard/DashboardOfferings"));
+const DashboardClasses      = lazyWithRetry(() => import("./views/dashboard/DashboardClasses"));
+const DashboardTestimonials = lazyWithRetry(() => import("./views/dashboard/DashboardTestimonials"));
+const DashboardBilling      = lazyWithRetry(() => import("./views/dashboard/DashboardBilling"));
+const DashboardAnalytics    = lazyWithRetry(() => import("./views/dashboard/DashboardAnalytics"));
+const DashboardSettings     = lazyWithRetry(() => import("./views/dashboard/DashboardSettings"));
 
 // ── Shared page-level loading fallback ───────────────────────────────────────
 function PageSpinner() {
@@ -149,23 +149,26 @@ const App = () => (
 
               {/* Public pages — all share Header/Footer via PublicLayout */}
               <Route element={<PublicLayout />}>
-                <Route path="/"          element={<BigIsland />} />
-                <Route path="/big-island" element={<BigIsland />} />
-                <Route path="/maui"      element={<MauiHome />} />
-                <Route path="/oahu"      element={<OahuHome />} />
-                <Route path="/kauai"     element={<KauaiHome />} />
+                {/* ── Owned by Next.js App Router (SSR) ── force hard reload ── */}
+                <Route path="/"               element={<NextJsPage />} />
+                <Route path="/big-island"     element={<NextJsPage />} />
+                <Route path="/maui"           element={<NextJsPage />} />
+                <Route path="/oahu"           element={<NextJsPage />} />
+                <Route path="/kauai"          element={<NextJsPage />} />
+                <Route path="/profile/:id"    element={<NextJsPage />} />
+                <Route path="/center/:id"     element={<NextJsPage />} />
+                <Route path="/articles/:slug" element={<NextJsPage />} />
+                <Route path="/privacy-policy" element={<NextJsPage />} />
+                <Route path="/terms-of-service" element={<NextJsPage />} />
+                <Route path="/help"           element={<NextJsPage />} />
+
+                {/* ── Still served by this SPA ── */}
                 <Route path="/directory"          element={<Directory />} />
                 <Route path="/articles"           element={<Articles />} />
-                <Route path="/articles/:slug"     element={<ArticleDetail />} />
                 <Route path="/list-your-practice" element={<ListYourPractice />} />
-                <Route path="/profile/:id"        element={<ProfileDetail />} />
-                <Route path="/center/:id"         element={<CenterDetail />} />
                 <Route path="/concierge"          element={<Concierge />} />
                 <Route path="/about"              element={<About />} />
-                <Route path="/website-packages"  element={<WebsitePackages />} />
-                <Route path="/privacy-policy"     element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service"   element={<TermsOfService />} />
-                <Route path="/help"               element={<HelpCenter />} />
+                <Route path="/website-packages"   element={<WebsitePackages />} />
                 <Route path="*"                   element={<NotFound />} />
               </Route>
             </Routes>
