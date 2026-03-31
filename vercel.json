@@ -25,10 +25,39 @@
       "destination": "/api/sitemap-articles.xml"
     },
     { "source": "/api/articles/:slug", "destination": "/api/articles/[slug]" },
-    { "source": "/api/island/:island", "destination": "/api/island/[island]" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/island/:island", "destination": "/api/island/[island]" }
   ],
   "headers": [
+    {
+      "source": "/auth(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/dashboard(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/admin(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/claim/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
+    {
+      "source": "/testimonial/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

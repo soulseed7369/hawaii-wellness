@@ -51,9 +51,6 @@ const nextConfig = {
     },
   },
 
-  // Standalone output for Vercel
-  output: 'standalone',
-
   // Image optimization: allow Supabase storage domain
   images: {
     remotePatterns: [
