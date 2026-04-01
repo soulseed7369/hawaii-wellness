@@ -24,7 +24,8 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 type ListingType = "all" | "practitioner" | "center";
 
 // Feature flag: set VITE_USE_NEW_SEARCH=false in .env to revert to old client-side search
-const USE_NEW_SEARCH = import.meta.env.VITE_USE_NEW_SEARCH !== 'false';
+const USE_NEW_SEARCH = (((import.meta as any).env?.VITE_USE_NEW_SEARCH as string | undefined)
+  ?? process.env.NEXT_PUBLIC_USE_NEW_SEARCH ?? 'true') !== 'false';
 
 // ── Canonical modalities (shown in filter dropdown) ──────────────────────────
 const FILTER_MODALITIES = [

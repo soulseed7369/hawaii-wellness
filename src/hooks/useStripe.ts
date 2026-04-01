@@ -28,7 +28,7 @@ export function useCreateCheckoutSession() {
         throw new Error('You must be logged in to upgrade. Please sign in again.');
       }
 
-      if (import.meta.env.DEV) {
+      if ((import.meta as any).env?.DEV) {
         console.log('[checkout] token refreshed, expires_at:', session.expires_at);
       }
 

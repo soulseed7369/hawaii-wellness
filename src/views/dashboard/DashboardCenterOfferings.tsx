@@ -160,7 +160,7 @@ export default function DashboardCenterOfferings() {
       setShowDialog(false);
     } catch (err) {
       toast.error("Failed to save offering. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
@@ -175,7 +175,7 @@ export default function DashboardCenterOfferings() {
       toast.success(`"${title}" has been removed.`);
     } catch (err) {
       toast.error("Failed to delete offering. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
@@ -214,7 +214,7 @@ export default function DashboardCenterOfferings() {
       toast.error(
         err instanceof Error ? err.message : "Failed to upload image."
       );
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     } finally {
       setUploading(false);
     }

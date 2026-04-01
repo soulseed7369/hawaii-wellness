@@ -32,7 +32,12 @@ export const VALID_PRICE_IDS: string[] = Object.values(STRIPE_PRICES);
 /** ALOHA20: 20% off for the first 12 billing cycles.
  *  Enable by setting VITE_PROMO_ACTIVE=true in .env.local */
 export const PROMO_COUPON_ID = 'o1QERmQL';
-export const PROMO_ACTIVE = import.meta.env.VITE_PROMO_ACTIVE === 'true';
+export const PROMO_ACTIVE =
+  (((import.meta as any).env?.VITE_PROMO_ACTIVE as string | undefined)
+    ?? process.env.NEXT_PUBLIC_PROMO_ACTIVE) === 'true';
 
 /** Publishable key — safe to include in browser bundle */
-export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string;
+export const STRIPE_PUBLISHABLE_KEY =
+  ((import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined)
+  ?? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ?? '';

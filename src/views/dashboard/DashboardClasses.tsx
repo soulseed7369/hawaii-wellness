@@ -168,7 +168,7 @@ export default function DashboardClasses() {
       setShowDialog(false);
     } catch (err) {
       toast.error("Failed to save class. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
@@ -183,7 +183,7 @@ export default function DashboardClasses() {
       toast.success(`"${title}" has been removed.`);
     } catch (err) {
       toast.error("Failed to delete class. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 

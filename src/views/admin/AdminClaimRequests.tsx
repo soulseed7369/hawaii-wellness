@@ -345,7 +345,7 @@ function DocumentPreviewSheet({
     try {
       // For now, construct the storage URL directly
       // In production, use supabase.storage.from().createSignedUrl()
-      const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const baseUrl = ((import.meta as any).env?.VITE_SUPABASE_URL as string | undefined) ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
       const bucketName = 'claim-documents';
       const signedUrl = `${baseUrl}/storage/v1/object/public/${bucketName}/${claim.document_url}`;
 
@@ -395,7 +395,7 @@ function DocumentPreviewSheet({
           {isImage && claim.document_url && (
             <div className="border rounded-lg overflow-hidden bg-secondary/20">
               <img
-                src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/claim-documents/${claim.document_url}`}
+                src={`${((import.meta as any).env?.VITE_SUPABASE_URL as string | undefined) ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/claim-documents/${claim.document_url}`}
                 alt={claim.document_name || 'Document'}
                 className="w-full h-auto"
               />

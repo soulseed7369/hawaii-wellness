@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <p className="text-muted-foreground max-w-sm">
             An unexpected error occurred. Please try navigating back or refreshing the page.
           </p>
-          {import.meta.env.DEV && this.state.errorMessage && (
+          {(import.meta as any).env?.DEV && this.state.errorMessage && (
             <pre className="mt-2 max-w-lg overflow-auto rounded bg-muted p-3 text-left text-xs text-muted-foreground">
               {this.state.errorMessage}
             </pre>

@@ -112,7 +112,7 @@ function LocationForm({
       onDone();
     } catch (err) {
       toast.error("Failed to save location.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
@@ -441,7 +441,7 @@ export default function DashboardCenters() {
       setShowForm(false);
     } catch (err) {
       toast.error("Failed to save center. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
@@ -454,7 +454,7 @@ export default function DashboardCenters() {
       if (expandedId === centerId) setExpandedId(null);
     } catch (err) {
       toast.error("Failed to remove center. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     } finally {
       setDeletingId(null);
     }

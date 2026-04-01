@@ -7,7 +7,7 @@ const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (import.meta.env.DEV) console.error("404:", location.pathname);
+    if ((import.meta as any).env?.DEV) console.error("404:", location.pathname);
   }, [location.pathname]);
 
   return (

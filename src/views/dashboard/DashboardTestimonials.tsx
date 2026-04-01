@@ -108,7 +108,7 @@ export default function DashboardTestimonials() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to send invitation";
       toast.error(msg);
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
@@ -137,7 +137,7 @@ export default function DashboardTestimonials() {
       });
     } catch (err) {
       toast.error("Failed to add response. Please try again.");
-      if (import.meta.env.DEV) console.error(err);
+      if ((import.meta as any).env?.DEV) console.error(err);
     }
   };
 
