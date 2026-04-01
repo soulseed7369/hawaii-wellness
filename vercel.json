@@ -1,34 +1,6 @@
 {
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "rewrites": [
-    {
-      "source": "/api/profile/:id",
-      "destination": "/api/profile/[id]"
-    },
-    {
-      "source": "/api/center/:id",
-      "destination": "/api/center/[id]"
-    },
-    {
-      "source": "/api/offering/:id",
-      "destination": "/api/offering/[id]"
-    },
-    {
-      "source": "/api/sitemap-practitioners.xml",
-      "destination": "/api/sitemap-practitioners.xml"
-    },
-    {
-      "source": "/api/sitemap-centers.xml",
-      "destination": "/api/sitemap-centers.xml"
-    },
-    {
-      "source": "/api/sitemap-articles.xml",
-      "destination": "/api/sitemap-articles.xml"
-    },
-    { "source": "/api/articles/:slug", "destination": "/api/articles/[slug]" },
-    { "source": "/api/island/:island", "destination": "/api/island/[island]" }
-  ],
   "headers": [
     {
       "source": "/auth(.*)",
