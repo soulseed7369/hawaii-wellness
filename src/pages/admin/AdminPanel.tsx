@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AdminArticles } from './AdminArticles';
 import { AdminFlags } from './AdminFlags';
 import { AdminAccounts } from './AdminAccounts';
+import { AdminOverview } from './AdminOverview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -133,7 +134,7 @@ const ImageStrip = ({ urls, onRemove }: ImageStripProps) => (
 // ─── Main component ──────────────────────────────────────────────────────────
 
 const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState<'practitioners' | 'centers' | 'articles' | 'flags' | 'accounts'>('practitioners');
+  const [activeTab, setActiveTab] = useState<'overview' | 'practitioners' | 'centers' | 'articles' | 'flags' | 'accounts'>('overview');
   const [isAddPractitionerOpen, setIsAddPractitionerOpen] = useState(false);
   const [isAddCenterOpen, setIsAddCenterOpen] = useState(false);
 
@@ -1184,7 +1185,10 @@ const AdminPanel = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={v => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="overview" className="gap-1.5">
+            Overview
+          </TabsTrigger>
           <TabsTrigger value="practitioners">
             Practitioners {practResult ? `(${practTotal})` : ''}
           </TabsTrigger>
@@ -1203,6 +1207,11 @@ const AdminPanel = () => {
             Accounts
           </TabsTrigger>
         </TabsList>
+
+        {/* ── OVERVIEW TAB ── */}
+        <TabsContent value="overview" className="mt-6">
+          <AdminOverview />
+        </TabsContent>
 
         {/* ── PRACTITIONERS TAB ── */}
         <TabsContent value="practitioners" className="mt-6">
