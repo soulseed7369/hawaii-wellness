@@ -1,4 +1,4 @@
-import { Suspense, useEffect, memo } from "react";
+import { Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,15 +16,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_EMAIL } from "@/lib/siteConfig";
 import { lazyWithRetry, clearChunkRetryFlag } from "@/lib/lazyWithRetry";
 
-
-// ── Next.js App Router shim ───────────────────────────────────────────────────
-// Routes in this list are now handled by Next.js App Router (SSR).
-// When React Router lands on one (e.g. an in-SPA link click), force a hard
-// reload so Next.js serves the correct SSR page instead of the Vite component.
-const NextJsPage = memo(function NextJsPage() {
-  useEffect(() => { window.location.replace(window.location.href); }, []);
-  return null;
-});
 
 // ── Lazy-loaded page bundles (with auto-reload on stale chunks) ───────────────
 const Directory         = lazyWithRetry(() => import("./views/Directory"));
@@ -149,20 +140,7 @@ const App = () => (
 
               {/* Public pages — all share Header/Footer via PublicLayout */}
               <Route element={<PublicLayout />}>
-                {/* ── Owned by Next.js App Router (SSR) ── force hard reload ── */}
-                <Route path="/"               element={<NextJsPage />} />
-                <Route path="/big-island"     element={<NextJsPage />} />
-                <Route path="/maui"           element={<NextJsPage />} />
-                <Route path="/oahu"           element={<NextJsPage />} />
-                <Route path="/kauai"          element={<NextJsPage />} />
-                <Route path="/profile/:id"    element={<NextJsPage />} />
-                <Route path="/center/:id"     element={<NextJsPage />} />
-                <Route path="/articles/:slug" element={<NextJsPage />} />
-                <Route path="/privacy-policy" element={<NextJsPage />} />
-                <Route path="/terms-of-service" element={<NextJsPage />} />
-                <Route path="/help"           element={<NextJsPage />} />
-
-                {/* ── Still served by this SPA ── */}
+                {/* ── Served by this SPA ── */}
                 <Route path="/directory"          element={<Directory />} />
                 <Route path="/articles"           element={<Articles />} />
                 <Route path="/list-your-practice" element={<ListYourPractice />} />
