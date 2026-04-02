@@ -3,13 +3,15 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPractitioner } from '@/lib/ssr';
 import { SITE_NAME, SITE_URL } from '@/lib/siteConfig';
+import { ContactReveal } from '@/components/ContactReveal';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const p = await getPractitioner(params.id);
+  const { id } = await params;
+  const p = await getPractitioner(id);
   if (!p) return { title: 'Practitioner Not Found' };
 
   const description = p.about
@@ -30,7 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProfilePage({ params }: Props) {
-  const p = await getPractitioner(params.id);
+  const { id } = await params;
+  const p = await getPractitioner(id);
   if (!p) notFound();
 
   const displayIsland = p.island
@@ -47,7 +50,6 @@ export default async function ProfilePage({ params }: Props) {
       ? { '@type': 'PostalAddress', streetAddress: p.address, addressRegion: 'HI', addressCountry: 'US' }
       : undefined,
     geo: p.lat && p.lng ? { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng } : undefined,
-    telephone: p.phone || undefined,
     url: p.website || `${SITE_URL}/profile/${p.id}`,
     knowsAbout: p.services,
   };
@@ -155,6 +157,14 @@ export default async function ProfilePage({ params }: Props) {
               <dd className="text-foreground">{p.address}</dd>
             </div>
           )}
+          <div className="flex gap-2 pt-1">
+            <dt className="w-20 shrink-0 text-muted-foreground">Phone</dt>
+            <dd><ContactReveal listingId={p.id} listingType="practitioner" type="phone" /></dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-20 shrink-0 text-muted-foreground">Email</dt>
+            <dd><ContactReveal listingId={p.id} listingType="practitioner" type="email" /></dd>
+          </div>
         </dl>
       </section>
 

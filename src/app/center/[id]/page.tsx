@@ -3,13 +3,15 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getCenter } from '@/lib/ssr';
 import { SITE_NAME, SITE_URL } from '@/lib/siteConfig';
+import { ContactReveal } from '@/components/ContactReveal';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const c = await getCenter(params.id);
+  const { id } = await params;
+  const c = await getCenter(id);
   if (!c) return { title: 'Wellness Center Not Found' };
 
   const description = `${c.name} — ${c.centerTypeLabel} in Hawaiʻi. View services, hours, and contact info.`;
@@ -28,7 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CenterPage({ params }: Props) {
-  const c = await getCenter(params.id);
+  const { id } = await params;
+  const c = await getCenter(id);
   if (!c) notFound();
 
   const displayIsland = c.island
@@ -45,7 +48,6 @@ export default async function CenterPage({ params }: Props) {
       ? { '@type': 'PostalAddress', streetAddress: c.address, addressRegion: 'HI', addressCountry: 'US' }
       : undefined,
     geo: c.lat && c.lng ? { '@type': 'GeoCoordinates', latitude: c.lat, longitude: c.lng } : undefined,
-    telephone: c.phone || undefined,
     url: c.website || `${SITE_URL}/center/${c.id}`,
     knowsAbout: c.modalities,
   };
@@ -164,12 +166,14 @@ export default async function CenterPage({ params }: Props) {
               <dd className="text-foreground">{c.address}</dd>
             </div>
           )}
-          {c.phone && (
-            <div className="flex gap-2">
-              <dt className="w-20 shrink-0 text-muted-foreground">Phone</dt>
-              <dd><a href={`tel:${c.phone}`} className="text-primary hover:underline">{c.phone}</a></dd>
-            </div>
-          )}
+          <div className="flex gap-2 pt-1">
+            <dt className="w-20 shrink-0 text-muted-foreground">Phone</dt>
+            <dd><ContactReveal listingId={c.id} listingType="center" type="phone" /></dd>
+          </div>
+          <div className="flex gap-2">
+            <dt className="w-20 shrink-0 text-muted-foreground">Email</dt>
+            <dd><ContactReveal listingId={c.id} listingType="center" type="email" /></dd>
+          </div>
         </dl>
       </section>
 

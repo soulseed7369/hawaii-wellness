@@ -46,9 +46,9 @@ function escapeHtml(str: string | null | undefined): string {
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   if (!id) return new NextResponse('Missing id', { status: 400 });
 
   // Select ONLY non-PII fields

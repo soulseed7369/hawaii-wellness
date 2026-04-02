@@ -47,9 +47,9 @@ const ISLAND_META: Record<string, { label: string; slug: string; desc: string; c
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { island: string } }
+  { params }: { params: Promise<{ island: string }> }
 ) {
-  const { island } = params;
+  const { island } = await params;
   if (!island || !ISLAND_META[island]) {
     return new NextResponse('Invalid island', { status: 400 });
   }
