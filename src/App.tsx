@@ -39,7 +39,6 @@ const ClaimListing      = lazyWithRetry(() => import("./views/ClaimListing"));
 const TestimonialSubmit = lazyWithRetry(() => import("./views/TestimonialSubmit"));
 const About             = lazyWithRetry(() => import("./views/About"));
 const WebsitePackages   = lazyWithRetry(() => import("./views/WebsitePackages"));
-const WebsitePreview    = lazyWithRetry(() => import("./views/WebsitePreview"));
 
 // Dashboard pages (split separately — only loaded when user visits /dashboard)
 const AdminPanel        = lazyWithRetry(() => import("./views/admin/AdminPanel"));
@@ -121,9 +120,6 @@ const App = () => (
 
               {/* Testimonial submission — full screen, no nav */}
               <Route path="/testimonial/:token" element={<TestimonialSubmit />} />
-
-              {/* Website preview — full screen, no nav */}
-              <Route path="/preview/:listingId" element={<WebsitePreview />} />
 
               {/* Dashboard — protected; ProtectedRoute renders Outlet */}
               <Route path="/dashboard" element={<ProtectedRoute />}>
