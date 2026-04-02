@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPractitioner } from '@/lib/ssr';
 import { SITE_NAME, SITE_URL } from '@/lib/siteConfig';
-import { ContactReveal } from '@/components/ContactReveal';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -157,14 +156,7 @@ export default async function ProfilePage({ params }: Props) {
               <dd className="text-foreground">{p.address}</dd>
             </div>
           )}
-          <div className="flex gap-2 pt-1">
-            <dt className="w-20 shrink-0 text-muted-foreground">Phone</dt>
-            <dd><ContactReveal listingId={p.id} listingType="practitioner" type="phone" /></dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="w-20 shrink-0 text-muted-foreground">Email</dt>
-            <dd><ContactReveal listingId={p.id} listingType="practitioner" type="email" /></dd>
-          </div>
+          {/* Phone/email revealed client-side in the SPA via ContactReveal */}
         </dl>
       </section>
 
