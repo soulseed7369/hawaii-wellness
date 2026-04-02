@@ -2,9 +2,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminMetrics } from '@/hooks/useAdminMetrics';
+import { useGA4Metrics } from '@/hooks/useGA4Metrics';
 import {
   Users, Building2, CheckCircle, FileText,
-  TrendingUp, Star, Crown, UserCheck, BarChart2,
+  TrendingUp, Star, Crown, UserCheck, BarChart2, Eye,
 } from 'lucide-react';
 
 function MetricCard({
@@ -56,6 +57,7 @@ function MetricCard({
 
 export function AdminOverview() {
   const { data, isLoading, error, dataUpdatedAt } = useAdminMetrics();
+  const { data: ga4, isLoading: ga4Loading, error: ga4Error } = useGA4Metrics();
 
   const lastUpdated = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -180,18 +182,82 @@ export function AdminOverview() {
         </div>
       </section>
 
-      {/* ── Traffic section (placeholder) ── */}
+      {/* ── Traffic section (Google Analytics) ── */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">Visitor Traffic</h3>
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-            <BarChart2 className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium text-muted-foreground">Traffic data not connected</p>
-            <p className="max-w-xs text-xs text-muted-foreground">
-              Connect Ahrefs Web Analytics by providing your project ID to see visitors, pageviews, and top pages here.
-            </p>
-          </CardContent>
-        </Card>
+        <h3 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          Visitor Traffic
+          <span className="ml-2 text-xs font-normal normal-case text-muted-foreground/60">via Google Analytics</span>
+        </h3>
+
+        {ga4Error ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+              <BarChart2 className="h-7 w-7 text-muted-foreground/40" />
+              <p className="text-sm font-medium text-muted-foreground">Traffic data unavailable</p>
+              <p className="max-w-xs text-xs text-muted-foreground">
+                Set GA4_CLIENT_ID, GA4_CLIENT_SECRET, GA4_REFRESH_TOKEN, and GA4_PROPERTY_ID in Supabase secrets, then redeploy the ga4-metrics function.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <p className="mb-2 text-xs text-muted-foreground">Last 7 days</p>
+            <div className="mb-4 grid grid-cols-3 gap-3">
+              <MetricCard
+                title="Sessions"
+                value={ga4?.last7d.sessions ?? 0}
+                sub="visits"
+                icon={TrendingUp}
+                loading={ga4Loading}
+                accent="blue"
+              />
+              <MetricCard
+                title="Users"
+                value={ga4?.last7d.users ?? 0}
+                sub="unique visitors"
+                icon={Users}
+                loading={ga4Loading}
+                accent="green"
+              />
+              <MetricCard
+                title="Pageviews"
+                value={ga4?.last7d.pageviews ?? 0}
+                sub="pages viewed"
+                icon={Eye}
+                loading={ga4Loading}
+                accent="purple"
+              />
+            </div>
+
+            <p className="mb-2 text-xs text-muted-foreground">Last 30 days</p>
+            <div className="grid grid-cols-3 gap-3">
+              <MetricCard
+                title="Sessions"
+                value={ga4?.last30d.sessions ?? 0}
+                sub="visits"
+                icon={TrendingUp}
+                loading={ga4Loading}
+                accent="blue"
+              />
+              <MetricCard
+                title="Users"
+                value={ga4?.last30d.users ?? 0}
+                sub="unique visitors"
+                icon={Users}
+                loading={ga4Loading}
+                accent="green"
+              />
+              <MetricCard
+                title="Pageviews"
+                value={ga4?.last30d.pageviews ?? 0}
+                sub="pages viewed"
+                icon={Eye}
+                loading={ga4Loading}
+                accent="purple"
+              />
+            </div>
+          </>
+        )}
       </section>
     </div>
   );
