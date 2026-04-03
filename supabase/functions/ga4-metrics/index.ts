@@ -23,7 +23,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
-const ADMIN_EMAILS = ['aloha@hawaiiwellness.net', 'mythicbitcoin@gmail.com'];
+const ADMIN_EMAILS = ['marcuswoo@gmail.com', 'aloha@hawaiiwellness.net', 'mythicbitcoin@gmail.com'];
 
 // ── GA4 helpers ──────────────────────────────────────────────────────────────
 
