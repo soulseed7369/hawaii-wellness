@@ -93,15 +93,18 @@ Deno.serve(async (req) => {
 
   try {
     // ── Auth check ───────────────────────────────────────────────────────────
+    // Pass the raw JWT explicitly — getUser() without an arg uses the client's
+    // internal session cache which is always empty in a fresh edge function instance.
     const authHeader = req.headers.get('authorization') ?? '';
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { authorization: authHeader } } },
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });

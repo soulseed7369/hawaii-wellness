@@ -194,8 +194,8 @@ export function AdminOverview() {
             <CardContent className="flex flex-col items-center justify-center gap-2 py-8 text-center">
               <BarChart2 className="h-7 w-7 text-muted-foreground/40" />
               <p className="text-sm font-medium text-muted-foreground">Traffic data unavailable</p>
-              <p className="max-w-xs text-xs text-muted-foreground">
-                Set GA4_CLIENT_ID, GA4_CLIENT_SECRET, GA4_REFRESH_TOKEN, and GA4_PROPERTY_ID in Supabase secrets, then redeploy the ga4-metrics function.
+              <p className="max-w-xs text-xs text-red-500 font-mono break-all">
+                {(ga4Error as Error)?.message || String(ga4Error)}
               </p>
             </CardContent>
           </Card>
