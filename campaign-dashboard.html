@@ -1519,6 +1519,9 @@
 
       const openRate = ((emailStats.by_status.opened || 0) / (emailStats.total_sent || 1) * 100).toFixed(1);
       const totalConversions = (funnel1.converted || 0) + (funnel2.converted || 0);
+      // true_claims_total = owner_id IS NOT NULL across practitioners + centers (authoritative)
+      const trueClaims = summary.true_claims_total || totalConversions;
+      const trueClaimsBreakdown = summary.true_claims_breakdown || {};
 
       const premiumSpotsLeft = Math.max(0, 20 - (revenue.conversions?.premium || 0));
       const featuredSpotsLeft = Math.max(0, 5 - (revenue.conversions?.featured || 0));
@@ -1526,7 +1529,7 @@
       const kpis = [
         { label: 'Total Contacts', value: summary.total, subtitle: `${summary.with_email} contactable` },
         { label: 'Emails Sent', value: emailStats.total_sent || 0, subtitle: `${openRate}% open rate` },
-        { label: 'Conversions', value: totalConversions, subtitle: 'claimed + upgraded' },
+        { label: 'Claims', value: trueClaims, subtitle: `${trueClaimsBreakdown.practitioners_claimed || 0} practitioners · ${trueClaimsBreakdown.centers_claimed || 0} centers` },
         { label: 'Campaign MRR', value: `$${(revenue.mrr || 0).toFixed(0)}`, subtitle: `+$${(revenue.onetime || 0).toFixed(0)} 1-time` },
         { label: 'By Email', value: summary.with_email, subtitle: `${((summary.with_email / summary.total) * 100).toFixed(0)}% of total` },
         { label: 'Not Yet Contacted', value: summary.contactable_not_contacted || 0, subtitle: 'next outreach pool' },
