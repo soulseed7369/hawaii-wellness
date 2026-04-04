@@ -88,8 +88,10 @@ function createMapIcon(loc: MapLocation) {
     ${style.inner}
   </svg>`;
 
+  // Wrap SVG in an inner div so the bounce animation's transform doesn't
+  // conflict with Leaflet's own transform: translate3d(...) on the outer container.
   return L.divIcon({
-    html: svg,
+    html: `<div class="map-marker-inner">${svg}</div>`,
     className: `custom-map-marker custom-map-marker--${variant}`,
     iconSize: [size, height],
     iconAnchor: [size / 2, height],
