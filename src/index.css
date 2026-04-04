@@ -133,3 +133,14 @@
   background: transparent !important;
   border: none !important;
 }
+
+/* Map marker bounce on card hover */
+@keyframes map-marker-bounce {
+  0%, 100% { transform: translateY(0); }
+  35%       { transform: translateY(-10px); }
+  65%       { transform: translateY(-5px); }
+}
+.map-marker-bounce {
+  animation: map-marker-bounce 0.55s ease infinite;
+  transform-origin: bottom center;
+}

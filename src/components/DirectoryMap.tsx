@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -102,9 +102,26 @@ function createMapIcon(loc: MapLocation) {
 interface DirectoryMapProps {
   locations: MapLocation[];
   visible?: boolean;
+  hoveredId?: string | null;
 }
 
-export function DirectoryMap({ locations, visible = true }: DirectoryMapProps) {
+export function DirectoryMap({ locations, visible = true, hoveredId }: DirectoryMapProps) {
+  // Store refs to each Leaflet Marker instance so we can animate them on hover
+  const markerRefs = useRef<Map<string, L.Marker>>(new Map());
+
+  // Toggle bounce class on the hovered marker's DOM element
+  useEffect(() => {
+    markerRefs.current.forEach((marker, id) => {
+      const el = marker.getElement();
+      if (!el) return;
+      if (id === hoveredId) {
+        el.classList.add('map-marker-bounce');
+      } else {
+        el.classList.remove('map-marker-bounce');
+      }
+    });
+  }, [hoveredId]);
+
   // Sort so featured pins render on top (later in SVG = higher z-index)
   const sorted = useMemo(
     () => [...locations].sort((a, b) => {
@@ -154,6 +171,10 @@ export function DirectoryMap({ locations, visible = true }: DirectoryMapProps) {
             position={[loc.lat, loc.lng]}
             icon={createMapIcon(loc)}
             aria-label={`Map pin for ${loc.name}`}
+            ref={(m) => {
+              if (m) markerRefs.current.set(loc.id, m);
+              else markerRefs.current.delete(loc.id);
+            }}
           >
             <Popup>
               <div
