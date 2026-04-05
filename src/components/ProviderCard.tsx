@@ -17,6 +17,7 @@ import {
   isValidListingImage,
   sortModalities,
   getObjectPosition,
+  inferTitleFromModality,
 } from "@/lib/cardUtils";
 
 // ── P-3 design tokens ────────────────────────────────────────────────────────
@@ -364,7 +365,7 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
               {provider.verified && <VerifiedDot />}
             </div>
 
-            {/* Primary modality as subtitle */}
+            {/* Job title inferred from primary modality */}
             {provider.modality && (
               <p
                 style={{
@@ -375,7 +376,7 @@ export function ProviderCard({ provider, highlightModality, compact = false }: P
                   letterSpacing: "0.02em",
                 }}
               >
-                {provider.modality}
+                {inferTitleFromModality(provider.modality)}
               </p>
             )}
 
